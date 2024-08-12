@@ -410,7 +410,7 @@ def fetchOpenAIEval():
 
         First detects if the eval is already in the cache. If the eval is already downloaded, 
         it will be stored in examples/ folder of the package under a new oaievals directory. 
-        If it's not in the cache, it will download it from the ChainForge webserver.
+        If it's not in the cache, it will download it from the webserver.
 
         POST'd data should be in form:
         { 

@@ -1,7 +1,7 @@
 # Preconverted OpenAI evals
 
 The flows in this directory were derived from a subset of OpenAI's evals registry: https://github.com/openai/evals
-These files are _not_ included in the PyPI chainforge package, but rather fetched from GitHub on an as-needed basis.
+These files are _not_ included in the PyPI package, but rather fetched from GitHub on an as-needed basis.
 This is to avoid requiring users to install OpenAI evals (which requires Git LFS, Python 3.9+, and a large number of dependencies).
 
 OpenAI evals is under the MIT License:

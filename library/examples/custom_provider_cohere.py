@@ -1,5 +1,5 @@
 """
-    A simple custom model provider to add to the ChainForge interface,
+    A simple custom model provider to add to the aggrag interface,
     to support Cohere AI text completions through their Python API.
 
     NOTE: You must have the `cohere` package installed and an API key.
