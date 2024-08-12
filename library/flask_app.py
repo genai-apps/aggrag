@@ -894,24 +894,16 @@ def write_json(file_content, file_path):
     except Exception as e:
         raise Exception(f"Failed to write JSON: {str(e)}")
 
-def generate_unique_folder_name(base_folder_name, parent_path, contains_default=False):
-    if contains_default:
-        base_new_iter_folder_name = f"{base_folder_name} copy"
-        new_iter_folder_name = base_new_iter_folder_name
-        counter = 2
-        while os.path.exists(os.path.join(parent_path, new_iter_folder_name)):
-            new_iter_folder_name = f"{base_new_iter_folder_name}{counter}"
-            counter += 1
-    else:
-        existing_iterations = [f for f in os.listdir(parent_path) if os.path.isdir(os.path.join(parent_path, f)) and f.startswith("iteration ")]
-        iteration_numbers = []
-        for f in existing_iterations:
-            match = re.match(r'iteration (\d+)', f)
-            if match:
-                iteration_numbers.append(int(match.group(1)))
+def generate_unique_folder_name(base_folder_name, parent_path):
+    existing_iterations = [f for f in os.listdir(parent_path) if os.path.isdir(os.path.join(parent_path, f)) and f.startswith("iteration ")]
+    iteration_numbers = []
+    for f in existing_iterations:
+        match = re.match(r'iteration (\d+)', f)
+        if match:
+            iteration_numbers.append(int(match.group(1)))
 
-        next_iteration_num = max(iteration_numbers) + 1 if iteration_numbers else 1
-        new_iter_folder_name = f"iteration {next_iteration_num}"
+    next_iteration_num = max(iteration_numbers) + 1 if iteration_numbers else 1
+    new_iter_folder_name = f"iteration {next_iteration_num}"
 
     return new_iter_folder_name
 
@@ -928,7 +920,7 @@ def copy_iteration():
     folder_path = os.path.join(parent_dir, usecase_folder_name)
     ensure_directory_exists(folder_path)
 
-    new_iter_folder_name = generate_unique_folder_name(iter_folder_name, folder_path, 'default' in usecase_folder_name)
+    new_iter_folder_name = generate_unique_folder_name(iter_folder_name, folder_path)
     iteration_folder_path = os.path.join(folder_path, new_iter_folder_name)
 
     ensure_directory_exists(iteration_folder_path)
@@ -945,6 +937,95 @@ def copy_iteration():
             return jsonify({"message": f"Failed to copy file: {str(e)}"}), 500
     else:
         return jsonify({"message": "Folder created successfully, but no valid file provided!", "iter_folder_name": new_iter_folder_name}), 201
+
+
+def generate_unique_usecase_folder_name(base_folder_name, parent_path, id):
+    base_folder = base_folder_name.split("__")
+    new_folder_name = base_folder[0] + '_Copy' + "__" + id
+    counter = 1
+    while os.path.exists(os.path.join(parent_path, new_folder_name)):
+        new_folder_name = f"{base_folder[0]}_Copy{counter}__{id}"
+        counter += 1
+    return new_folder_name  
+
+@app.route('/app/copyusecase', methods=['POST'])
+def copy_usecase():
+    data = request.get_json()
+    source_usecase_folder_name = data.get('sourceUsecase')
+    user_provided_target_usecase_folder = data.get('targetUsecase')
+    aggrag_user_id = data.get('aggrag_user_id')
+    parent_dir = os.path.join(os.getcwd(), 'configurations')
+    
+
+    ensure_directory_exists(parent_dir)
+
+    source_usecase_folder_path = os.path.join(parent_dir, source_usecase_folder_name)
+    if not os.path.exists(source_usecase_folder_path):
+        return jsonify({'message': 'Source use case folder does not exist'}), 404
+    isUsecaseAlreadyExists = False
+    for usecase in os.listdir(parent_dir):
+        if user_provided_target_usecase_folder in usecase:
+            isUsecaseAlreadyExists = True
+            break
+        else:
+            isUsecaseAlreadyExists = False
+    if isUsecaseAlreadyExists:
+        # target_usecase_folder_name = generate_unique_usecase_folder_name(user_provided_target_usecase_folder,parent_dir,aggrag_user_id)
+        return jsonify({"ok": False, "message": "Usecase folder already exists"}), 400 
+    else:
+        target_usecase_folder_name = user_provided_target_usecase_folder
+    # target_usecase_folder_name = user_provided_target_usecase_folder
+    target_usecase_folder_path = os.path.join(parent_dir, target_usecase_folder_name)
+    ensure_directory_exists(target_usecase_folder_path)
+
+    for item in os.listdir(source_usecase_folder_path):
+        item_path = os.path.join(source_usecase_folder_path, item)
+        if os.path.isdir(item_path):
+            target_iteration_folder_path = os.path.join(target_usecase_folder_path, item)
+            ensure_directory_exists(target_iteration_folder_path)
+            for file in os.listdir(item_path):
+                if file.endswith('.cforge'):
+                    source_file_path = os.path.join(item_path, file)
+                    target_file_path = os.path.join(target_iteration_folder_path, file)
+                    try:
+                        file_content = read_and_modify_json(source_file_path)
+                        metadata_path = os.path.join(target_usecase_folder_path, '.metadata')
+                        with open(metadata_path, 'w') as f:
+                            json.dump({"created_at": time.time(),"user_id":aggrag_user_id}, f)
+                        write_json(file_content, target_file_path)
+                    except Exception as e:
+                        return jsonify({"message": f"Failed to copy file: {str(e)}"}), 500
+        else:
+            target_file_path = os.path.join(target_usecase_folder_path, item)
+            try:
+                file_content = read_and_modify_json(item_path)
+                write_json(file_content, target_file_path)
+            except Exception as e:
+                return jsonify({"message": f"Failed to copy file: {str(e)}"}), 500
+            
+    iterations_info = []
+
+
+    for item in os.listdir(target_usecase_folder_path):
+        item_path = os.path.join(target_usecase_folder_path, item)
+        # Check if the item is a directory (i.e., an iteration folder)
+        if os.path.isdir(item_path):
+            # Ensure that the target iteration folder exists
+            target_iteration_folder_path = os.path.join(target_usecase_folder_path, item)
+            if os.path.exists(target_iteration_folder_path):
+                iteration_files = []
+
+                for file in os.listdir(item_path):
+                    if file.endswith('.cforge'):
+                        # Just collect the file names, 
+                        iteration_files.append(file)
+
+                iterations_info.append({
+                    "iteration_name": item,
+                    "files": iteration_files
+                })
+
+    return jsonify({"message": "Use case and iterations copied successfully!", "target_usecase_folder_name": target_usecase_folder_name,"iterations_info":iterations_info}), 201
 
 
 @app.route('/app/createusecase', methods=['POST'])
@@ -977,7 +1058,7 @@ def create_usecase():
     iteration_folder_path = os.path.join(folder_path, 'iteration 1')
     os.makedirs(iteration_folder_path)
     return jsonify({"ok":True,"message": "Folder created successfully!","usecase_folder":folder_with_userid}),200
-  
+
 def read_cforge_file(file_path):
     try:
         with open(file_path, 'r') as file:
@@ -1024,7 +1105,6 @@ def load_cforge():
                         "path": folder_path,
                         "default": "__default"  in folder or "__Default"  in folder
                     })
-
     # Sort folders based on creation time
     folder_data_list.sort(key=lambda x: (not x['default'],x['creation_time']))
 
@@ -1044,7 +1124,6 @@ def load_cforge():
             [item for item in folder_contents if os.path.isdir(os.path.join(folder_path, item)) and re.match(r'iteration[ _](\d+)', item)],
             key=lambda x: int(re.match(r'iteration[ _](\d+)', x).group(1))
         )
-
         for iteration in iterations:
             iteration_path = os.path.join(folder_path, iteration)
             iteration_contents = os.listdir(iteration_path)
@@ -1064,6 +1143,7 @@ def load_cforge():
         structured_folders.append(folder_data_structured)
 
     return jsonify(structured_folders if structured_folders else [])
+
 
 @app.route('/app/saveflow', methods=['POST'])
 def save_flow():
