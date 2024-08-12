@@ -1450,6 +1450,7 @@ export async function call_together(
   };
 
   // Create call to chat model
+  console.log("Are we sending system prompt: ", query)
   const together_call: any = together.createChatCompletion.bind(together);
 
   // Carry over chat history, if present:

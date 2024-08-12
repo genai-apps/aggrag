@@ -2102,6 +2102,14 @@ export const TogetherChatSettings: ModelSettingsDict = {
         ],
         default: "meta-llama/Llama-2-7b-chat-hf",
       },
+      system_msg: {
+        type: "string",
+        title: "system_msg",
+        description:
+          "Many conversations begin with a system message to gently instruct the assistant. By default, Aggrag includes the suggested 'You are a helpful assistant.'",
+        default: "You are a helpful assistant.",
+        allow_empty_str: true,
+      },
       temperature: {
         type: "number",
         title: "temperature",
@@ -2148,6 +2156,9 @@ export const TogetherChatSettings: ModelSettingsDict = {
     },
     model: {
       "ui:help": "Defaults to LlamaChat 13B",
+    },
+    system_msg: {
+      "ui:widget": "textarea",
     },
     temperature: {
       "ui:help": "Defaults to 1.0.",
