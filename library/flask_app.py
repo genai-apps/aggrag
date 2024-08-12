@@ -450,8 +450,8 @@ def fetchOpenAIEval():
         except Exception as e:
             return jsonify({'error': f"Error creating a new directory 'oaievals' at filepath {oaievals_cache_dir}: {str(e)}"})
 
-    # Download the preconverted OpenAI eval from the GitHub main branch for ChainForge
-    _url = f"https://raw.githubusercontent.com/ianarawjo/ChainForge/main/chainforge/oaievals/{evalname}.cforge"
+    # Download the preconverted OpenAI eval from the GitHub main branch for aggrag
+    _url = f"https://github.com/genai-apps/aggrag"
     response = py_requests.get(_url)
 
     # Check if the request was successful (status code 200)

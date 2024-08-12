@@ -1911,13 +1911,13 @@ const App = () => {
         <Text m="xl" size={"11pt"}>
           If you have any questions or need assistance, please don&apos;t
           hesitate to reach out on our{" "}
-          <a href="https://github.com/ianarawjo/ChainForge/issues">GitHub</a> by{" "}
-          <a href="https://github.com/ianarawjo/ChainForge/issues">
+          <a href="https://github.com/genai-apps/aggrag/issues">GitHub</a> by{" "}
+          <a href="https://github.com/genai-apps/aggrag/issues">
             opening an Issue.
           </a>
           &nbsp; (If you&apos;re a web developer, consider forking our
           repository and making a{" "}
-          <a href="https://github.com/ianarawjo/ChainForge/pulls">
+          <a href="https://github.com/genai-apps/aggrag/pulls">
             Pull Request
           </a>{" "}
           to support your particular browser.)
