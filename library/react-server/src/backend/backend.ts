@@ -296,21 +296,28 @@ function isLooselyEqual(value1: any, value2: any): boolean {
 function matching_settings(
   cache_llm_spec: Dict | string,
   llm_spec: Dict | string,
+  keysToIgnore?: string[],
 ): boolean {
-  if (extract_llm_name(cache_llm_spec) !== extract_llm_name(llm_spec))
+  if (extract_llm_name(cache_llm_spec) !== extract_llm_name(llm_spec)) {
     return false;
+  }
+
   if (typeof llm_spec === "object" && typeof cache_llm_spec === "object") {
     const llm_params = extract_llm_params(llm_spec);
     const cache_llm_params = extract_llm_params(cache_llm_spec);
+
     for (const [param, val] of Object.entries(llm_params)) {
       if (
         param in cache_llm_params &&
         !isLooselyEqual(cache_llm_params[param], val)
       ) {
-        return false;
+        if (!keysToIgnore || !(param in keysToIgnore)) {
+          return false;
+        }
       }
     }
   }
+
   return true;
 }
 
@@ -518,6 +525,7 @@ export async function countQueries(
   prompt: string,
   vars: PromptVarsDict,
   llms: Array<Dict | string>,
+  rags: Array<Dict | string>,
   n: number,
   chat_histories?:
     | (ChatHistoryInfo | undefined)[]
@@ -528,8 +536,9 @@ export async function countQueries(
   if (chat_histories === undefined) chat_histories = [undefined];
   vars = deepcopy(vars);
   llms = deepcopy(llms);
-
+  rags = deepcopy(rags);
   let all_prompt_permutations: PromptTemplate[] | Dict<PromptTemplate[]>;
+  let all_rag_prompt_permutations: PromptTemplate[] | Dict<PromptTemplate[]>;
 
   const gen_prompts = new PromptPermutationGenerator(prompt);
   if (cont_only_w_prior_llms && Array.isArray(llms)) {
@@ -542,6 +551,19 @@ export async function countQueries(
     });
   } else {
     all_prompt_permutations = Array.from(gen_prompts.generate(vars));
+  }
+  const gen_rag_prompts = new PromptPermutationGenerator(
+    prompt + " - {rag_knowledge_base}",
+  );
+  if (cont_only_w_prior_llms && Array.isArray(rags)) {
+    all_rag_prompt_permutations = {};
+    rags.forEach((llm_spec) => {
+      const llm_key = extract_llm_key(llm_spec);
+      (all_rag_prompt_permutations as Dict<PromptTemplate[]>)[llm_key] =
+        Array.from(gen_rag_prompts.generate(filterVarsByLLM(vars, llm_key)));
+    });
+  } else {
+    all_rag_prompt_permutations = Array.from(gen_rag_prompts.generate(vars));
   }
 
   let cache_file_lookup: Dict = {};
@@ -567,98 +589,111 @@ export async function countQueries(
     num_responses_req[llm_key] += num;
   };
 
-  llms.forEach((llm_spec) => {
-    const llm_key = extract_llm_key(llm_spec);
+  const processLLMs = (
+    llm_specs: Array<Dict | string>,
+    all_prompt_perms: PromptTemplate[] | Dict<PromptTemplate[]>,
+    keysToIgnore: string[] = [],
+  ) => {
+    llm_specs.forEach((llm_spec) => {
+      const llm_key = extract_llm_key(llm_spec);
 
-    // Get only the relevant prompt permutations
-    const _all_prompt_perms = cont_only_w_prior_llms
-      ? (all_prompt_permutations as Dict<PromptTemplate[]>)[llm_key]
-      : (all_prompt_permutations as PromptTemplate[]);
+      // Get only the relevant prompt permutations
+      const _all_prompt_perms = cont_only_w_prior_llms
+        ? (all_prompt_perms as Dict<PromptTemplate[]>)[llm_key]
+        : (all_prompt_perms as PromptTemplate[]);
 
-    // Get the relevant chat histories for this LLM:
-    const chat_hists = (
-      !Array.isArray(chat_histories) && chat_histories !== undefined
-        ? chat_histories[extract_llm_nickname(llm_spec)]
-        : chat_histories
-    ) as ChatHistoryInfo[];
+      // Get the relevant chat histories for this LLM:
+      const chat_hists = (
+        !Array.isArray(chat_histories) && chat_histories !== undefined
+          ? chat_histories[extract_llm_nickname(llm_spec)]
+          : chat_histories
+      ) as ChatHistoryInfo[];
 
-    // Find the response cache file for the specific LLM, if any
-    let found_cache = false;
-    for (const [cache_filename, cache_llm_spec] of Object.entries(
-      cache_file_lookup,
-    )) {
-      if (matching_settings(cache_llm_spec, llm_spec)) {
-        found_cache = true;
+      // Find the response cache file for the specific LLM, if any
+      let found_cache = false;
+      for (const [cache_filename, cache_llm_spec] of Object.entries(
+        cache_file_lookup,
+      )) {
+        if (matching_settings(cache_llm_spec, llm_spec, keysToIgnore)) {
+          found_cache = true;
 
-        // Load the cache file
-        const cache_llm_responses = load_from_cache(cache_filename);
+          // Load the cache file
+          const cache_llm_responses = load_from_cache(cache_filename);
 
-        // Iterate through all prompt permutations and check if how many responses there are in the cache with that prompt
-        _all_prompt_perms.forEach((prompt) => {
-          let prompt_str = prompt.toString();
-          const settings_params = extractSettingsVars(prompt.fill_history);
+          // Iterate through all prompt permutations and check if how many responses there are in the cache with that prompt
+          _all_prompt_perms.forEach((prompt) => {
+            let prompt_str = prompt.toString();
+            const settings_params = extractSettingsVars(prompt.fill_history);
 
-          add_to_num_responses_req(llm_key, n * chat_hists.length);
+            add_to_num_responses_req(llm_key, n * chat_hists.length);
 
-          // For each chat history, find an indivdual response obj that matches it
-          // (chat_hist be undefined, in which case the cache'd response obj must similarly have an undefined chat history in order to match):
-          for (const chat_hist of chat_hists) {
-            // If there's chat history, we need to fill any special (#) vars from the carried chat_history vars and metavars:
-            if (chat_hist !== undefined) {
-              prompt.fill_special_vars({
-                ...chat_hist?.fill_history,
-                ...chat_hist?.metavars,
-              });
-              prompt_str = prompt.toString();
-            }
-
-            // Get the cache of responses with respect to this prompt, + normalize format so it's always an array (of size >= 0)
-            const cache_bucket = cache_llm_responses[prompt_str];
-            const cached_resps: RawLLMResponseObject[] = Array.isArray(
-              cache_bucket,
-            )
-              ? cache_bucket
-              : cache_bucket === undefined
-                ? []
-                : [cache_bucket];
-
-            let found_resp = false;
-            for (const cached_resp of cached_resps) {
-              if (
-                isEqualChatHistory(
-                  cached_resp.chat_history,
-                  chat_hist?.messages,
-                ) &&
-                areEqualVarsDicts(
-                  settings_params,
-                  extractSettingsVars(cached_resp.vars),
-                )
-              ) {
-                // Match found. Note it and count response length:
-                found_resp = true;
-                const num_resps = cached_resp.responses.length;
-                if (n > num_resps)
-                  add_to_missing_queries(llm_key, prompt_str, n - num_resps);
-                break;
+            // For each chat history, find an indivdual response obj that matches it
+            // (chat_hist be undefined, in which case the cache'd response obj must similarly have an undefined chat history in order to match):
+            for (const chat_hist of chat_hists) {
+              // If there's chat history, we need to fill any special (#) vars from the carried chat_history vars and metavars:
+              if (chat_hist !== undefined) {
+                prompt.fill_special_vars({
+                  ...chat_hist?.fill_history,
+                  ...chat_hist?.metavars,
+                });
+                prompt_str = prompt.toString();
               }
+
+              // Get the cache of responses with respect to this prompt, + normalize format so it's always an array (of size >= 0)
+              const cache_bucket = cache_llm_responses[prompt_str];
+              const cached_resps: RawLLMResponseObject[] = Array.isArray(
+                cache_bucket,
+              )
+                ? cache_bucket
+                : cache_bucket === undefined
+                  ? []
+                  : [cache_bucket];
+
+              let found_resp = false;
+              for (const cached_resp of cached_resps) {
+                if (
+                  isEqualChatHistory(
+                    cached_resp.chat_history,
+                    chat_hist?.messages,
+                  ) &&
+                  areEqualVarsDicts(
+                    settings_params,
+                    extractSettingsVars(cached_resp.vars),
+                  )
+                ) {
+                  // Match found. Note it and count response length:
+                  found_resp = true;
+                  const num_resps = cached_resp.responses.length;
+                  if (n > num_resps)
+                    add_to_missing_queries(llm_key, prompt_str, n - num_resps);
+                  break;
+                }
+              }
+
+              // If a cache'd response wasn't found, add n required:
+              if (!found_resp) add_to_missing_queries(llm_key, prompt_str, n);
             }
+          });
 
-            // If a cache'd response wasn't found, add n required:
-            if (!found_resp) add_to_missing_queries(llm_key, prompt_str, n);
-          }
-        });
-
-        break;
+          break;
+        }
       }
-    }
 
-    if (!found_cache) {
-      _all_prompt_perms.forEach((perm: PromptTemplate) => {
-        add_to_num_responses_req(llm_key, n * chat_hists.length);
-        add_to_missing_queries(llm_key, perm.toString(), n * chat_hists.length);
-      });
-    }
-  });
+      if (!found_cache) {
+        _all_prompt_perms.forEach((perm: PromptTemplate) => {
+          add_to_num_responses_req(llm_key, n * chat_hists.length);
+          add_to_missing_queries(
+            llm_key,
+            perm.toString(),
+            n * chat_hists.length,
+          );
+        });
+      }
+    });
+  };
+
+  processLLMs(llms, all_prompt_permutations);
+  processLLMs(rags, all_rag_prompt_permutations, ["index_name"]);
 
   return { counts: missing_queries, total_num_responses: num_responses_req };
 }
@@ -730,7 +765,6 @@ export async function queryLLM(
   // Cast and deep copy these objects as they may be modified
   llm = deepcopy(llm) as string[] | LLMSpec[];
   vars = deepcopy(vars);
-
   if (api_keys !== undefined) set_api_keys(api_keys);
 
   // Get the storage keys of any cache files for specific models + settings
@@ -1658,11 +1692,25 @@ export async function queryRAG(
   if (typeof rag === "string") rag = [rag];
 
   // Cast and deep copy these objects as they may be modified
-  rag = deepcopy(rag) as string[] | LLMSpec[];
+  const rag_copy = deepcopy(rag) as string[] | LLMSpec[];
   vars = deepcopy(vars);
 
   // Get the storage keys of any cache files for specific models + settings
-  const rags = rag;
+  const rags: any = [];
+  vars.uid.forEach((item: any) => {
+    rag_copy.forEach((element) => {
+      const temp_ele = deepcopy(element);
+      if (
+        typeof temp_ele !== "string" &&
+        temp_ele.settings?.index_name &&
+        temp_ele?.formData?.index_name
+      ) {
+        temp_ele.formData.index_name += "__" + item;
+        temp_ele.settings.index_name = temp_ele.formData.index_name;
+      }
+      rags.push(temp_ele);
+    });
+  });
   let cache: Dict = StorageCache.get(`${id}.json`) || {}; // returns {} if 'id' is not in the storage cache yet
 
   // Ignore cache if no_cache is present
@@ -1673,7 +1721,7 @@ export async function queryRAG(
   if (typeof cache === "object" && cache.cache_files !== undefined) {
     const past_cache_files: Dict = cache.cache_files;
     const past_cache_filenames: Array<string> = Object.keys(past_cache_files);
-    rags.forEach((rag_spec) => {
+    rags.forEach((rag_spec: string | LLMSpec) => {
       let found_cache = false;
       for (const [filename, cache_rag_spec] of Object.entries(
         past_cache_files,
@@ -1782,7 +1830,15 @@ export async function queryRAG(
           // The request succeeded
           // The response name will be the actual name of the RAG. However,
           // for the front-end it is more informative to pass the user-provided nickname.
-          num_resps += 1;
+
+          const tempVarToAdd = _vars.query?.rag_knowledge_base.find(
+            (str: string) => str.includes(rag_params.index_name.split("__")[1]),
+          );
+          if (tempVarToAdd) {
+            response.vars.rag_knowledge_base = tempVarToAdd.split("/").pop();
+          }
+          response.llm = rag_nickname;
+          num_resps += response.responses.length;
           resps.push(response);
         }
 
@@ -1803,7 +1859,6 @@ export async function queryRAG(
         throw e;
       }
     }
-
     return {
       rag_key,
       responses: resps,
@@ -1817,7 +1872,13 @@ export async function queryRAG(
   // Await the responses from all queried RAGs
   const rag_results = await Promise.all(tasks);
   rag_results.forEach((result) => {
-    responses[result.rag_key] = result.responses;
+    if (result.rag_key in responses) {
+      responses[result.rag_key] = responses[result.rag_key].concat(
+        result.responses,
+      );
+    } else {
+      responses[result.rag_key] = result.responses;
+    }
     if (result.errors.length > 0) all_errors[result.rag_key] = result.errors;
   });
 
@@ -1860,7 +1921,6 @@ export async function queryRAG(
       cache_files: cache_filenames,
       responses_last_run: res,
     });
-
   // Return all responses for all RAGs
   return {
     responses: res,

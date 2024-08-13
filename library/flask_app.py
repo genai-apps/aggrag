@@ -739,11 +739,11 @@ async def callCustomProvider():
 @app.route('/app/uploadFile', methods=['POST'])
 async def uploadFileToKnowledgeBase():
     """
-        Uploads pdf/word file, given its filename and fileid. 
+        Uploads pdf/word file, given its filename and file_node_id. 
         POST'd data should be in form:
         { 
-            name: <str>  # The filename,
-            fileid: <str> # The UUID,
+            timestamp: <str>  # The timestamp (last 7 digits),
+            file_node_id: <str> # The UUID for file node,
             file: <fileobj>,
             p_folder: <str> # The parent folder (usecase)
             i_folder: <str> # The iteration folder
@@ -761,10 +761,14 @@ async def uploadFileToKnowledgeBase():
     
     req = request.form
     if 'p_folder' not in req or 'i_folder' not in req:
-        return jsonify({'error': 'Missing usecase or iteration folder to upload file.'})
+        return jsonify({'error': 'Missing usecase or iteration to upload file.'})
+    if 'file_node_id' not in req:
+        return jsonify({'error': 'Missing file_node_id parameter to upload file.'})
+    if 'timestamp' not in req:
+        return jsonify({'error': 'Missing timestamp parameter to upload file.'})
 
     # Verify 'raw_docs' directory exists:
-    RAW_DOCS_DIR = os.path.join(CONFIGURATION_DIR, req["p_folder"], req["i_folder"], 'raw_docs')
+    RAW_DOCS_DIR = os.path.join(CONFIGURATION_DIR, req["p_folder"], req["i_folder"], 'raw_docs', req["file_node_id"]+"_"+req["timestamp"])
     print(RAW_DOCS_DIR)
     if not os.path.isdir(RAW_DOCS_DIR):
         os.makedirs(RAW_DOCS_DIR)
@@ -811,22 +815,49 @@ def indexRAGFiles():
     data = request.get_json()
     working_dir = data.get('files_path')
     rag_name = data.get('rag_name')
-    use_case_name = working_dir.split('/')[-2]
-    iteration = working_dir.split('/')[-1]
+    use_case_name = working_dir.split('/')[1]
+    iteration = working_dir.split('/')[2]
 
-    raw_docs_path = os.path.join(working_dir, 'raw_docs')
+    raw_docs_path = os.path.dirname(working_dir)
 
     rag_models = ['base', 'raptor', 'subqa', 'meta_llama', 'meta_lang']
 
     if rag_name not in rag_models:
         return jsonify({'error': f'Invalid rag_name, rag_name can be one of this values {rag_models}'})
     
+    ragstore_settings = data.get('ragstore_settings')
+
+    if not ragstore_settings:
+        return jsonify({'error': f'ragstore_settings is required'})
+    
+
+
+    allowed_rag_settings= {'base_rag_setting', 'subqa_rag_setting', 'raptor_rag_setting', 'meta_llama_rag_setting', 'meta_lang_rag_setting'}
+    if not set(ragstore_settings.keys()).issubset(allowed_rag_settings):
+        return jsonify({'error': 'ragstore_settings should be one of ["base_rag_setting", "subqa_rag_setting", "raptor_rag_setting", "meta_llama_rag_setting", "meta_lang_rag_setting"]'})
+
+    try:
+        aggrag_ragstore_settings = RagStoreSettings(**ragstore_settings)
+        ragstore_settings = RagStoreSettings(
+            base_rag_setting=BaseRagSetting(**ragstore_settings.get('base_rag_setting')) if ragstore_settings.get('base_rag_setting') else None,
+            # base_rag_setting=BaseRagSetting(**ragstore_settings.base_rag_setting.model_dump()) if ragstore_settings.base_rag_setting else None,
+            raptor_rag_setting=RaptorRagSetting(**ragstore_settings.get('raptor_rag_setting')) if ragstore_settings.get('raptor_rag_setting')  else None,
+            subqa_rag_setting=SubQARagSetting(**ragstore_settings.get('subqa_rag_setting')) if ragstore_settings.get('subqa_rag_setting') else None,
+            meta_llama_rag_setting=MetaLlamaRagSetting(**ragstore_settings.get('meta_llama_rag_setting')) if ragstore_settings.get('meta_llama_rag_setting') else None,
+            meta_lang_rag_setting=MetaLangRagSetting(**ragstore_settings.get('meta_lang_rag_setting')) if ragstore_settings.get('meta_lang_rag_setting') else None
+
+
+        )
+
+    except ValidationError as e:
+        return jsonify({'error': e.errors()})
+    
     aggrag = AggRAG(
         ragstore_bool=RagStoreBool(**{rag_name: True}),
-        DATA_DIR=working_dir,
         usecase_name=use_case_name,
         iteration=iteration,
-    )
+        DATA_DIR=working_dir,
+        ragstore_settings=aggrag_ragstore_settings)
 
     try:
         aggrag.documents_loader(DIR=raw_docs_path)

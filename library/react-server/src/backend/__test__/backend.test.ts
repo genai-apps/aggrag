@@ -22,11 +22,16 @@ test("count queries required", async () => {
   };
 
   // Double-check the queries required (not loading from cache)
-  const test_count_queries = async (llms: Array<string | Dict>, n: number) => {
+  const test_count_queries = async (
+    llms: Array<string | Dict>,
+    rags: Array<string | Dict>,
+    n: number,
+  ) => {
     const { counts, total_num_responses } = await countQueries(
       prompt,
       vars,
       llms,
+      rags,
       n,
     );
 
@@ -42,7 +47,11 @@ test("count queries required", async () => {
   };
 
   // Try a number of different inputs
-  await test_count_queries([NativeLLM.OpenAI_ChatGPT, NativeLLM.Claude_v1], 3);
+  await test_count_queries(
+    [NativeLLM.OpenAI_ChatGPT, NativeLLM.Claude_v1],
+    [],
+    3,
+  );
   await test_count_queries(
     [
       {
@@ -54,6 +63,7 @@ test("count queries required", async () => {
         temp: 0.5,
       },
     ],
+    [],
     5,
   );
 });
