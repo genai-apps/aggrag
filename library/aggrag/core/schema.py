@@ -35,7 +35,7 @@ class BaseRagSetting(BaseModel):
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
     context_prompt: str = DEFAULT_CONTEXT_PROMPT
     temperature: float = 0.1
-    index_name: Literal["base_index"] = "base_index"
+    index_name: str = "base_index"
     # class Config:
     #     extra = 'forbid'
 
@@ -53,7 +53,7 @@ class MetaLlamaRagSetting(BaseModel):
         default=None, description="A JSON schema for the system prompt."
     )
     temperature: float = 0.1
-    index_name: Literal["meta_llama_index"] = "meta_llama_index"
+    index_name: str = "meta_llama_index"
     # class Config:
     #     extra = 'forbid'
 
@@ -71,7 +71,7 @@ class MetaLangRagSetting(BaseModel):
         default=None, description="A JSON schema for the system prompt."
     )
     temperature: float = 0.1
-    index_name: Literal["meta_lang_index"] = "meta_lang_index"
+    index_name: str = "meta_lang_index"
     # class Config:
     #     extra = 'forbid'
 
@@ -93,7 +93,7 @@ class SubQARagSetting(BaseModel):
     )
     INDEX_TEXT_QA_SYSTEM_PROMPT_CONTENT: str = INDEX_TEXT_QA_SYSTEM_PROMPT_CONTENT
     SUBQ_TEXT_QA_SYSTEM_PROMPT_CONTENT: str = SUBQ_TEXT_QA_SYSTEM_PROMPT_CONTENT
-    index_name: Literal["subqa_index"] = "subqa_index"
+    index_name: str = "subqa_index"
     temperature: float = 0.2
     # class Config:
     #     extra = 'forbid'
@@ -110,7 +110,7 @@ class RaptorRagSetting(BaseModel):
     )
     summary_prompt: str = SUMMARY_PROMPT
     temperature: float = 0.3
-    index_name: Literal["raptor_index"] = "raptor_index"
+    index_name: str = "raptor_index"
     # class Config:
     #     extra = 'forbid'
 
