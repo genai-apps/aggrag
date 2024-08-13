@@ -343,7 +343,7 @@ const GlobalSettingsModal = forwardRef<GlobalSettingsModalRef, object>(
                 <b>you must set your API keys every time you load Aggrag.</b> If
                 you prefer not to worry about it, we recommend{" "}
                 <a
-                  href="https://github.com/ianarawjo/ChainForge"
+                  href="https://github.com/genai-apps/aggrag"
                   target="_blank"
                   style={_LINK_STYLE}
                   rel="noreferrer"
@@ -352,7 +352,7 @@ const GlobalSettingsModal = forwardRef<GlobalSettingsModalRef, object>(
                 </a>{" "}
                 and
                 <a
-                  href="https://github.com/ianarawjo/ChainForge/blob/main/INSTALL_GUIDE.md#2-set-api-keys-openai-anthropic-google-palm"
+                  href="https://github.com/genai-apps/aggrag?tab=readme-ov-file#supported-providers"
                   target="_blank"
                   style={_LINK_STYLE}
                   rel="noreferrer"
@@ -536,7 +536,7 @@ const GlobalSettingsModal = forwardRef<GlobalSettingsModalRef, object>(
                   completion functions as Python scripts. (You can even make
                   your own settings screen!) To learn more,{" "}
                   <a
-                    href="https://chainforge.ai/docs/custom_providers/"
+                    href="https://github.com/genai-apps/aggrag?tab=readme-ov-file#ragstore"
                     target="_blank"
                     style={_LINK_STYLE}
                     rel="noreferrer"

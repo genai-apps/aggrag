@@ -1524,8 +1524,7 @@ export async function fetchOpenAIEval(evalname: string): Promise<Dict> {
   }
 
   // App is not running locally, but hosted on a site.
-  // If this is the case, attempt to fetch the example flow from relative path on the site:
-  //  > ALT: `https://raw.githubusercontent.com/ianarawjo/Aggrag/main/aggrag/oaievals/${_name}.cforge`
+  
   return fetch(`oaievals/${evalname}.cforge`).then((response) =>
     response.json(),
   );
