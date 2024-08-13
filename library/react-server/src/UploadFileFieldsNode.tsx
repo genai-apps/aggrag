@@ -237,14 +237,18 @@ const FileFieldsNode: React.FC<FileFieldsNodeProps> = ({ data, id }) => {
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
       ) {
         const formData = new FormData();
+        const timestamp = Date.now().toString();
+        const fid = `fnid-${id.split("-")[1]}`;
         formData.append("file", event.target.files[0]);
-        formData.append("fileid", field_id);
+        formData.append("timestamp", timestamp);
+        formData.append("file_node_id", fid);
         formData.append("p_folder", urlParams.get("p_folder") || "");
         formData.append("i_folder", urlParams.get("i_folder") || "");
         try {
           setIsLoading(true);
           const response = await upload_raw_docs_file(formData);
-          handleFileFieldChange(field_id, event.target.files[0].name, false);
+          const file_path = `${urlParams.get("p_folder")}/${urlParams.get("i_folder")}/raw_docs/${fid}_${timestamp}/${event.target.files[0].name}`;
+          handleFileFieldChange(field_id, file_path, false);
           console.log("File uploaded successfully!", response);
         } catch (error) {
           console.error("Error uploading file:", error);

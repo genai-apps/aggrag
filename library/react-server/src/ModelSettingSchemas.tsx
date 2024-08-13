@@ -2273,6 +2273,7 @@ const BaseRagSettings: ModelSettingsDict = {
         description: "The index to be used.",
         title: "Index Name",
         type: "string",
+        readOnly: true,
       },
       llm_model: {
         default: "gpt-35-turbo-16k",
@@ -2449,6 +2450,7 @@ const SubQARagSettings: ModelSettingsDict = {
         description: "Index name to be used",
         title: "Index Name",
         type: "string",
+        readOnly: true,
       },
       llm_model: {
         default: "gpt-35-turbo-16k",
@@ -2596,6 +2598,7 @@ const RaptorRagSettings: ModelSettingsDict = {
         description: "Index name to be used",
         title: "Index Name",
         type: "string",
+        readOnly: true,
       },
       llm_model: {
         default: "gpt-35-turbo-16k",
@@ -2732,6 +2735,7 @@ const Meta_llamaRagSettings: ModelSettingsDict = {
         description: "The index to be used.",
         title: "Index Name",
         type: "string",
+        readOnly: true,
       },
       llm_model: {
         default: "gpt-35-turbo-16k",
@@ -2870,6 +2874,7 @@ const Meta_langRagSettings: ModelSettingsDict = {
         description: "The index to be used.",
         title: "Index Name",
         type: "string",
+        readOnly: true,
       },
       llm_model: {
         default: "gpt-35-turbo-16k",

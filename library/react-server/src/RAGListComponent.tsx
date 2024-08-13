@@ -146,6 +146,20 @@ export function RAGList({
               updated_item.name = unique_name;
               if (updated_item.formData?.shortname)
                 updated_item.formData.shortname = unique_name;
+              if (updated_item.formData?.index_name) {
+                if (unique_name.includes(" ")) {
+                  const uid = unique_name
+                    .toLowerCase()
+                    ?.replace(" ", "_index_")
+                    ?.replace(/[{()}]/g, "");
+                  updated_item.formData.index_name = uid;
+                } else {
+                  updated_item.formData.index_name =
+                    unique_name.toLowerCase() + "_index_1";
+                }
+                updated_item.settings.index_name =
+                  updated_item.formData.index_name;
+              }
             }
 
             if (savedItem.emoji) updated_item.emoji = savedItem.emoji;
@@ -376,7 +390,22 @@ export const RAGListContainer = forwardRef<
         ragItemsCurrState.map((i) => i.name),
       );
       item.name = unique_name;
-      item.formData = { shortname: unique_name };
+      if (unique_name.includes(" ")) {
+        const uid = unique_name
+          .toLowerCase()
+          ?.replace(" ", "_index_")
+          ?.replace(/[{()}]/g, "");
+        item.formData = { shortname: unique_name, index_name: uid };
+      } else {
+        item.formData = {
+          shortname: unique_name,
+          index_name: unique_name.toLowerCase() + "_index_1",
+        };
+      }
+      item.settings = {
+        ...item.settings,
+        index_name: item.formData.index_name,
+      };
 
       let new_items: LLMSpec[] = [];
       if (selectModelAction === "add" || selectModelAction === undefined) {
