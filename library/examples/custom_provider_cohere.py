@@ -8,7 +8,7 @@ from library.providers import provider
 import cohere
 
 # Init the Cohere client (replace with your Cohere API Key)
-co = cohere.Client('f8qXMP9W3FxvURiEgfIkg243q1aJ98SGvOgpvZ7e')
+co = cohere.Client('<YOUR_API_KEY>')
 
 # JSON schemas to pass react-jsonschema-form, one for this endpoints' settings and one to describe the settings UI.
 COHERE_SETTINGS_SCHEMA = {
