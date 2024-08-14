@@ -62,7 +62,9 @@ class SubQA:
                  iteration: str,
                  DATA_DIR: Optional[str] = None,
                  upload_type: Optional[str] = None,
-                 subqa_rag_setting= None):
+                 subqa_rag_setting= None,
+                 llm:str = None,
+                 embed_model:str = None):
         
         """
         Initializes the SubQA RAG system with specified models and configurations for specialized sub-question handling.
@@ -80,23 +82,9 @@ class SubQA:
 
         self.name = 'SubQA'
         
-        self.llm = AzureOpenAI(
-            model= subqa_rag_setting.llm_model.value,
-            deployment_name=subqa_rag_setting.llm_deployment.value,
-            api_key=settings.AZURE_OPENAI_KEY, 
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-            temperature= subqa_rag_setting.temperature
-        )
+        self.llm = llm
 
-        self.embed_model = AzureOpenAIEmbedding(
-            model=subqa_rag_setting.embed_model.value,
-            deployment_name=subqa_rag_setting.embed_deployment.value,
-            api_key=settings.AZURE_OPENAI_KEY,
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-        )
-
+        self.embed_model = embed_model
         self.documents = None
         self.index_name =  subqa_rag_setting.index_name  # reusing the same index from Base RAG
         self.index = None

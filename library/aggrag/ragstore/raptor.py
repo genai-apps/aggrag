@@ -37,7 +37,10 @@ class Raptor:
                  iteration: str,
                  DATA_DIR: Optional[str] = None,
                  upload_type: Optional[str] = None,
-                 raptor_rag_setting= None):
+                 raptor_rag_setting= None,
+                 llm:str = None,
+                 embed_model:str = None):
+        
         self.name = 'Raptor'
 
 
@@ -46,30 +49,13 @@ class Raptor:
         self.ai_service = raptor_rag_setting.ai_service 
         self.chunk_size = raptor_rag_setting.chunk_size
 
-        self.llm = AzureOpenAI(
-            model=raptor_rag_setting.llm_model.value,
-            deployment_name=raptor_rag_setting.llm_deployment.value,
-            api_key=settings.AZURE_OPENAI_KEY, 
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-            temperature=raptor_rag_setting.temperature
-
-        )
-
-        self.llm_summary = AzureOpenAI(
-            model=raptor_rag_setting.llm_model.value,
-            deployment_name=raptor_rag_setting.llm_deployment.value,
-            api_key=settings.AZURE_OPENAI_KEY, 
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-            temperature=raptor_rag_setting.temperature
-
-        )
+        self.llm = llm
+        self.llm_summary = llm
         self.summary_module = SummaryModule(summary_prompt=raptor_rag_setting.summary_prompt, llm=self.llm_summary)
 
-        self.embed_model = AzureOpenAIEmbedding(
-            model=raptor_rag_setting.embed_model.value,
-            deployment_name=raptor_rag_setting.embed_deployment.value,
+        self.embed_model = embed_model or AzureOpenAIEmbedding(
+            model=raptor_rag_setting.embed_model,
+            deployment_name=raptor_rag_setting.embed_deployment,
             api_key=settings.AZURE_OPENAI_KEY,
             azure_endpoint=settings.AZURE_API_BASE,
             api_version=settings.OPENAI_API_VERSION,

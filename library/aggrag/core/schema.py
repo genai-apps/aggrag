@@ -1,119 +1,308 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Any, Dict
-from library.aggrag.core.config import (
-    settings,
-    AzureOpenAIModelNames,
-    AzureOpenAIModelEngines,
-)
+from pydantic import BaseModel, Field, model_validator
+from typing import Optional, Any, Dict, Union
+from library.aggrag.core.config import settings, AzureOpenAIModelNames, AzureOpenAIModelEngines, OpenAIModelNames
 
 from library.aggrag.ragstore import Raptor, Base, SubQA, MetaLlama, MetaLang
 from pydantic import BaseModel
+from library.aggrag.core.config import ai_services_config, all_ai_services
 
 from typing import Literal
-from library.aggrag.prompts import (
-    DEFAULT_CONTEXT_PROMPT,
-    DEFAULT_SYSTEM_PROMPT,
-    CHAT_REFINE_PROMPT_TMPL_MSGS_CONTENT,
-    INDEX_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT,
-    SUBQ_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT,
-    DEFAULT_OPENAI_SUB_QUESTION_PROMPT_TMPL,
-    INDEX_TEXT_QA_SYSTEM_PROMPT_CONTENT,
-    SUBQ_TEXT_QA_SYSTEM_PROMPT_CONTENT,
-    SUMMARY_PROMPT,
-)
+from library.aggrag.prompts import ( DEFAULT_CONTEXT_PROMPT, 
+                                        DEFAULT_SYSTEM_PROMPT, 
+                                        CHAT_REFINE_PROMPT_TMPL_MSGS_CONTENT, 
+                                        INDEX_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT, 
+                                        SUBQ_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT,
+                                        DEFAULT_OPENAI_SUB_QUESTION_PROMPT_TMPL,
+                                        INDEX_TEXT_QA_SYSTEM_PROMPT_CONTENT,
+                                        SUBQ_TEXT_QA_SYSTEM_PROMPT_CONTENT,
+                                        SUMMARY_PROMPT)
 
 
 class BaseRagSetting(BaseModel):
-    ai_service: Literal["AzureOpenAI", "OpenAI", "NVIDIA"] = "AzureOpenAI"
-    chunk_size: int = 512
-    llm_model: AzureOpenAIModelNames = AzureOpenAIModelNames.gpt_35_turbo_16k
-    llm_deployment: AzureOpenAIModelEngines = AzureOpenAIModelEngines.gpt_35_turbo_16k
-    embed_model: AzureOpenAIModelNames = AzureOpenAIModelNames.text_embedding_ada_002
-    embed_deployment: AzureOpenAIModelEngines = (
-        AzureOpenAIModelEngines.text_embedding_ada_002
-    )
+    ai_service: Optional[str] = 'AzureOpenAI'
+    embed_ai_service: Optional[str] = 'AzureOpenAI'
+    chunk_size: Optional[int] = 512
+    llm_model: Optional[str] = AzureOpenAIModelNames.gpt_35_turbo_16k.value
+    llm_deployment: Optional[AzureOpenAIModelEngines] = AzureOpenAIModelEngines.gpt_35_turbo_16k.value
+    embed_model: Optional[str] = AzureOpenAIModelNames.text_embedding_ada_002.value
+    embed_deployment: Optional[AzureOpenAIModelEngines] = AzureOpenAIModelEngines.text_embedding_ada_002.value
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
     context_prompt: str = DEFAULT_CONTEXT_PROMPT
     temperature: float = 0.1
     index_name: str = "base_index"
+
+    @model_validator(mode='before')
+    def input_validation(cls, values):
+
+        ai_service = values.get('ai_service')
+        embed_ai_service = values.get('embed_ai_service')
+        llm_model = values.get('llm_model')
+        embed_model = values.get('embed_model')
+
+        if ai_service and ai_service not in all_ai_services :
+            raise ValueError(f"Invalid AI service '{ai_service}'. Expected one of {all_ai_services}.")
+        
+        if embed_ai_service and  embed_ai_service not in all_ai_services:
+            raise ValueError(f"Invalid Embed AI service '{embed_ai_service}'. Expected one of {all_ai_services}.")
+
+        if llm_model and ai_service is None:
+            raise ValueError(f"Please provide ai_service as well while providing a llm_model or just opt out llm_model to use the default service and model")
+
+        if embed_model and embed_ai_service is None:
+            raise ValueError(f"Please provide embed_ai_service as well while providing a embed_model or just opt out embed_model to use the default service and model")
+
+
+        expected_llm_models = [
+            model['model_name'] 
+            for model in ai_services_config.get(ai_service, {}).get('chat_models', {}).values()  # Access models in chat_models
+        ]
+
+        if llm_model and llm_model not in expected_llm_models:
+            raise ValueError(f"Invalid model '{llm_model}' for ai_service '{ai_service}'. Expected one of {expected_llm_models}")
+
+
+        expected_embed_models = [
+            model_info['model_name'] 
+            for model_info in ai_services_config.get(embed_ai_service, {}).get('embed_models', {}).values()  # Access models in embed_models
+        ]
+
+
+        if embed_model and embed_model not in expected_embed_models:
+                raise ValueError(f"Invalid model '{llm_model}' for service '{ai_service}'. Expected a type of embedding model from the list {expected_embed_models}")
+
+        return values
     # class Config:
     #     extra = 'forbid'
 
-
 class MetaLlamaRagSetting(BaseModel):
-    ai_service: Literal["AzureOpenAI", "OpenAI", "NVIDIA"] = "AzureOpenAI"
-    chunk_size: int = 512
-    llm_model: AzureOpenAIModelNames = AzureOpenAIModelNames.gpt_35_turbo_16k
-    llm_deployment: AzureOpenAIModelEngines = AzureOpenAIModelEngines.gpt_35_turbo_16k
-    embed_model: AzureOpenAIModelNames = AzureOpenAIModelNames.text_embedding_ada_002
-    embed_deployment: AzureOpenAIModelEngines = (
-        AzureOpenAIModelEngines.text_embedding_ada_002
-    )
+    ai_service: Optional[str] = 'AzureOpenAI'
+    embed_ai_service: Optional[str] = 'AzureOpenAI'
+    chunk_size: Optional[int] = 512
+    llm_model: Optional[str] = AzureOpenAIModelNames.gpt_35_turbo_16k.value
+    llm_deployment: Optional[AzureOpenAIModelEngines] = AzureOpenAIModelEngines.gpt_35_turbo_16k.value
+    embed_model: Optional[str] = AzureOpenAIModelNames.text_embedding_ada_002.value
+    embed_deployment: Optional[AzureOpenAIModelEngines] = AzureOpenAIModelEngines.text_embedding_ada_002.value
     metadata_json_schema: Optional[str] = Field(
         default=None, description="A JSON schema for the system prompt."
     )
     temperature: float = 0.1
     index_name: str = "meta_llama_index"
+
+    @model_validator(mode='before')
+    def input_validation(cls, values):
+
+        ai_service = values.get('ai_service')
+        embed_ai_service = values.get('embed_ai_service')
+        llm_model = values.get('llm_model')
+        embed_model = values.get('embed_model')
+
+        if ai_service and ai_service not in all_ai_services :
+            raise ValueError(f"Invalid AI service '{ai_service}'. Expected one of {all_ai_services}.")
+        
+        if embed_ai_service and  embed_ai_service not in all_ai_services:
+            raise ValueError(f"Invalid Embed AI service '{embed_ai_service}'. Expected one of {all_ai_services}.")
+
+        if llm_model and ai_service is None:
+            raise ValueError(f"Please provide ai_service as well while providing a llm_model or just opt out llm_model to use the default service and model")
+
+        if embed_model and embed_ai_service is None:
+            raise ValueError(f"Please provide embed_ai_service as well while providing a embed_model or just opt out embed_model to use the default service and model")
+
+
+        expected_llm_models = [
+            model['model_name'] 
+            for model in ai_services_config.get(ai_service, {}).get('chat_models', {}).values()  # Access models in chat_models
+        ]
+
+        if llm_model and llm_model not in expected_llm_models:
+            raise ValueError(f"Invalid model '{llm_model}' for ai_service '{ai_service}'. Expected one of {expected_llm_models}")
+
+
+        expected_embed_models = [
+            model_info['model_name'] 
+            for model_info in ai_services_config.get(embed_ai_service, {}).get('embed_models', {}).values()  # Access models in embed_models
+        ]
+
+
+        if embed_model and embed_model not in expected_embed_models:
+                raise ValueError(f"Invalid model '{llm_model}' for service '{ai_service}'. Expected a type of embedding model from the list {expected_embed_models}")
+
+        return values
     # class Config:
     #     extra = 'forbid'
 
-
 class MetaLangRagSetting(BaseModel):
-    ai_service: Literal["AzureOpenAI", "OpenAI", "NVIDIA"] = "AzureOpenAI"
-    chunk_size: int = 512
-    llm_model: AzureOpenAIModelNames = AzureOpenAIModelNames.gpt_35_turbo_16k
-    llm_deployment: AzureOpenAIModelEngines = AzureOpenAIModelEngines.gpt_35_turbo_16k
-    embed_model: AzureOpenAIModelNames = AzureOpenAIModelNames.text_embedding_ada_002
-    embed_deployment: AzureOpenAIModelEngines = (
-        AzureOpenAIModelEngines.text_embedding_ada_002
-    )
+    ai_service: Optional[str] = 'AzureOpenAI'
+    embed_ai_service: Optional[str] = 'AzureOpenAI'
+    chunk_size: Optional[int] = 512
+    llm_model: Optional[str] = AzureOpenAIModelNames.gpt_35_turbo_16k.value
+    llm_deployment: Optional[AzureOpenAIModelEngines] = AzureOpenAIModelEngines.gpt_35_turbo_16k.value
+    embed_model: Optional[str] = AzureOpenAIModelNames.text_embedding_ada_002.value
+    embed_deployment: Optional[AzureOpenAIModelEngines] = AzureOpenAIModelEngines.text_embedding_ada_002.value
     metadata_json_schema: Optional[str] = Field(
         default=None, description="A JSON schema for the system prompt."
     )
     temperature: float = 0.1
     index_name: str = "meta_lang_index"
+
+    @model_validator(mode='before')
+    def input_validation(cls, values):
+
+        ai_service = values.get('ai_service')
+        embed_ai_service = values.get('embed_ai_service')
+        llm_model = values.get('llm_model')
+        embed_model = values.get('embed_model')
+
+        if ai_service and ai_service not in all_ai_services :
+            raise ValueError(f"Invalid AI service '{ai_service}'. Expected one of {all_ai_services}.")
+        
+        if embed_ai_service and  embed_ai_service not in all_ai_services:
+            raise ValueError(f"Invalid Embed AI service '{embed_ai_service}'. Expected one of {all_ai_services}.")
+
+        if llm_model and ai_service is None:
+            raise ValueError(f"Please provide ai_service as well while providing a llm_model or just opt out llm_model to use the default service and model")
+
+        if embed_model and embed_ai_service is None:
+            raise ValueError(f"Please provide embed_ai_service as well while providing a embed_model or just opt out embed_model to use the default service and model")
+
+
+        expected_llm_models = [
+            model['model_name'] 
+            for model in ai_services_config.get(ai_service, {}).get('chat_models', {}).values()  # Access models in chat_models
+        ]
+
+        if llm_model and llm_model not in expected_llm_models:
+            raise ValueError(f"Invalid model '{llm_model}' for ai_service '{ai_service}'. Expected one of {expected_llm_models}")
+
+
+        expected_embed_models = [
+            model_info['model_name'] 
+            for model_info in ai_services_config.get(embed_ai_service, {}).get('embed_models', {}).values()  # Access models in embed_models
+        ]
+
+
+        if embed_model and embed_model not in expected_embed_models:
+                raise ValueError(f"Invalid model '{llm_model}' for service '{ai_service}'. Expected a type of embedding model from the list {expected_embed_models}")
+
+        return values
     # class Config:
     #     extra = 'forbid'
 
 
 class SubQARagSetting(BaseModel):
-    ai_service: Literal["AzureOpenAI", "OpenAI", "NVIDIA"] = "AzureOpenAI"
-    chunk_size: int = 513
-    llm_model: AzureOpenAIModelNames = AzureOpenAIModelNames.gpt_35_turbo_16k
-    llm_deployment: AzureOpenAIModelEngines = AzureOpenAIModelEngines.gpt_35_turbo_16k
-    embed_model: AzureOpenAIModelNames = AzureOpenAIModelNames.text_embedding_ada_002
-    embed_deployment: AzureOpenAIModelEngines = (
-        AzureOpenAIModelEngines.text_embedding_ada_002
-    )
+    ai_service: Optional[str] = 'AzureOpenAI'
+    embed_ai_service: Optional[str] = 'AzureOpenAI'
+    chunk_size: Optional[int] = 512
+    llm_model: Optional[str] = AzureOpenAIModelNames.gpt_35_turbo_16k.value
+    llm_deployment: Optional[AzureOpenAIModelEngines] = AzureOpenAIModelEngines.gpt_35_turbo_16k.value
+    embed_model: Optional[str] = AzureOpenAIModelNames.text_embedding_ada_002.value
+    embed_deployment: Optional[AzureOpenAIModelEngines] = AzureOpenAIModelEngines.text_embedding_ada_002.value
     CHAT_REFINE_PROMPT_TMPL_MSGS_CONTENT: str = CHAT_REFINE_PROMPT_TMPL_MSGS_CONTENT
     INDEX_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT: str = INDEX_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT
-    SUBQ_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT: str = SUBQ_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT
-    DEFAULT_OPENAI_SUB_QUESTION_PROMPT_TMPL: str = (
-        DEFAULT_OPENAI_SUB_QUESTION_PROMPT_TMPL
-    )
+    SUBQ_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT: str = SUBQ_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT 
+    DEFAULT_OPENAI_SUB_QUESTION_PROMPT_TMPL: str = DEFAULT_OPENAI_SUB_QUESTION_PROMPT_TMPL  
     INDEX_TEXT_QA_SYSTEM_PROMPT_CONTENT: str = INDEX_TEXT_QA_SYSTEM_PROMPT_CONTENT
     SUBQ_TEXT_QA_SYSTEM_PROMPT_CONTENT: str = SUBQ_TEXT_QA_SYSTEM_PROMPT_CONTENT
     index_name: str = "subqa_index"
     temperature: float = 0.2
+
+    @model_validator(mode='before')
+    def input_validation(cls, values):
+
+        ai_service = values.get('ai_service')
+        embed_ai_service = values.get('embed_ai_service')
+        llm_model = values.get('llm_model')
+        embed_model = values.get('embed_model')
+
+        if ai_service and ai_service not in all_ai_services :
+            raise ValueError(f"Invalid AI service '{ai_service}'. Expected one of {all_ai_services}.")
+        
+        if embed_ai_service and  embed_ai_service not in all_ai_services:
+            raise ValueError(f"Invalid Embed AI service '{embed_ai_service}'. Expected one of {all_ai_services}.")
+
+        if llm_model and ai_service is None:
+            raise ValueError(f"Please provide ai_service as well while providing a llm_model or just opt out llm_model to use the default service and model")
+
+        if embed_model and embed_ai_service is None:
+            raise ValueError(f"Please provide embed_ai_service as well while providing a embed_model or just opt out embed_model to use the default service and model")
+
+
+        expected_llm_models = [
+            model['model_name'] 
+            for model in ai_services_config.get(ai_service, {}).get('chat_models', {}).values()  # Access models in chat_models
+        ]
+
+        if llm_model and llm_model not in expected_llm_models:
+            raise ValueError(f"Invalid model '{llm_model}' for ai_service '{ai_service}'. Expected one of {expected_llm_models}")
+
+
+        expected_embed_models = [
+            model_info['model_name'] 
+            for model_info in ai_services_config.get(embed_ai_service, {}).get('embed_models', {}).values()  # Access models in embed_models
+        ]
+
+
+        if embed_model and embed_model not in expected_embed_models:
+                raise ValueError(f"Invalid model '{llm_model}' for service '{ai_service}'. Expected a type of embedding model from the list {expected_embed_models}")
+
+        return values
     # class Config:
     #     extra = 'forbid'
 
-
 class RaptorRagSetting(BaseModel):
-    ai_service: Literal["AzureOpenAI", "OpenAI", "NVIDIA"] = "AzureOpenAI"
-    chunk_size: int = 514
-    llm_model: AzureOpenAIModelNames = AzureOpenAIModelNames.gpt_35_turbo_16k
-    llm_deployment: AzureOpenAIModelEngines = AzureOpenAIModelEngines.gpt_35_turbo_16k
-    embed_model: AzureOpenAIModelNames = AzureOpenAIModelNames.text_embedding_ada_002
-    embed_deployment: AzureOpenAIModelEngines = (
-        AzureOpenAIModelEngines.text_embedding_ada_002
-    )
+    ai_service: Optional[str] = 'AzureOpenAI'
+    embed_ai_service: Optional[str] = 'AzureOpenAI'
+    chunk_size: Optional[int] = 512
+    llm_model: Optional[str] = AzureOpenAIModelNames.gpt_35_turbo_16k.value
+    llm_deployment: Optional[AzureOpenAIModelEngines] = AzureOpenAIModelEngines.gpt_35_turbo_16k.value
+    embed_model: Optional[str] = AzureOpenAIModelNames.text_embedding_ada_002.value
+    embed_deployment: Optional[AzureOpenAIModelEngines] = AzureOpenAIModelEngines.text_embedding_ada_002.value
     summary_prompt: str = SUMMARY_PROMPT
     temperature: float = 0.3
     index_name: str = "raptor_index"
+
+    @model_validator(mode='before')
+    def input_validation(cls, values):
+
+        ai_service = values.get('ai_service')
+        embed_ai_service = values.get('embed_ai_service')
+        llm_model = values.get('llm_model')
+        embed_model = values.get('embed_model')
+
+        if ai_service and ai_service not in all_ai_services :
+            raise ValueError(f"Invalid AI service '{ai_service}'. Expected one of {all_ai_services}.")
+        
+        if embed_ai_service and  embed_ai_service not in all_ai_services:
+            raise ValueError(f"Invalid Embed AI service '{embed_ai_service}'. Expected one of {all_ai_services}.")
+
+        if llm_model and ai_service is None:
+            raise ValueError(f"Please provide ai_service as well while providing a llm_model or just opt out llm_model to use the default service and model")
+
+        if embed_model and embed_ai_service is None:
+            raise ValueError(f"Please provide embed_ai_service as well while providing a embed_model or just opt out embed_model to use the default service and model")
+
+
+        expected_llm_models = [
+            model['model_name'] 
+            for model in ai_services_config.get(ai_service, {}).get('chat_models', {}).values()  # Access models in chat_models
+        ]
+
+        if llm_model and llm_model not in expected_llm_models:
+            raise ValueError(f"Invalid model '{llm_model}' for ai_service '{ai_service}'. Expected one of {expected_llm_models}")
+
+
+        expected_embed_models = [
+            model_info['model_name'] 
+            for model_info in ai_services_config.get(embed_ai_service, {}).get('embed_models', {}).values()  # Access models in embed_models
+        ]
+
+
+        if embed_model and embed_model not in expected_embed_models:
+                raise ValueError(f"Invalid model '{llm_model}' for service '{ai_service}'. Expected a type of embedding model from the list {expected_embed_models}")
+
+        return values
     # class Config:
     #     extra = 'forbid'
-
 
 class RagStoreSettings(BaseModel):
     base_rag_setting: Optional[BaseRagSetting] = None
@@ -124,12 +313,11 @@ class RagStoreSettings(BaseModel):
 
 
 class RagStore(BaseModel):
-    base: Optional[Base]
+    base: Optional[Base] 
     raptor: Optional[Raptor] = None
     subqa: Optional[SubQA] = None
     meta_llama: Optional[MetaLlama] = None
     meta_lang: Optional[MetaLang] = None
-
     class Config:
         arbitrary_types_allowed = True
 
@@ -143,6 +331,6 @@ class RagStoreBool(BaseModel):
 
 
 class UserConfig(BaseModel):
-    usecase_name: str = "introductory_questions"
-    iteration: str = "iteration 1"
-    upload_type: str = "pdf"
+    usecase_name: str = 'introductory_questions'
+    iteration: str = 'iteration 1'
+    upload_type: str ='pdf'
