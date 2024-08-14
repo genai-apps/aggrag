@@ -36,9 +36,10 @@ try:
 
 except json.JSONDecodeError as e:
     logger.error(f"Error parsing JSON: {e}")
-    raise
+    raise Exception(f"Please provide a valid json in AI_SERVICES_CONFIG, error while parsing json --> {e}")
 except ValueError as ve:
     logger.error(f"ValueError: {ve}")
+    raise
 except Exception as e:
     logger.exception("An unexpected error occurred")
 
