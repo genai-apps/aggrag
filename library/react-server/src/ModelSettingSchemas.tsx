@@ -3284,7 +3284,7 @@ export const getDefaultModelSettings = (modelName: string) => {
 };
 
 export const getIsRag = (modelName: string) => {
-  let tempRag = getRAGProvider(modelName);
+  const tempRag = getRAGProvider(modelName);
   if (tempRag) return true;
   else return false;
 };
