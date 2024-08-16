@@ -3282,3 +3282,9 @@ export const getDefaultModelSettings = (modelName: string) => {
     getDefaultModelFormData(settingsSpec),
   );
 };
+
+export const getIsRag = (modelName: string) => {
+  const tempRag = getRAGProvider(modelName);
+  if (tempRag) return true;
+  else return false;
+};

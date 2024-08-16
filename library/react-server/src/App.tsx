@@ -10,6 +10,7 @@ import ReactFlow, {
   Background,
   ReactFlowInstance,
   Node,
+  MiniMap,
 } from "reactflow";
 import {
   Button,
@@ -541,12 +542,14 @@ const App = () => {
 
   const loadFlow = async (flow?: Dict, rf_inst?: ReactFlowInstance | null) => {
     if (flow === undefined) return;
+
     if (rf_inst) {
       if (flow.viewport)
         rf_inst.setViewport({
           x: flow.viewport.x || 0,
           y: flow.viewport.y || 0,
-          zoom: flow.viewport.zoom || 1,
+          // zoom: flow.viewport.zoom || 1,
+          zoom: (flow.viewport.x > 400 ? 0.2 : flow.viewport.zoom) || 1,
         });
       else rf_inst.setViewport({ x: 0, y: 0, zoom: 1 });
     }
@@ -630,6 +633,16 @@ const App = () => {
     if (menuData.length === 0) {
       return;
     }
+    localStorage.setItem(
+      "iteration-created",
+      JSON.stringify({
+        usecase: "",
+        iteration: "",
+        fileName: "",
+        committed: false,
+        iterationCreated: false,
+      }),
+    );
     setIsChangesNotSaved(false);
     if (!rfInstance) return;
 
@@ -746,13 +759,21 @@ const App = () => {
     try {
       setOpenMenu(false);
       if (isChangesNotSaved) {
-        setModalOpen({
-          usecase: ItemLabel,
-          iteration: subItemLabel,
-          subItems: subItems,
-          open: true,
-          for: "click-iteration",
-        });
+        if (
+          activeUseCase.usecase === ItemLabel &&
+          activeUseCase.iteration === subItemLabel
+        ) {
+          return;
+        } else {
+          setModalOpen({
+            usecase: ItemLabel,
+            iteration: subItemLabel,
+            subItems: subItems,
+            open: true,
+            for: "click-iteration",
+          });
+        }
+
         return;
       } else {
         setModalOpen({
@@ -1372,32 +1393,80 @@ const App = () => {
       } else {
         setIsUseCaseCreated(false);
       }
-      setNotificationText({
-        title: "",
-        text: `Iteration (${iterationName} of ${usecaseName && usecaseName.split("__")[0]}) has been successfully deleted!`,
-      });
+      // this block of code is for showing deleted notification text only when user deletes.
+      // (in some cases when undoing a iteration we are deleting iteration so in such cases we are skipping it)
+      let parsedIterCreated = false;
+      const iterCreated = localStorage.getItem("iteration-created");
+      if (iterCreated !== null) {
+        const parsedData = iterCreated && JSON.parse(iterCreated);
+        parsedIterCreated = parsedData.iterationCreated;
+      }
+      if (!parsedIterCreated) {
+        setNotificationText({
+          title: "",
+          text: `Iteration (${iterationName} of ${usecaseName && usecaseName.split("__")[0]}) has been successfully deleted!`,
+        });
+      }
+      // when a user creates an iteration and then clicks on another iteration without
+      // saving previous iteration then
+      // we are deleting unsaved iteration and redirecting to iteration which user has clicked.
+      if (parsedIterCreated) {
+        handleIterationFolderClick(
+          modalOpen.usecase,
+          modalOpen.iteration,
+          modalOpen.subItems,
+        );
+        localStorage.setItem(
+          "current_usecase",
+          JSON.stringify({
+            parent_folder: modalOpen.usecase,
+            iter_folder: modalOpen.iteration,
+            file_name: modalOpen.subItems && modalOpen.subItems[0]?.label,
+            committed: false,
+          }),
+        );
+        setActiveUseCase({
+          fileName: modalOpen.subItems && modalOpen.subItems[0]?.label,
+          iteration: modalOpen.iteration,
+          usecase: modalOpen.usecase,
+          committed: false,
+        });
+      } else {
+        localStorage.setItem(
+          "current_usecase",
+          JSON.stringify({
+            parent_folder: usecaseName,
+            iter_folder: "",
+            file_name: "",
+            committed: false,
+          }),
+        );
+        setActiveUseCase({
+          fileName: "",
+          iteration: "",
+          usecase: usecaseName,
+          committed: false,
+        });
+      }
+
       setLoading(false);
       setDeleteUsecaseOrIter({
         usecase: "",
         iteration: "",
         open: false,
       });
+
       localStorage.setItem(
-        "current_usecase",
+        "iteration-created",
         JSON.stringify({
-          parent_folder: usecaseName,
-          iter_folder: "",
-          file_name: "",
+          usecase: "",
+          iteration: "",
+          fileName: "",
           committed: false,
+          iterationCreated: false,
         }),
       );
       // we can keep committed value as false
-      setActiveUseCase({
-        fileName: "",
-        iteration: "",
-        usecase: usecaseName,
-        committed: false,
-      });
 
       // Update the URL
       window.history.pushState({}, "", "/");
@@ -1521,6 +1590,16 @@ const App = () => {
           title: "Created",
           text: "Iteration has been created successfully",
         });
+        localStorage.setItem(
+          "iteration-created",
+          JSON.stringify({
+            usecase: folderName,
+            iteration: res.iter_folder_name,
+            fileName: "",
+            committed: false,
+            iterationCreated: true,
+          }),
+        );
         // handleSaveFlow(false);
       }
     } catch (e) {
@@ -1606,7 +1685,7 @@ const App = () => {
       setOpenCreateUseCase(false);
       setLoading(false);
       setIsCurrentFileLocked(false);
-      setIsChangesNotSaved(true);
+      // setIsChangesNotSaved(true);
       localStorage.setItem(
         "current_usecase",
         JSON.stringify({
@@ -1864,6 +1943,7 @@ const App = () => {
       return false;
     }
   };
+
   useEffect(() => {
     fetchFoldersAndContents();
   }, [isUseCaseCreated]);
@@ -1872,6 +1952,11 @@ const App = () => {
   useEffect(() => {
     if (confirmed) {
       if (modalOpen.for === "create-iteration") {
+        const data = localStorage.getItem("iteration-created");
+        const parsedData = data && JSON.parse(data);
+        if (parsedData && parsedData.iterationCreated) {
+          handleDeleteIteration(parsedData.usecase, parsedData.iteration);
+        }
         handleCreateIteration(modalOpen.usecase);
       } else if (modalOpen.for === "copy-iteration") {
         handleCopyIteration(
@@ -1880,11 +1965,18 @@ const App = () => {
           modalOpen.subItems[0]?.label,
         );
       } else if (modalOpen.for === "click-iteration") {
-        handleIterationFolderClick(
-          modalOpen.usecase,
-          modalOpen.iteration,
-          modalOpen.subItems,
-        );
+        const data = localStorage.getItem("iteration-created");
+        const parsedData = data && JSON.parse(data);
+        if (parsedData && parsedData.iterationCreated) {
+          handleDeleteIteration(parsedData.usecase, parsedData.iteration);
+          console.log("triggered");
+        } else {
+          handleIterationFolderClick(
+            modalOpen.usecase,
+            modalOpen.iteration,
+            modalOpen.subItems,
+          );
+        }
       } else if (copyModalOpen.for === "copy-usecase") {
         handleCopyUsecase(copyModalOpen.usecase);
       }
@@ -2006,9 +2098,7 @@ const App = () => {
           </a>
           &nbsp; (If you&apos;re a web developer, consider forking our
           repository and making a{" "}
-          <a href="https://github.com/genai-apps/aggrag/pulls">
-            Pull Request
-          </a>{" "}
+          <a href="https://github.com/genai-apps/aggrag/pulls">Pull Request</a>{" "}
           to support your particular browser.)
         </Text>
       </Box>
@@ -2272,6 +2362,7 @@ const App = () => {
             style={{ height: "100%", backgroundColor: "#eee", flexGrow: "1" }}
           >
             <ReactFlow
+              minZoom={0.7}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
@@ -2305,6 +2396,7 @@ const App = () => {
             >
               <Background color="#999" gap={16} />
               <Controls showZoom={true} />
+              {/* <MiniMap zoomable pannable /> */}
             </ReactFlow>
           </div>
         </div>
@@ -2953,7 +3045,6 @@ const App = () => {
               >
                 {saveDropdown}
               </Button>
-
               {isCurrenFileLocked && (
                 <span
                   style={{

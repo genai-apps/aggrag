@@ -369,7 +369,7 @@ const PromptNode: React.FC<PromptNodeProps> = ({
       } else {
         debounce(
           (_value) => removeFromTemplateHooks(_value),
-          500,
+          100,
         )("rag_knowledge_base");
       }
       // If there's been any change to the item list, signal dirty:
