@@ -7,7 +7,7 @@ import React, {
   MouseEventHandler,
 } from "react";
 import { Handle, Node, Position } from "reactflow";
-import { Tooltip, Skeleton, Loader, Grid } from "@mantine/core";
+import { Tooltip, Skeleton, Loader, Grid, Text } from "@mantine/core";
 import {
   IconTextPlus,
   IconEye,
@@ -298,25 +298,42 @@ const FileFieldsNode: React.FC<FileFieldsNodeProps> = ({ data, id }) => {
     }
   }, [refresh]);
 
+  function getFileName(filePath: string) {
+    return filePath.split("/").pop();
+  }
+
   // Cache the rendering of the file fields.
   const fileFields = useMemo(
     () =>
       Object.keys(filefieldsValues).map((i) => {
         return (
           <div className="input-field" key={i}>
-            <label htmlFor={"pdfWordFile" + i} className="upload-file">
-              <input
-                className="text-field-fixed nodrag nowheel"
-                ref={fileInputRef}
-                formEncType="multipart/form-data"
-                type="file"
-                id={"pdfWordFile" + i}
-                name={"pdfWordFile" + i}
-                // value={filefieldsValues[i]}
-                disabled={fieldVisibility[i] === false}
-                accept=""
-                onChange={(event) => handleFileUpload(event, i)}
-              />
+            <label
+              htmlFor={"pdfWordFile" + i}
+              className="upload-file"
+              style={{ width: "285px" }}
+            >
+              {filefieldsValues[i] ? (
+                <Text
+                  className="text-field-fixed nodrag nowheel"
+                  truncate="end"
+                >
+                  {getFileName(filefieldsValues[i])}
+                </Text>
+              ) : (
+                <input
+                  className="text-field-fixed nodrag nowheel"
+                  ref={fileInputRef}
+                  formEncType="multipart/form-data"
+                  type="file"
+                  id={"pdfWordFile" + i}
+                  name={"pdfWordFile" + i}
+                  // value={filefieldsValues[i]}
+                  disabled={fieldVisibility[i] === false}
+                  accept="application/msword, application/vnd.ms-excel, application/vnd.ms-powerpoint, text/plain, application/pdf"
+                  onChange={(event) => handleFileUpload(event, i)}
+                />
+              )}
             </label>
             {Object.keys(filefieldsValues).length > 1 ? (
               <div style={{ display: "flex", flexDirection: "column" }}>
