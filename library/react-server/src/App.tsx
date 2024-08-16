@@ -759,13 +759,21 @@ const App = () => {
     try {
       setOpenMenu(false);
       if (isChangesNotSaved) {
-        setModalOpen({
-          usecase: ItemLabel,
-          iteration: subItemLabel,
-          subItems: subItems,
-          open: true,
-          for: "click-iteration",
-        });
+        if (
+          activeUseCase.usecase === ItemLabel &&
+          activeUseCase.iteration === subItemLabel
+        ) {
+          return;
+        } else {
+          setModalOpen({
+            usecase: ItemLabel,
+            iteration: subItemLabel,
+            subItems: subItems,
+            open: true,
+            for: "click-iteration",
+          });
+        }
+
         return;
       } else {
         setModalOpen({
