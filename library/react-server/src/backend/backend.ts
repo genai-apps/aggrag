@@ -1558,7 +1558,7 @@ export async function fetchOpenAIEval(evalname: string): Promise<Dict> {
   }
 
   // App is not running locally, but hosted on a site.
-  
+
   return fetch(`oaievals/${evalname}.cforge`).then((response) =>
     response.json(),
   );

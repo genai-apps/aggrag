@@ -411,7 +411,7 @@ def fetchOpenAIEval():
 
         First detects if the eval is already in the cache. If the eval is already downloaded, 
         it will be stored in examples/ folder of the package under a new oaievals directory. 
-        If it's not in the cache, it will download it from the ChainForge webserver.
+        If it's not in the cache, it will download it from the webserver.
 
         POST'd data should be in form:
         { 
@@ -451,8 +451,8 @@ def fetchOpenAIEval():
         except Exception as e:
             return jsonify({'error': f"Error creating a new directory 'oaievals' at filepath {oaievals_cache_dir}: {str(e)}"})
 
-    # Download the preconverted OpenAI eval from the GitHub main branch for ChainForge
-    _url = f"https://raw.githubusercontent.com/ianarawjo/ChainForge/main/chainforge/oaievals/{evalname}.cforge"
+    # Download the preconverted OpenAI eval from the GitHub main branch for aggrag
+    _url = f"https://github.com/genai-apps/aggrag"
     response = py_requests.get(_url)
 
     # Check if the request was successful (status code 200)
@@ -740,11 +740,11 @@ async def callCustomProvider():
 @app.route('/app/uploadFile', methods=['POST'])
 async def uploadFileToKnowledgeBase():
     """
-        Uploads pdf/word file, given its filename and fileid. 
+        Uploads pdf/word file, given its filename and file_node_id. 
         POST'd data should be in form:
         { 
-            name: <str>  # The filename,
-            fileid: <str> # The UUID,
+            timestamp: <str>  # The timestamp (last 7 digits),
+            file_node_id: <str> # The UUID for file node,
             file: <fileobj>,
             p_folder: <str> # The parent folder (usecase)
             i_folder: <str> # The iteration folder
@@ -762,10 +762,14 @@ async def uploadFileToKnowledgeBase():
     
     req = request.form
     if 'p_folder' not in req or 'i_folder' not in req:
-        return jsonify({'error': 'Missing usecase or iteration folder to upload file.'})
+        return jsonify({'error': 'Missing usecase or iteration to upload file.'})
+    if 'file_node_id' not in req:
+        return jsonify({'error': 'Missing file_node_id parameter to upload file.'})
+    if 'timestamp' not in req:
+        return jsonify({'error': 'Missing timestamp parameter to upload file.'})
 
     # Verify 'raw_docs' directory exists:
-    RAW_DOCS_DIR = os.path.join(CONFIGURATION_DIR, req["p_folder"], req["i_folder"], 'raw_docs')
+    RAW_DOCS_DIR = os.path.join(CONFIGURATION_DIR, req["p_folder"], req["i_folder"], 'raw_docs', req["file_node_id"]+"_"+req["timestamp"])
     print(RAW_DOCS_DIR)
     if not os.path.isdir(RAW_DOCS_DIR):
         os.makedirs(RAW_DOCS_DIR)
@@ -812,21 +816,21 @@ def indexRAGFiles():
     data = request.get_json()
     working_dir = data.get('files_path')
     rag_name = data.get('rag_name')
-    use_case_name = working_dir.split('/')[-2]
-    iteration = working_dir.split('/')[-1]
+    use_case_name = working_dir.split('/')[1]
+    iteration = working_dir.split('/')[2]
 
-    raw_docs_path = os.path.join(working_dir, 'raw_docs')
+    raw_docs_path = os.path.dirname(working_dir)
 
     rag_models = ['base', 'raptor', 'subqa', 'meta_llama', 'meta_lang']
 
     if rag_name not in rag_models:
         return jsonify({'error': f'Invalid rag_name, rag_name can be one of this values {rag_models}'})
-
-    ragstore_settings = data.get('ragstore_settings')
     
+    ragstore_settings = data.get('ragstore_settings')
+
     if not ragstore_settings:
         return jsonify({'error': f'ragstore_settings is required'})
-
+    
     allowed_rag_settings= {'base_rag_setting', 'subqa_rag_setting', 'raptor_rag_setting', 'meta_llama_rag_setting', 'meta_lang_rag_setting'}
     if not set(ragstore_settings.keys()).issubset(allowed_rag_settings):
         return jsonify({'error': 'ragstore_settings should be one of ["base_rag_setting", "subqa_rag_setting", "raptor_rag_setting", "meta_llama_rag_setting", "meta_lang_rag_setting"]'})
@@ -856,11 +860,10 @@ def indexRAGFiles():
 
     aggrag = AggRAG(
         ragstore_bool=RagStoreBool(**{rag_name: True}),
-        DATA_DIR=working_dir,
         usecase_name=use_case_name,
         iteration=iteration,
-        ragstore_settings=aggrag_ragstore_settings
-    )
+        DATA_DIR=working_dir,
+        ragstore_settings=aggrag_ragstore_settings)
 
     try:
         aggrag.documents_loader(DIR=raw_docs_path)
@@ -1036,8 +1039,30 @@ def copy_usecase():
                 write_json(file_content, target_file_path)
             except Exception as e:
                 return jsonify({"message": f"Failed to copy file: {str(e)}"}), 500
+            
+    iterations_info = []
 
-    return jsonify({"message": "Use case and iterations copied successfully!", "target_usecase_folder_name": target_usecase_folder_name}), 201
+
+    for item in os.listdir(target_usecase_folder_path):
+        item_path = os.path.join(target_usecase_folder_path, item)
+        # Check if the item is a directory (i.e., an iteration folder)
+        if os.path.isdir(item_path):
+            # Ensure that the target iteration folder exists
+            target_iteration_folder_path = os.path.join(target_usecase_folder_path, item)
+            if os.path.exists(target_iteration_folder_path):
+                iteration_files = []
+
+                for file in os.listdir(item_path):
+                    if file.endswith('.cforge'):
+                        # Just collect the file names, 
+                        iteration_files.append(file)
+
+                iterations_info.append({
+                    "iteration_name": item,
+                    "files": iteration_files
+                })
+
+    return jsonify({"message": "Use case and iterations copied successfully!", "target_usecase_folder_name": target_usecase_folder_name,"iterations_info":iterations_info}), 201
 
 
 @app.route('/app/createusecase', methods=['POST'])
@@ -1117,7 +1142,6 @@ def load_cforge():
                         "path": folder_path,
                         "default": "__default"  in folder or "__Default"  in folder
                     })
-
     # Sort folders based on creation time
     folder_data_list.sort(key=lambda x: (not x['default'],x['creation_time']))
 
@@ -1137,7 +1161,6 @@ def load_cforge():
             [item for item in folder_contents if os.path.isdir(os.path.join(folder_path, item)) and re.match(r'iteration[ _](\d+)', item)],
             key=lambda x: int(re.match(r'iteration[ _](\d+)', x).group(1))
         )
-
         for iteration in iterations:
             iteration_path = os.path.join(folder_path, iteration)
             iteration_contents = os.listdir(iteration_path)

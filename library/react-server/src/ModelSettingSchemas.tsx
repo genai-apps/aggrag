@@ -2234,8 +2234,31 @@ const BaseRagSettings: ModelSettingsDict = {
             const: "Nvidia",
             title: "Nvidia",
           },
+          {
+            const: "Replicate",
+            title: "Replicate",
+          },
+          {
+            const: "Together",
+            title: "Together",
+          },
         ],
         title: "AI service",
+        type: "string",
+      },
+      embed_ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+        ],
+        title: "Embedding AI service",
         type: "string",
       },
       chunk_size: {
@@ -2418,8 +2441,31 @@ const SubQARagSettings: ModelSettingsDict = {
             const: "Nvidia",
             title: "Nvidia",
           },
+          {
+            const: "Replicate",
+            title: "Replicate",
+          },
+          {
+            const: "Together",
+            title: "Together",
+          },
         ],
         title: "AI service",
+        type: "string",
+      },
+      embed_ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+        ],
+        title: "Embedding AI service",
         type: "string",
       },
       chunk_size: {
@@ -2566,8 +2612,31 @@ const RaptorRagSettings: ModelSettingsDict = {
             const: "Nvidia",
             title: "Nvidia",
           },
+          {
+            const: "Replicate",
+            title: "Replicate",
+          },
+          {
+            const: "Together",
+            title: "Together",
+          },
         ],
         title: "AI service",
+        type: "string",
+      },
+      embed_ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+        ],
+        title: "Embedding AI service",
         type: "string",
       },
       chunk_size: {
@@ -2703,8 +2772,31 @@ const Meta_llamaRagSettings: ModelSettingsDict = {
             const: "Nvidia",
             title: "Nvidia",
           },
+          {
+            const: "Replicate",
+            title: "Replicate",
+          },
+          {
+            const: "Together",
+            title: "Together",
+          },
         ],
         title: "AI service",
+        type: "string",
+      },
+      embed_ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+        ],
+        title: "Embedding AI service",
         type: "string",
       },
       chunk_size: {
@@ -2842,8 +2934,31 @@ const Meta_langRagSettings: ModelSettingsDict = {
             const: "Nvidia",
             title: "Nvidia",
           },
+          {
+            const: "Replicate",
+            title: "Replicate",
+          },
+          {
+            const: "Together",
+            title: "Together",
+          },
         ],
         title: "AI service",
+        type: "string",
+      },
+      embed_ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+        ],
+        title: "Embedding AI service",
         type: "string",
       },
       chunk_size: {
