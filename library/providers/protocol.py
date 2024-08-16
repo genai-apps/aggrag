@@ -108,7 +108,7 @@ def provider(name: str = 'Custom Provider',
                    If you're just calling a single model, you can omit this.
        - `rate_limit`: If an integer, the maximum number of simulatenous requests to send per minute. 
                    To force requests to be sequential (wait until each request returns before sending another), enter "sequential". Default is sequential.
-       - `settings_schema`: a JSON Schema specifying the name of your provider in the ChainForge UI, the available settings, and the UI for those settings.
+       - `settings_schema`: a JSON Schema specifying the name of your provider in the aggrag UI, the available settings, and the UI for those settings.
           The settings and UI specs are in react-jsonschema-form format: https://rjsf-team.github.io/react-jsonschema-form/. 
           
             Specifically, your `settings_schema` dict should have keys:
@@ -120,14 +120,14 @@ def provider(name: str = 'Custom Provider',
             }
             ```
 
-            You may look to adapt an existing schema from `ModelSettingsSchemas.js` in `chainforge/react-server/src/`,
+            You may look to adapt an existing schema from `ModelSettingsSchemas.js` in `library/react-server/src/`,
             BUT with the following things to keep in mind:
              - the value of "settings" should just be the value of "properties" in the full schema 
              - don't include the 'shortname' property; this will be added by default and set to the value of `name`
              - don't include the 'model' property; this will be populated by the list you passed to `models` (if any)
              - the keynames of all properties of the schema should be valid as variable names for Python keyword args; i.e., no spaces
 
-            Finally, if you want temperature to appear in the ChainForge UI, you must name your
+            Finally, if you want temperature to appear in the aggrag UI, you must name your
             settings schema property `temperature`, and give it `minimum` and `maximum` values.  
 
             NOTE: Only `textarea`, `range`, and enum, and text input UI widgets are properly supported from `react-jsonschema-form`; 

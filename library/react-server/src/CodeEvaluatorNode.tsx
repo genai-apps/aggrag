@@ -640,7 +640,7 @@ The Python interpeter in the browser is Pyodide. You may not be able to run some
             <Code>evaluate</Code> is defined. For more information on
             what&apos;s possible, see the{" "}
             <a
-              href="https://chainforge.ai/docs/"
+              href="https://github.com/genai-apps/aggrag"
               target="_blank"
               rel="noreferrer"
             >
@@ -698,7 +698,7 @@ The Python interpeter in the browser is Pyodide. You may not be able to run some
             <Code>process</Code> is defined. For more information on what&apos;s
             possible, see the{" "}
             <a
-              href="https://chainforge.ai/docs/"
+              href="https://github.com/genai-apps/aggrag"
               target="_blank"
               rel="noreferrer"
             >
