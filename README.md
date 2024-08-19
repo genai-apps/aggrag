@@ -78,7 +78,7 @@ Aggrag is our original concept, however, for implementation we have relied on th
 
 # Managing Dependencies
 
-When adding a new package, please add it to the `requirements.in` file and run `pip-compile` to automatically update 
+When adding a new package, please add it to the `requirements.in` file and run `pip-compile requirements.in` to automatically update 
 the `requirements.txt` with the package and its sub-dependencies.
 
 
