@@ -1,6 +1,11 @@
 
 # 🎛️ Aggrag 
 
+### Built with
+
+1. Python 3.11.9
+2. Node.js 22.2.0
+
 Aggrag allows you to configure LLM experiments, and take them from prototype to deployment wthin a single framework. With Aggrag library, you get a framework that allows:
 
 - **Multiple RAGs are better than one RAG**: Configure experiments with an ensemble of RAG pipelines
@@ -20,6 +25,7 @@ Aggrag allows you to configure LLM experiments, and take them from prototype to 
 - [Example Use Cases](#example-use-cases)
 - [Features](#features) 
 - [Citations](#citations)
+- [Managing Dependencies](#managing-dependencies)
 
 
 
@@ -69,6 +75,12 @@ Aggrag is released under the MIT License.
 # Citations
 
 Aggrag is our original concept, however, for implementation we have relied on the existing development of: [arXiv pre-print](https://arxiv.org/abs/2309.09128)
+
+# Managing Dependencies
+
+When adding a new package, please add it to the `requirements.in` file and run `pip-compile` to automatically update 
+the `requirements.txt` with the package and its sub-dependencies.
+
 
 
 
