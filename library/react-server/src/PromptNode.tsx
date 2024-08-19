@@ -316,15 +316,6 @@ const PromptNode: React.FC<PromptNodeProps> = ({
     [llmListContainer, showAlert],
   );
 
-  const triggerRAGAlert = useCallback(
-    (msg: string) => {
-      setProgress(undefined);
-      ragListContainer?.current?.resetRAGItemsProgress();
-      if (showAlert) showAlert(msg);
-    },
-    [ragListContainer, showAlert],
-  );
-
   const showResponseInspector = useCallback(() => {
     if (inspectModal && inspectModal.current && jsonResponses) {
       inspectModal.current?.trigger();
@@ -369,7 +360,18 @@ const PromptNode: React.FC<PromptNodeProps> = ({
       // Update the local and global state;
       setRAGItemsCurrState(new_items);
       setDataPropsForNode(id, { rags: new_items });
-
+      if (new_items.length > 0) {
+        // Debounce refreshing the template hooks so we don't annoy the user
+        debounce(
+          (_value) => refreshTemplateHooks(_value),
+          100,
+        )(promptText + " {rag_knowledge_base}");
+      } else {
+        debounce(
+          (_value) => removeFromTemplateHooks(_value),
+          100,
+        )("rag_knowledge_base");
+      }
       // If there's been any change to the item list, signal dirty:
       if (
         new_items.length !== old_items.length ||
@@ -420,23 +422,37 @@ const PromptNode: React.FC<PromptNodeProps> = ({
     }
   }, [templateVars, id, pullInputData, updateShowContToggle]);
 
+  const removeFromTemplateHooks = useCallback(
+    (text: string) => {
+      // Update template var fields + handles
+      const found_template_vars = new Set(templateVars);
+      found_template_vars.delete(text);
+      setTemplateVars(Array.from(found_template_vars));
+    },
+    [setTemplateVars, templateVars],
+  );
+
   const refreshTemplateHooks = useCallback(
     (text: string) => {
       // Update template var fields + handles
-      const found_template_vars = new Set(extractBracketedSubstrings(text)); // gets all strs within braces {} that aren't escaped; e.g., ignores \{this\} but captures {this}
-
-      if (!setsAreEqual(found_template_vars, new Set(templateVars))) {
-        if (node_type !== "chat") {
-          try {
-            updateShowContToggle(
-              pullInputData(Array.from(found_template_vars), id),
-            );
-          } catch (err) {
-            console.error(err);
-          }
-        }
-        setTemplateVars(Array.from(found_template_vars));
+      let found_template_vars = new Set(extractBracketedSubstrings(text));
+      // gets all strs within braces {} that aren't escaped; e.g., ignores \{this\} but captures {this}
+      if (ragItemsCurrState.length > 0) {
+        found_template_vars = new Set([
+          ...found_template_vars,
+          "rag_knowledge_base",
+        ]);
       }
+      if (node_type !== "chat") {
+        try {
+          updateShowContToggle(
+            pullInputData(Array.from(found_template_vars), id),
+          );
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      setTemplateVars(Array.from(found_template_vars));
     },
     [setTemplateVars, templateVars, pullInputData, id],
   );
@@ -570,6 +586,7 @@ const PromptNode: React.FC<PromptNodeProps> = ({
     prompt: string,
     vars: Dict,
     llms: (string | Dict)[],
+    rags: (string | Dict)[],
     chat_histories?:
       | (ChatHistoryInfo | undefined)[]
       | Dict<(ChatHistoryInfo | undefined)[]>,
@@ -578,6 +595,7 @@ const PromptNode: React.FC<PromptNodeProps> = ({
       prompt,
       vars,
       llms,
+      rags,
       numGenerations,
       chat_histories,
       id,
@@ -659,9 +677,7 @@ const PromptNode: React.FC<PromptNodeProps> = ({
       // We need to draw the LLMs to query from the input responses
       _llmItemsCurrState = getLLMsInPulledInputData(pulled_vars);
     }
-    // Whether to continue with only the prior LLMs, for each value in vars dict
     if (node_type !== "chat" && showContToggle && contWithPriorRAGs) {
-      // We need to draw the LLMs to query from the input responses
       _ragItemsCurrState = getLLMsInPulledInputData(pulled_vars);
     }
 
@@ -682,81 +698,77 @@ const PromptNode: React.FC<PromptNodeProps> = ({
     fetchResponseCounts(
       promptText,
       pulled_vars,
-      [..._llmItemsCurrState, ..._ragItemsCurrState],
+      _llmItemsCurrState,
+      _ragItemsCurrState,
       chat_hist_by_llm,
-    )
-      .then((res) => {
-        if (res === undefined) return;
-        const [counts] = res;
+    ).then((res) => {
+      if (res === undefined) return;
+      const [counts] = res;
 
-        // Check for empty counts (means no requests will be sent!)
-        const num_llms_missing = Object.keys(counts).length;
-        if (num_llms_missing === 0) {
-          setRunTooltip("Will load responses from cache");
-          setResponsesWillChange(false);
-          return;
-        }
+      // Check for empty counts (means no requests will be sent!)
+      const num_llms_missing = Object.keys(counts).length;
+      if (num_llms_missing === 0) {
+        setRunTooltip("Will load responses from cache");
+        setResponsesWillChange(false);
+        return;
+      }
 
-        setResponsesWillChange(true);
+      setResponsesWillChange(true);
 
-        // Tally how many queries per LLM:
-        const queries_per_llm: Dict<number> = {};
-        Object.keys(counts).forEach((llm_key) => {
-          queries_per_llm[llm_key] = Object.keys(counts[llm_key]).reduce(
-            (acc, prompt) => acc + counts[llm_key][prompt],
+      // Tally how many queries per LLM:
+      const queries_per_llm: Dict<number> = {};
+      Object.keys(counts).forEach((llm_key) => {
+        queries_per_llm[llm_key] = Object.keys(counts[llm_key]).reduce(
+          (acc, prompt) => acc + counts[llm_key][prompt],
+          0,
+        );
+      });
+
+      // Check if all counts are the same:
+      if (num_llms_missing > 1) {
+        const some_llm_num = queries_per_llm[Object.keys(queries_per_llm)[0]];
+        const all_same_num_queries = Object.keys(queries_per_llm).reduce(
+          (acc, llm_key) => acc && queries_per_llm[llm_key] === some_llm_num,
+          true,
+        );
+        if (num_llms_missing === num_llms && all_same_num_queries) {
+          // Counts are the same
+          const req = some_llm_num > 1 ? "requests" : "request";
+          setRunTooltip(
+            `Will send ${some_llm_num} new ${req}` +
+              (num_llms > 1 ? " per LLM/RAG" : ""),
+          );
+        } else if (all_same_num_queries) {
+          const req = some_llm_num > 1 ? "requests" : "request";
+          setRunTooltip(
+            `Will send ${some_llm_num} new ${req}` +
+              (num_llms > 1 ? ` to ${num_llms_missing} LLMs/RAGs` : ""),
+          );
+        } else {
+          // Counts are different
+          const sum_queries = Object.keys(queries_per_llm).reduce(
+            (acc, llm_key) => acc + queries_per_llm[llm_key],
             0,
           );
-        });
-
-        // Check if all counts are the same:
-        if (num_llms_missing > 1) {
-          const some_llm_num = queries_per_llm[Object.keys(queries_per_llm)[0]];
-          const all_same_num_queries = Object.keys(queries_per_llm).reduce(
-            (acc, llm_key) => acc && queries_per_llm[llm_key] === some_llm_num,
-            true,
+          setRunTooltip(
+            `Will send a variable # of queries to LLM/RAG(s) (total=${sum_queries})`,
           );
-          if (num_llms_missing === num_llms && all_same_num_queries) {
-            // Counts are the same
-            const req = some_llm_num > 1 ? "requests" : "request";
-            setRunTooltip(
-              `Will send ${some_llm_num} new ${req}` +
-                (num_llms > 1 ? " per LLM/RAG" : ""),
-            );
-          } else if (all_same_num_queries) {
-            const req = some_llm_num > 1 ? "requests" : "request";
-            setRunTooltip(
-              `Will send ${some_llm_num} new ${req}` +
-                (num_llms > 1 ? ` to ${num_llms_missing} LLMs/RAGs` : ""),
-            );
-          } else {
-            // Counts are different
-            const sum_queries = Object.keys(queries_per_llm).reduce(
-              (acc, llm_key) => acc + queries_per_llm[llm_key],
-              0,
-            );
-            setRunTooltip(
-              `Will send a variable # of queries to LLM/RAG(s) (total=${sum_queries})`,
-            );
-          }
-        } else {
-          const llm_key = Object.keys(queries_per_llm)[0];
-          const llm_name =
-            llmListContainer?.current?.getLLMListItemForKey(llm_key)?.name;
-          const llm_count = queries_per_llm[llm_key];
-          const req = llm_count > 1 ? "queries" : "query";
-          if (llm_name === undefined)
-            setRunTooltip(`Will send ${llm_count} ${req} per LLM/RAG`);
-          else if (num_llms > num_llms_missing)
-            setRunTooltip(
-              `Will send ${llm_count} ${req} to ${llm_name} and load others`,
-            );
-          else setRunTooltip(`Will send ${llm_count} ${req} to ${llm_name}`);
         }
-      })
-      .catch((err: Error | string) => {
-        console.error(err); // soft fail
-        setRunTooltip("Could not reach backend server.");
-      });
+      } else {
+        const llm_key = Object.keys(queries_per_llm)[0];
+        const llm_name =
+          llmListContainer?.current?.getLLMListItemForKey(llm_key)?.name;
+        const llm_count = queries_per_llm[llm_key];
+        const req = llm_count > 1 ? "queries" : "query";
+        if (llm_name === undefined)
+          setRunTooltip(`Will send ${llm_count} ${req} per LLM/RAG`);
+        else if (num_llms > num_llms_missing)
+          setRunTooltip(
+            `Will send ${llm_count} ${req} to ${llm_name} and load others`,
+          );
+        else setRunTooltip(`Will send ${llm_count} ${req} to ${llm_name}`);
+      }
+    });
   };
 
   const handleRunClick = () => {
@@ -879,7 +891,8 @@ Soft failing by replacing undefined with empty strings.`,
       fetchResponseCounts(
         prompt_template,
         pulled_data,
-        [..._llmItemsCurrState, ..._ragItemsCurrState],
+        _llmItemsCurrState,
+        _ragItemsCurrState,
         pulled_chats as ChatHistoryInfo[],
       );
 
@@ -1001,7 +1014,7 @@ Soft failing by replacing undefined with empty strings.`,
             setJSONResponses(LlmRagJsonResponses);
 
             // Log responses for debugging:
-            console.log(LlmRagJsonResponses);
+            // console.log(LlmRagJsonResponses);
 
             // Save response texts as 'fields' of data, for any prompt nodes pulling the outputs
             // We also need to store a unique metavar for the LLM *set* (set of LLM nicknames) that produced these responses,
@@ -1111,16 +1124,20 @@ Soft failing by replacing undefined with empty strings.`,
     const query_rags = () => {
       if (_ragItemsCurrState?.length > 0) {
         const data: any = {};
-        const pulled_vars = getImmediateInputNode(["__rags"], id).filter(
-          (t) => t.type === "uploadfilefields",
-        );
-        pulled_vars.forEach((node_obj) => {
-          if (Object.keys(node_obj?.data?.fields)?.length > 0)
-            data.hasUploadedFiles = true;
-        });
+        const pulled_vars = getImmediateInputNode(
+          ["rag_knowledge_base"],
+          id,
+        ).filter((t) => t.type === "uploadfilefields");
         data.index_path = `configurations/${urlParams.get("p_folder")}/${urlParams.get("i_folder")}`;
         data.query = pulled_data;
-
+        data.uid = [];
+        pulled_vars.forEach((node_obj) => {
+          Object.keys(node_obj?.data?.fields)?.forEach((key) => {
+            data.uid.push(
+              node_obj.data.fields[key].split("/")[3].split("-")[1],
+            );
+          });
+        });
         return queryRAG(
           id,
           _ragItemsCurrState, // deep clone it first
@@ -1150,7 +1167,7 @@ Soft failing by replacing undefined with empty strings.`,
             setJSONResponses(LlmRagJsonResponses);
 
             // Log responses for debugging:
-            console.log(LlmRagJsonResponses);
+            // console.log(LlmRagJsonResponses);
 
             // Save response texts as 'fields' of data, for any prompt nodes pulling the outputs
             // We also need to store a unique metavar for the RAG *set* (set of RAG nicknames) that produced these responses,
@@ -1319,20 +1336,20 @@ Soft failing by replacing undefined with empty strings.`,
     let pulled_vars;
     const resp = [];
     try {
-      pulled_vars = getImmediateInputNode(["__rags"], id).filter(
+      pulled_vars = getImmediateInputNode(["rag_knowledge_base"], id).filter(
         (t) => t.type === "uploadfilefields",
       );
       ragListContainer?.current?.setZeroPercProgress();
       pulled_vars.forEach((node_obj) => {
-        if (Object.keys(node_obj?.data?.fields)?.length > 0) {
+        Object.keys(node_obj?.data?.fields)?.forEach((key) => {
           ragItemsCurrState.forEach(async (rag) => {
             try {
               let rag_params = {};
               if (typeof rag === "object" && rag.settings !== undefined)
                 rag_params = rag.settings;
 
-              const dataObj = {
-                files_path: `configurations/${urlParams.get("p_folder")}/${urlParams.get("i_folder")}`,
+              const dataObj: any = {
+                files_path: `configurations/${node_obj.data.fields[key]}`,
                 rag_name: rag.model,
                 settings: {
                   ...rag_params,
@@ -1342,6 +1359,7 @@ Soft failing by replacing undefined with empty strings.`,
                   ),
                 },
               };
+              dataObj.settings.index_name = `${dataObj.settings.index_name}__${node_obj.data.fields[key].split("/")[3].split("-")[1]}`;
               const response = await index_file(dataObj);
               resp.push(response);
               ragListContainer?.current?.updateProgress((item: LLMSpec) => {
@@ -1372,7 +1390,7 @@ Soft failing by replacing undefined with empty strings.`,
               console.error(err);
             }
           });
-        }
+        });
       });
     } catch (err) {
       setRunTooltip("Error: Duplicate variables detected.");
@@ -1527,7 +1545,7 @@ Soft failing by replacing undefined with empty strings.`,
         nodeId={id}
         startY={hooksY}
         position={Position.Left}
-        ignoreHandles={["__past_chats", "__rags"]}
+        ignoreHandles={["__past_chats"]}
       />
       <hr />
       <div>
@@ -1616,17 +1634,17 @@ Soft failing by replacing undefined with empty strings.`,
         )} */}
         {!contWithPriorRAGs || !showContToggle ? (
           <div>
-            {ragItemsCurrState?.length > 0 && (
+            {/* {ragItemsCurrState?.length > 0 && (
               <Handle
                 type="target"
                 position={Position.Left}
-                id="__rags"
+                id="rag_knowledge_base"
                 style={{
                   top: `${85 - ragItemsCurrState?.length}%`,
                   background: "#555",
                 }}
               />
-            )}
+            )} */}
             <RAGListContainer
               ref={ragListContainer}
               initRAGItems={data.rags}

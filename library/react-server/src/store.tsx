@@ -329,6 +329,13 @@ export const initRAGProviderMenu: LLMSpec[] = [
     base_model: "meta_lang",
     temp: 0.1,
   },
+  {
+    name: "Table Base",
+    emoji: "📊",
+    model: "tableBase",
+    base_model: "tableBase",
+    temp: 0.7,
+  },
 ];
 
 const togetherModels = TogetherChatSettings.schema.properties.model

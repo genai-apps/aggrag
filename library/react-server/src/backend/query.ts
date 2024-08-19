@@ -466,7 +466,7 @@ export class PromptPipeline {
     for (const prompt of this.gen_prompts(vars.query)) {
       let prompt_str = prompt.toString();
       const info = prompt.fill_history;
-      // const metavars = prompt.metavars;
+      const metavars = prompt.metavars;
 
       // Settings params are special template vars of form {=name}, where = prefaces the varname.
       // These must be extracted and, below, passed as 'llm_params'. Note that the name of the param
@@ -488,6 +488,58 @@ export class PromptPipeline {
           throw new Error(
             `Cannot send a prompt '${prompt}' to RAG: Prompt is a template.`,
           );
+        // Get the cache of responses with respect to this prompt, + normalize format so it's always an array (of size >= 0)
+        const cache_bucket = responses[prompt_str];
+        const cached_resps: RawLLMResponseObject[] = Array.isArray(cache_bucket)
+          ? cache_bucket
+          : cache_bucket === undefined
+            ? []
+            : [cache_bucket];
+
+        // Check if there's a cached response with the same prompt + (if present) chat history and settings vars:
+        let cached_resp: RawLLMResponseObject | undefined;
+        let cached_resp_idx = -1;
+        // Find an indivdual response obj that matches the chat history + (if present) settings vars:
+        for (let i = 0; i < cached_resps.length; i++) {
+          if (
+            isEqualChatHistory(
+              cached_resps[i].chat_history,
+              chat_history?.messages,
+            ) &&
+            areEqualVarsDicts(
+              settings_params,
+              extractSettingsVars(cached_resps[i].vars),
+            )
+          ) {
+            cached_resp = cached_resps[i];
+            cached_resp_idx = i;
+            break;
+          }
+        }
+        const extracted_resps: Array<any> = cached_resp
+          ? cached_resp.responses
+          : [];
+
+        // First check if there is already a response for this item under these settings. If so, we can save an LLM call:
+        if (cached_resp && extracted_resps.length >= 1) {
+          // console.log(` - Found cache'd response for prompt ${prompt_str}. Using...`);
+          const resp: RawLLMResponseObject = {
+            prompt: prompt_str,
+            query: cached_resp.query,
+            uid: cached_resp.uid ?? uuid(),
+            responses: extracted_resps.slice(0, 1),
+            raw_response: cached_resp.raw_response,
+            llm: cached_resp.llm || NativeLLM.OpenAI_ChatGPT,
+            // We want to use the new info, since 'vars' could have changed even though
+            // the prompt text is the same (e.g., "this is a tool -> this is a {x} where x='tool'")
+            vars: mergeDicts(info, chat_history?.fill_history) ?? {},
+            metavars: mergeDicts(metavars, chat_history?.metavars) ?? {},
+          };
+          if (chat_history !== undefined)
+            resp.chat_history = chat_history.messages;
+          yield resp;
+          continue;
+        }
 
         // Call the RAG asynchronously to generate a response
         tasks.push(

@@ -7,7 +7,7 @@ import React, {
   MouseEventHandler,
 } from "react";
 import { Handle, Node, Position } from "reactflow";
-import { Tooltip, Skeleton, Loader, Grid } from "@mantine/core";
+import { Tooltip, Skeleton, Loader, Grid, Text } from "@mantine/core";
 import {
   IconTextPlus,
   IconEye,
@@ -237,14 +237,18 @@ const FileFieldsNode: React.FC<FileFieldsNodeProps> = ({ data, id }) => {
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
       ) {
         const formData = new FormData();
+        const timestamp = Date.now().toString();
+        const fid = `fnid-${id.split("-")[1]}`;
         formData.append("file", event.target.files[0]);
-        formData.append("fileid", field_id);
+        formData.append("timestamp", timestamp);
+        formData.append("file_node_id", fid);
         formData.append("p_folder", urlParams.get("p_folder") || "");
         formData.append("i_folder", urlParams.get("i_folder") || "");
         try {
           setIsLoading(true);
           const response = await upload_raw_docs_file(formData);
-          handleFileFieldChange(field_id, event.target.files[0].name, false);
+          const file_path = `${urlParams.get("p_folder")}/${urlParams.get("i_folder")}/raw_docs/${fid}_${timestamp}/${event.target.files[0].name}`;
+          handleFileFieldChange(field_id, file_path, false);
           console.log("File uploaded successfully!", response);
         } catch (error) {
           console.error("Error uploading file:", error);
@@ -294,25 +298,42 @@ const FileFieldsNode: React.FC<FileFieldsNodeProps> = ({ data, id }) => {
     }
   }, [refresh]);
 
+  function getFileName(filePath: string) {
+    return filePath.split("/").pop();
+  }
+
   // Cache the rendering of the file fields.
   const fileFields = useMemo(
     () =>
       Object.keys(filefieldsValues).map((i) => {
         return (
           <div className="input-field" key={i}>
-            <label htmlFor={"pdfWordFile" + i} className="upload-file">
-              <input
-                className="text-field-fixed nodrag nowheel"
-                ref={fileInputRef}
-                formEncType="multipart/form-data"
-                type="file"
-                id={"pdfWordFile" + i}
-                name={"pdfWordFile" + i}
-                // value={filefieldsValues[i]}
-                disabled={fieldVisibility[i] === false}
-                accept=""
-                onChange={(event) => handleFileUpload(event, i)}
-              />
+            <label
+              htmlFor={"pdfWordFile" + i}
+              className="upload-file"
+              style={{ width: "285px" }}
+            >
+              {filefieldsValues[i] ? (
+                <Text
+                  className="text-field-fixed nodrag nowheel"
+                  truncate="end"
+                >
+                  {getFileName(filefieldsValues[i])}
+                </Text>
+              ) : (
+                <input
+                  className="text-field-fixed nodrag nowheel"
+                  ref={fileInputRef}
+                  formEncType="multipart/form-data"
+                  type="file"
+                  id={"pdfWordFile" + i}
+                  name={"pdfWordFile" + i}
+                  // value={filefieldsValues[i]}
+                  disabled={fieldVisibility[i] === false}
+                  accept="application/msword, application/vnd.ms-excel, application/vnd.ms-powerpoint, text/plain, application/pdf"
+                  onChange={(event) => handleFileUpload(event, i)}
+                />
+              )}
             </label>
             {Object.keys(filefieldsValues).length > 1 ? (
               <div style={{ display: "flex", flexDirection: "column" }}>

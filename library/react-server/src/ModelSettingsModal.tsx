@@ -16,6 +16,7 @@ import {
   ModelSettings,
   getDefaultModelFormData,
   postProcessFormData,
+  getIsRag,
 } from "./ModelSettingSchemas";
 import {
   Dict,
@@ -63,6 +64,7 @@ const ModelSettingsModal = forwardRef<
 
   // Totally necessary emoji picker
   const [modelEmoji, setModelEmoji] = useState("");
+  const [modelOrRag, setModelOrRag] = useState("Model");
   const [emojiPickerOpen, setEmojiPickerOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -76,9 +78,12 @@ const ModelSettingsModal = forwardRef<
           properties: {},
         });
         setUISchema({});
-        setBaseModelName(model.base_model);
+        if (model.base_model) setBaseModelName(model.base_model);
         return;
       }
+      getIsRag(model.base_model)
+        ? setModelOrRag("Rag")
+        : setModelOrRag("Model");
       const settingsSpec = ModelSettings[model.base_model];
       const schema = settingsSpec.schema;
       setSchema(schema);
@@ -235,7 +240,7 @@ const ModelSettingsModal = forwardRef<
               />
             </Popover.Dropdown>
           </Popover>
-          <span>{`Model Settings: ${baseModelName}`}</span>
+          <span>{`${modelOrRag} Settings: ${baseModelName}`}</span>
         </div>
       }
       closeOnClickOutside={false}

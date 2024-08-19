@@ -9,7 +9,7 @@ from flask_cors import CORS
 from pydantic import ValidationError
 
 from library.aggrag.aggrag import AggRAG
-from library.aggrag.core.schema import RagStoreBool, RagStoreSettings, BaseRagSetting, SubQARagSetting, RaptorRagSetting, MetaLlamaRagSetting, MetaLangRagSetting
+from library.aggrag.core.schema import RagStoreBool, RagStoreSettings, BaseRagSetting, SubQARagSetting, RaptorRagSetting, MetaLlamaRagSetting, MetaLangRagSetting, TableBaseRagSetting
 from library.providers.dalai import call_dalai
 from library.providers import ProviderRegistry
 import requests as py_requests
@@ -410,7 +410,7 @@ def fetchOpenAIEval():
 
         First detects if the eval is already in the cache. If the eval is already downloaded, 
         it will be stored in examples/ folder of the package under a new oaievals directory. 
-        If it's not in the cache, it will download it from the ChainForge webserver.
+        If it's not in the cache, it will download it from the webserver.
 
         POST'd data should be in form:
         { 
@@ -450,8 +450,8 @@ def fetchOpenAIEval():
         except Exception as e:
             return jsonify({'error': f"Error creating a new directory 'oaievals' at filepath {oaievals_cache_dir}: {str(e)}"})
 
-    # Download the preconverted OpenAI eval from the GitHub main branch for ChainForge
-    _url = f"https://raw.githubusercontent.com/ianarawjo/ChainForge/main/chainforge/oaievals/{evalname}.cforge"
+    # Download the preconverted OpenAI eval from the GitHub main branch for aggrag
+    _url = f"https://github.com/genai-apps/aggrag"
     response = py_requests.get(_url)
 
     # Check if the request was successful (status code 200)
@@ -739,11 +739,11 @@ async def callCustomProvider():
 @app.route('/app/uploadFile', methods=['POST'])
 async def uploadFileToKnowledgeBase():
     """
-        Uploads pdf/word file, given its filename and fileid. 
+        Uploads pdf/word file, given its filename and file_node_id. 
         POST'd data should be in form:
         { 
-            name: <str>  # The filename,
-            fileid: <str> # The UUID,
+            timestamp: <str>  # The timestamp (last 7 digits),
+            file_node_id: <str> # The UUID for file node,
             file: <fileobj>,
             p_folder: <str> # The parent folder (usecase)
             i_folder: <str> # The iteration folder
@@ -761,10 +761,14 @@ async def uploadFileToKnowledgeBase():
     
     req = request.form
     if 'p_folder' not in req or 'i_folder' not in req:
-        return jsonify({'error': 'Missing usecase or iteration folder to upload file.'})
+        return jsonify({'error': 'Missing usecase or iteration to upload file.'})
+    if 'file_node_id' not in req:
+        return jsonify({'error': 'Missing file_node_id parameter to upload file.'})
+    if 'timestamp' not in req:
+        return jsonify({'error': 'Missing timestamp parameter to upload file.'})
 
     # Verify 'raw_docs' directory exists:
-    RAW_DOCS_DIR = os.path.join(CONFIGURATION_DIR, req["p_folder"], req["i_folder"], 'raw_docs')
+    RAW_DOCS_DIR = os.path.join(CONFIGURATION_DIR, req["p_folder"], req["i_folder"], 'raw_docs', req["file_node_id"]+"_"+req["timestamp"])
     print(RAW_DOCS_DIR)
     if not os.path.isdir(RAW_DOCS_DIR):
         os.makedirs(RAW_DOCS_DIR)
@@ -811,22 +815,48 @@ def indexRAGFiles():
     data = request.get_json()
     working_dir = data.get('files_path')
     rag_name = data.get('rag_name')
-    use_case_name = working_dir.split('/')[-2]
-    iteration = working_dir.split('/')[-1]
+    use_case_name = working_dir.split('/')[1]
+    iteration = working_dir.split('/')[2]
 
-    raw_docs_path = os.path.join(working_dir, 'raw_docs')
+    raw_docs_path = os.path.dirname(working_dir)
 
-    rag_models = ['base', 'raptor', 'subqa', 'meta_llama', 'meta_lang']
-
+    rag_models = ['base', 'raptor', 'subqa', 'meta_llama', 'meta_lang', 'tableBase']
     if rag_name not in rag_models:
         return jsonify({'error': f'Invalid rag_name, rag_name can be one of this values {rag_models}'})
     
+    ragstore_settings = data.get('ragstore_settings')
+
+    if not ragstore_settings:
+        return jsonify({'error': f'ragstore_settings is required'})
+    
+
+    allowed_rag_settings= {'base_rag_setting', 'subqa_rag_setting', 'raptor_rag_setting', 'meta_llama_rag_setting', 'meta_lang_rag_setting', 'tableBase_rag_setting'}
+    if not set(ragstore_settings.keys()).issubset(allowed_rag_settings):
+        return jsonify({'error': 'ragstore_settings should be one of ["base_rag_setting", "subqa_rag_setting", "raptor_rag_setting", "meta_llama_rag_setting", "meta_lang_rag_setting", "tableBase_rag_setting"]'})
+
+    try:
+        aggrag_ragstore_settings = RagStoreSettings(**ragstore_settings)
+        ragstore_settings = RagStoreSettings(
+            base_rag_setting=BaseRagSetting(**ragstore_settings.get('base_rag_setting')) if ragstore_settings.get('base_rag_setting') else None,
+            # base_rag_setting=BaseRagSetting(**ragstore_settings.base_rag_setting.model_dump()) if ragstore_settings.base_rag_setting else None,
+            raptor_rag_setting=RaptorRagSetting(**ragstore_settings.get('raptor_rag_setting')) if ragstore_settings.get('raptor_rag_setting')  else None,
+            subqa_rag_setting=SubQARagSetting(**ragstore_settings.get('subqa_rag_setting')) if ragstore_settings.get('subqa_rag_setting') else None,
+            meta_llama_rag_setting=MetaLlamaRagSetting(**ragstore_settings.get('meta_llama_rag_setting')) if ragstore_settings.get('meta_llama_rag_setting') else None,
+            meta_lang_rag_setting=MetaLangRagSetting(**ragstore_settings.get('meta_lang_rag_setting')) if ragstore_settings.get('meta_lang_rag_setting') else None,
+            tableBase_rag_setting=TableBaseRagSetting(**ragstore_settings.get('tableBase_rag_setting')) if ragstore_settings.get('tableBase_rag_setting')  else None,
+
+
+        )
+
+    except ValidationError as e:
+        return jsonify({'error': e.errors()})
+    
     aggrag = AggRAG(
         ragstore_bool=RagStoreBool(**{rag_name: True}),
-        DATA_DIR=working_dir,
         usecase_name=use_case_name,
         iteration=iteration,
-    )
+        DATA_DIR=working_dir,
+        ragstore_settings=aggrag_ragstore_settings)
 
     try:
         aggrag.documents_loader(DIR=raw_docs_path)
@@ -894,24 +924,16 @@ def write_json(file_content, file_path):
     except Exception as e:
         raise Exception(f"Failed to write JSON: {str(e)}")
 
-def generate_unique_folder_name(base_folder_name, parent_path, contains_default=False):
-    if contains_default:
-        base_new_iter_folder_name = f"{base_folder_name} copy"
-        new_iter_folder_name = base_new_iter_folder_name
-        counter = 2
-        while os.path.exists(os.path.join(parent_path, new_iter_folder_name)):
-            new_iter_folder_name = f"{base_new_iter_folder_name}{counter}"
-            counter += 1
-    else:
-        existing_iterations = [f for f in os.listdir(parent_path) if os.path.isdir(os.path.join(parent_path, f)) and f.startswith("iteration ")]
-        iteration_numbers = []
-        for f in existing_iterations:
-            match = re.match(r'iteration (\d+)', f)
-            if match:
-                iteration_numbers.append(int(match.group(1)))
+def generate_unique_folder_name(base_folder_name, parent_path):
+    existing_iterations = [f for f in os.listdir(parent_path) if os.path.isdir(os.path.join(parent_path, f)) and f.startswith("iteration ")]
+    iteration_numbers = []
+    for f in existing_iterations:
+        match = re.match(r'iteration (\d+)', f)
+        if match:
+            iteration_numbers.append(int(match.group(1)))
 
-        next_iteration_num = max(iteration_numbers) + 1 if iteration_numbers else 1
-        new_iter_folder_name = f"iteration {next_iteration_num}"
+    next_iteration_num = max(iteration_numbers) + 1 if iteration_numbers else 1
+    new_iter_folder_name = f"iteration {next_iteration_num}"
 
     return new_iter_folder_name
 
@@ -928,7 +950,7 @@ def copy_iteration():
     folder_path = os.path.join(parent_dir, usecase_folder_name)
     ensure_directory_exists(folder_path)
 
-    new_iter_folder_name = generate_unique_folder_name(iter_folder_name, folder_path, 'default' in usecase_folder_name)
+    new_iter_folder_name = generate_unique_folder_name(iter_folder_name, folder_path)
     iteration_folder_path = os.path.join(folder_path, new_iter_folder_name)
 
     ensure_directory_exists(iteration_folder_path)
@@ -945,6 +967,95 @@ def copy_iteration():
             return jsonify({"message": f"Failed to copy file: {str(e)}"}), 500
     else:
         return jsonify({"message": "Folder created successfully, but no valid file provided!", "iter_folder_name": new_iter_folder_name}), 201
+
+
+def generate_unique_usecase_folder_name(base_folder_name, parent_path, id):
+    base_folder = base_folder_name.split("__")
+    new_folder_name = base_folder[0] + '_Copy' + "__" + id
+    counter = 1
+    while os.path.exists(os.path.join(parent_path, new_folder_name)):
+        new_folder_name = f"{base_folder[0]}_Copy{counter}__{id}"
+        counter += 1
+    return new_folder_name  
+
+@app.route('/app/copyusecase', methods=['POST'])
+def copy_usecase():
+    data = request.get_json()
+    source_usecase_folder_name = data.get('sourceUsecase')
+    user_provided_target_usecase_folder = data.get('targetUsecase')
+    aggrag_user_id = data.get('aggrag_user_id')
+    parent_dir = os.path.join(os.getcwd(), 'configurations')
+    
+
+    ensure_directory_exists(parent_dir)
+
+    source_usecase_folder_path = os.path.join(parent_dir, source_usecase_folder_name)
+    if not os.path.exists(source_usecase_folder_path):
+        return jsonify({'message': 'Source use case folder does not exist'}), 404
+    isUsecaseAlreadyExists = False
+    for usecase in os.listdir(parent_dir):
+        if user_provided_target_usecase_folder in usecase:
+            isUsecaseAlreadyExists = True
+            break
+        else:
+            isUsecaseAlreadyExists = False
+    if isUsecaseAlreadyExists:
+        # target_usecase_folder_name = generate_unique_usecase_folder_name(user_provided_target_usecase_folder,parent_dir,aggrag_user_id)
+        return jsonify({"ok": False, "message": "Usecase folder already exists"}), 400 
+    else:
+        target_usecase_folder_name = user_provided_target_usecase_folder
+    # target_usecase_folder_name = user_provided_target_usecase_folder
+    target_usecase_folder_path = os.path.join(parent_dir, target_usecase_folder_name)
+    ensure_directory_exists(target_usecase_folder_path)
+
+    for item in os.listdir(source_usecase_folder_path):
+        item_path = os.path.join(source_usecase_folder_path, item)
+        if os.path.isdir(item_path):
+            target_iteration_folder_path = os.path.join(target_usecase_folder_path, item)
+            ensure_directory_exists(target_iteration_folder_path)
+            for file in os.listdir(item_path):
+                if file.endswith('.cforge'):
+                    source_file_path = os.path.join(item_path, file)
+                    target_file_path = os.path.join(target_iteration_folder_path, file)
+                    try:
+                        file_content = read_and_modify_json(source_file_path)
+                        metadata_path = os.path.join(target_usecase_folder_path, '.metadata')
+                        with open(metadata_path, 'w') as f:
+                            json.dump({"created_at": time.time(),"user_id":aggrag_user_id}, f)
+                        write_json(file_content, target_file_path)
+                    except Exception as e:
+                        return jsonify({"message": f"Failed to copy file: {str(e)}"}), 500
+        else:
+            target_file_path = os.path.join(target_usecase_folder_path, item)
+            try:
+                file_content = read_and_modify_json(item_path)
+                write_json(file_content, target_file_path)
+            except Exception as e:
+                return jsonify({"message": f"Failed to copy file: {str(e)}"}), 500
+            
+    iterations_info = []
+
+
+    for item in os.listdir(target_usecase_folder_path):
+        item_path = os.path.join(target_usecase_folder_path, item)
+        # Check if the item is a directory (i.e., an iteration folder)
+        if os.path.isdir(item_path):
+            # Ensure that the target iteration folder exists
+            target_iteration_folder_path = os.path.join(target_usecase_folder_path, item)
+            if os.path.exists(target_iteration_folder_path):
+                iteration_files = []
+
+                for file in os.listdir(item_path):
+                    if file.endswith('.cforge'):
+                        # Just collect the file names, 
+                        iteration_files.append(file)
+
+                iterations_info.append({
+                    "iteration_name": item,
+                    "files": iteration_files
+                })
+
+    return jsonify({"message": "Use case and iterations copied successfully!", "target_usecase_folder_name": target_usecase_folder_name,"iterations_info":iterations_info}), 201
 
 
 @app.route('/app/createusecase', methods=['POST'])
@@ -977,7 +1088,7 @@ def create_usecase():
     iteration_folder_path = os.path.join(folder_path, 'iteration 1')
     os.makedirs(iteration_folder_path)
     return jsonify({"ok":True,"message": "Folder created successfully!","usecase_folder":folder_with_userid}),200
-  
+
 def read_cforge_file(file_path):
     try:
         with open(file_path, 'r') as file:
@@ -1024,7 +1135,6 @@ def load_cforge():
                         "path": folder_path,
                         "default": "__default"  in folder or "__Default"  in folder
                     })
-
     # Sort folders based on creation time
     folder_data_list.sort(key=lambda x: (not x['default'],x['creation_time']))
 
@@ -1044,7 +1154,6 @@ def load_cforge():
             [item for item in folder_contents if os.path.isdir(os.path.join(folder_path, item)) and re.match(r'iteration[ _](\d+)', item)],
             key=lambda x: int(re.match(r'iteration[ _](\d+)', x).group(1))
         )
-
         for iteration in iterations:
             iteration_path = os.path.join(folder_path, iteration)
             iteration_contents = os.listdir(iteration_path)
@@ -1064,6 +1173,7 @@ def load_cforge():
         structured_folders.append(folder_data_structured)
 
     return jsonify(structured_folders if structured_folders else [])
+
 
 @app.route('/app/saveflow', methods=['POST'])
 def save_flow():
@@ -1162,7 +1272,7 @@ def RAGStoreChat():
 
     use_case_name = working_dir.split('/')[-2]
     iteration = working_dir.split('/')[-1] 
-    rag_models = ['base', 'raptor', 'subqa', 'meta_llama', 'meta_lang']
+    rag_models = ['base', 'raptor', 'subqa', 'meta_llama', 'meta_lang', 'tableBase']
 
     if rag_name not in rag_models:
         return jsonify({'error': f'Invalid rag_name, rag_name can be one of this values {rag_models}'})
@@ -1172,9 +1282,9 @@ def RAGStoreChat():
     
 
 
-    allowed_rag_settings= {'base_rag_setting', 'subqa_rag_setting', 'raptor_rag_setting', 'meta_llama_rag_setting', 'meta_lang_rag_setting'}
+    allowed_rag_settings= {'base_rag_setting', 'subqa_rag_setting', 'raptor_rag_setting', 'meta_llama_rag_setting', 'meta_lang_rag_setting', 'tableBase_rag_setting'}
     if not set(ragstore_settings.keys()).issubset(allowed_rag_settings):
-        return jsonify({'error': 'ragstore_settings should be one of ["base_rag_setting", "subqa_rag_setting", "raptor_rag_setting", "meta_llama_rag_setting", "meta_lang_rag_setting"]'})
+        return jsonify({'error': 'ragstore_settings should be one of ["base_rag_setting", "subqa_rag_setting", "raptor_rag_setting", "meta_llama_rag_setting", "meta_lang_rag_setting", "tableBase_rag_setting]'})
 
     try:
         aggrag_ragstore_settings = RagStoreSettings(**ragstore_settings)
@@ -1184,7 +1294,8 @@ def RAGStoreChat():
             raptor_rag_setting=RaptorRagSetting(**ragstore_settings.get('raptor_rag_setting')) if ragstore_settings.get('raptor_rag_setting')  else None,
             subqa_rag_setting=SubQARagSetting(**ragstore_settings.get('subqa_rag_setting')) if ragstore_settings.get('subqa_rag_setting') else None,
             meta_llama_rag_setting=MetaLlamaRagSetting(**ragstore_settings.get('meta_llama_rag_setting')) if ragstore_settings.get('meta_llama_rag_setting') else None,
-            meta_lang_rag_setting=MetaLangRagSetting(**ragstore_settings.get('meta_lang_rag_setting')) if ragstore_settings.get('meta_lang_rag_setting') else None
+            meta_lang_rag_setting=MetaLangRagSetting(**ragstore_settings.get('meta_lang_rag_setting')) if ragstore_settings.get('meta_lang_rag_setting') else None,
+            tableBase_rag_setting=TableBaseRagSetting(**ragstore_settings.get('tableBase_rag_setting')) if ragstore_settings.get('tableBase_rag_setting') else None
 
 
         )
@@ -1202,27 +1313,27 @@ def RAGStoreChat():
     working_dir = os.getcwd()
     print(f"current working dir: {working_dir} ")
     print(f"data dir: {aggrag.BASE_DIR} {aggrag.DATA_DIR} ")
-
-    directory_path = f"{working_dir}{aggrag.BASE_DIR}/index/{rag_name}_index"
+    index_folder = os.listdir(f"{working_dir}{aggrag.BASE_DIR}/index/")[0]
+    directory_path = f"{working_dir}{aggrag.BASE_DIR}/index/{index_folder}"
     print(f"directory path: {directory_path}. Is dir: {os.path.isdir(directory_path)}")
     # _ = aggrag.documents_loader(DIR=f"{working_dir}{aggrag.DATA_DIR}")
     try:
         
         loop = get_event_loop()
-        # if os.path.isdir(directory_path):
-        #     print(f"The directory '{directory_path}' exists.")
-        # else:
-        #     print(f"Creating index as the directory '{directory_path}' does not exist. ")
-        #     _ = aggrag.documents_loader(DIR=f"{working_dir}{aggrag.DATA_DIR}")
+        if os.path.isdir(directory_path):
+            print(f"The directory '{directory_path}' exists.")
+        else:
+            print(f"Creating index as the directory '{directory_path}' does not exist. ")
+            _ = aggrag.documents_loader(DIR=f"{working_dir}{aggrag.DATA_DIR}")
 
-        #     index = asyncio.run( aggrag.create_all_index_async(
-        #             documents=aggrag.documents,
-        #             exclude=[]
-        #         ))
+            index = asyncio.run( aggrag.create_all_index_async(
+                    documents=aggrag.documents,
+                    exclude=[]
+                ))
             
-        # index = asyncio.run(aggrag.retrieve_all_index_async())
+        index = asyncio.run(aggrag.retrieve_all_index_async())
 
-        # asyncio.run(aggrag.load_chat_engines())
+        asyncio.run(aggrag.load_chat_engines())
     
 
 

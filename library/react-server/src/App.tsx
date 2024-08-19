@@ -10,6 +10,7 @@ import ReactFlow, {
   Background,
   ReactFlowInstance,
   Node,
+  MiniMap,
 } from "reactflow";
 import {
   Button,
@@ -25,6 +26,8 @@ import {
   TextInput,
   Notification,
   Transition,
+  Input,
+  Flex,
 } from "@mantine/core";
 import { useClipboard } from "@mantine/hooks";
 import { useContextMenu } from "mantine-contextmenu";
@@ -262,6 +265,7 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [menuData, setMenuData] = useState<any>(null);
   const [openMenu, setOpenMenu] = useState<any>(false);
+  const [openAddNode, setOpenAddNode] = useState(false);
   const [activeUseCase, setActiveUseCase] = useState({
     usecase: "",
     iteration: "",
@@ -292,6 +296,11 @@ const App = () => {
     open: false,
     for: "",
   });
+  const [copyModalOpen, setCopyModalOpen] = useState({
+    usecase: "",
+    open: false,
+    for: "",
+  });
   const [notificationText, setNotificationText] = useState<{
     title: string;
     text: string;
@@ -302,6 +311,8 @@ const App = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [warning, setWarning] = useState({ warning: "", open: false });
   const API_URL = process.env.REACT_APP_API_URL;
+  const [hoveredItem, setHoveredItem] = useState(null);
+  const [editUsecaseforCopy, setEditUsecaseforCopy] = useState("");
   // For saving / loading
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   const [autosavingInterval, setAutosavingInterval] = useState<
@@ -518,7 +529,7 @@ const App = () => {
     if (rfInstance) rfInstance.setViewport({ x: 200, y: 80, zoom: 1 });
   }, [setNodes, setEdges, resetLLMColors, rfInstance]);
 
-  const resetFlowAfterIterationCreation = useCallback(() => {
+  const resetFlowToBlankCanvas = useCallback(() => {
     resetLLMColors();
 
     const uid = (id: string) => `${id}-${Date.now()}`;
@@ -531,12 +542,14 @@ const App = () => {
 
   const loadFlow = async (flow?: Dict, rf_inst?: ReactFlowInstance | null) => {
     if (flow === undefined) return;
+
     if (rf_inst) {
       if (flow.viewport)
         rf_inst.setViewport({
           x: flow.viewport.x || 0,
           y: flow.viewport.y || 0,
-          zoom: flow.viewport.zoom || 1,
+          // zoom: flow.viewport.zoom || 1,
+          zoom: (flow.viewport.x > 400 ? 0.2 : flow.viewport.zoom) || 1,
         });
       else rf_inst.setViewport({ x: 0, y: 0, zoom: 1 });
     }
@@ -620,6 +633,16 @@ const App = () => {
     if (menuData.length === 0) {
       return;
     }
+    localStorage.setItem(
+      "iteration-created",
+      JSON.stringify({
+        usecase: "",
+        iteration: "",
+        fileName: "",
+        committed: false,
+        iterationCreated: false,
+      }),
+    );
     setIsChangesNotSaved(false);
     if (!rfInstance) return;
 
@@ -681,7 +704,7 @@ const App = () => {
           const temp_file_name = saveAndCommit ? "" : data.file_name;
           if (saveAndCommit) {
             setIsCurrentFileLocked(true);
-            setSaveDropdown("Deploy & Host");
+            setSaveDropdown("Deploy in app");
           }
           !saveAndCommit &&
             localStorage.setItem(
@@ -736,13 +759,21 @@ const App = () => {
     try {
       setOpenMenu(false);
       if (isChangesNotSaved) {
-        setModalOpen({
-          usecase: ItemLabel,
-          iteration: subItemLabel,
-          subItems: subItems,
-          open: true,
-          for: "click-iteration",
-        });
+        if (
+          activeUseCase.usecase === ItemLabel &&
+          activeUseCase.iteration === subItemLabel
+        ) {
+          return;
+        } else {
+          setModalOpen({
+            usecase: ItemLabel,
+            iteration: subItemLabel,
+            subItems: subItems,
+            open: true,
+            for: "click-iteration",
+          });
+        }
+
         return;
       } else {
         setModalOpen({
@@ -769,7 +800,7 @@ const App = () => {
           console.log("error in loading file");
         }
         if (subItems[0]?.isCommitted) {
-          setSaveDropdown("Deploy & Host");
+          setSaveDropdown("Deploy in app");
         } else {
           setSaveDropdown("Save");
         }
@@ -790,7 +821,7 @@ const App = () => {
           }),
         );
       } else {
-        resetFlowAfterIterationCreation();
+        resetFlowToBlankCanvas();
         setIsCurrentFileLocked(false);
         setSaveDropdown("Save");
         localStorage.setItem(
@@ -886,7 +917,7 @@ const App = () => {
       const flow = flowJSON.flow;
       if (flow.isCommitted) {
         setIsCurrentFileLocked(true);
-        setSaveDropdown("Deploy & Host");
+        setSaveDropdown("Deploy in app");
       } else {
         setIsCurrentFileLocked(false);
       }
@@ -1194,8 +1225,18 @@ const App = () => {
     }
 
     // Attempt to load an autosaved flow, if one exists:
-    if (autosavedFlowExists()) loadFlowFromAutosave(rf_inst);
-    else {
+    if (autosavedFlowExists()) {
+      const localStorageContent = localStorage.getItem("current_usecase");
+      if (localStorageContent !== null) {
+        const parsedData = JSON.parse(localStorageContent);
+        // when user refresh the page and there is no file present, then we will reset the flow
+        if (parsedData.file_name === "") {
+          resetFlowToBlankCanvas();
+        }
+      } else {
+        loadFlowFromAutosave(rf_inst);
+      }
+    } else {
       // Load an interesting default starting flow for new users
       importFlowFromJSON(EXAMPLEFLOW_1, rf_inst);
 
@@ -1279,7 +1320,7 @@ const App = () => {
           text: "Use case has been successfully created",
         });
         // resetFlow();
-        resetFlowAfterIterationCreation();
+        resetFlowToBlankCanvas();
         setIsChangesNotSaved(true);
       } else {
         setLoading(false);
@@ -1311,6 +1352,13 @@ const App = () => {
       setUseCaseName(value);
       setErrorMessage({ error: false, message: "" });
     }
+  };
+
+  const handleEditUsecaseForCopy = (value: string) => {
+    if (errorMessage.message) {
+      setErrorMessage({ error: false, message: "" });
+    }
+    setEditUsecaseforCopy(value);
   };
 
   const handleSaveDropdown = () => {
@@ -1345,37 +1393,85 @@ const App = () => {
       } else {
         setIsUseCaseCreated(false);
       }
-      setNotificationText({
-        title: "",
-        text: `Iteration (${iterationName} of ${usecaseName && usecaseName.split("__")[0]}) has been successfully deleted!`,
-      });
+      // this block of code is for showing deleted notification text only when user deletes.
+      // (in some cases when undoing a iteration we are deleting iteration so in such cases we are skipping it)
+      let parsedIterCreated = false;
+      const iterCreated = localStorage.getItem("iteration-created");
+      if (iterCreated !== null) {
+        const parsedData = iterCreated && JSON.parse(iterCreated);
+        parsedIterCreated = parsedData.iterationCreated;
+      }
+      if (!parsedIterCreated) {
+        setNotificationText({
+          title: "",
+          text: `Iteration (${iterationName} of ${usecaseName && usecaseName.split("__")[0]}) has been successfully deleted!`,
+        });
+      }
+      // when a user creates an iteration and then clicks on another iteration without
+      // saving previous iteration then
+      // we are deleting unsaved iteration and redirecting to iteration which user has clicked.
+      if (parsedIterCreated) {
+        handleIterationFolderClick(
+          modalOpen.usecase,
+          modalOpen.iteration,
+          modalOpen.subItems,
+        );
+        localStorage.setItem(
+          "current_usecase",
+          JSON.stringify({
+            parent_folder: modalOpen.usecase,
+            iter_folder: modalOpen.iteration,
+            file_name: modalOpen.subItems && modalOpen.subItems[0]?.label,
+            committed: false,
+          }),
+        );
+        setActiveUseCase({
+          fileName: modalOpen.subItems && modalOpen.subItems[0]?.label,
+          iteration: modalOpen.iteration,
+          usecase: modalOpen.usecase,
+          committed: false,
+        });
+      } else {
+        localStorage.setItem(
+          "current_usecase",
+          JSON.stringify({
+            parent_folder: usecaseName,
+            iter_folder: "",
+            file_name: "",
+            committed: false,
+          }),
+        );
+        setActiveUseCase({
+          fileName: "",
+          iteration: "",
+          usecase: usecaseName,
+          committed: false,
+        });
+      }
+
       setLoading(false);
       setDeleteUsecaseOrIter({
         usecase: "",
         iteration: "",
         open: false,
       });
+
       localStorage.setItem(
-        "current_usecase",
+        "iteration-created",
         JSON.stringify({
-          parent_folder: usecaseName,
-          iter_folder: "",
-          file_name: "",
+          usecase: "",
+          iteration: "",
+          fileName: "",
           committed: false,
+          iterationCreated: false,
         }),
       );
       // we can keep committed value as false
-      setActiveUseCase({
-        fileName: "",
-        iteration: "",
-        usecase: usecaseName,
-        committed: false,
-      });
 
       // Update the URL
       window.history.pushState({}, "", "/");
       setOpenMenu(false);
-      resetFlowAfterIterationCreation();
+      resetFlowToBlankCanvas();
       setWarning({ warning: "", open: true });
       setIsCurrentFileLocked(true);
       setIsChangesNotSaved(false);
@@ -1389,14 +1485,6 @@ const App = () => {
     }
 
     const newLabel = item.label.split("__");
-
-    if (subItem.label.indexOf("copy") > -1) {
-      setDeleteUsecaseOrIter({
-        usecase: item.label,
-        iteration: subItem.label,
-        open: true,
-      });
-    }
     // If the label is 'default', exit the function
     if (newLabel.length > 1 && newLabel[1] === "default") {
       return;
@@ -1417,18 +1505,11 @@ const App = () => {
 
   const handleIterationCopyForDefault = (subItem: any, item: any) => {
     if (item.label) {
-      const newLabel = item.label.split("__");
       if (
-        newLabel.length > 1 &&
-        newLabel[1] === "default" &&
-        subItem.subItems[0]
+        subItem &&
+        subItem.subItems[0]?.isCommitted &&
+        !(item.label.indexOf("__default") > -1)
       ) {
-        handleCopyIteration(
-          item.label,
-          subItem.label,
-          subItem.subItems[0].label,
-        );
-      } else if (subItem && subItem.subItems[0]?.isCommitted) {
         handleCopyIteration(
           item.label,
           subItem.label,
@@ -1439,7 +1520,7 @@ const App = () => {
   };
 
   const handleCreateIteration = async (folderName: string) => {
-    if (folderName.indexOf("default") > -1) {
+    if (folderName.indexOf("__default") > -1) {
       return;
     }
     setOpenMenu(false);
@@ -1503,12 +1584,23 @@ const App = () => {
         // Update the URL
         window.history.pushState({}, "", queryString);
         setSaveAndCommitBtnOpen(false);
-        resetFlowAfterIterationCreation();
+        resetFlowToBlankCanvas();
         setOpenMenu(false);
         setNotificationText({
           title: "Created",
           text: "Iteration has been created successfully",
         });
+        localStorage.setItem(
+          "iteration-created",
+          JSON.stringify({
+            usecase: folderName,
+            iteration: res.iter_folder_name,
+            fileName: "",
+            committed: false,
+            iterationCreated: true,
+          }),
+        );
+        // handleSaveFlow(false);
       }
     } catch (e) {
       console.log("error in creating iteration");
@@ -1593,7 +1685,7 @@ const App = () => {
       setOpenCreateUseCase(false);
       setLoading(false);
       setIsCurrentFileLocked(false);
-      setIsChangesNotSaved(true);
+      // setIsChangesNotSaved(true);
       localStorage.setItem(
         "current_usecase",
         JSON.stringify({
@@ -1668,12 +1760,92 @@ const App = () => {
         title: "",
         text: `Use case (${usecasename && usecasename.split("__")[0]}) has been successfully deleted!`,
       });
-      resetFlow();
+      resetFlowToBlankCanvas();
       setOpenMenu(false);
       setWarning({ warning: "", open: true });
       setIsCurrentFileLocked(true);
       setIsChangesNotSaved(false);
     }
+  };
+
+  const handleCopyUsecaseModal = (item: any) => {
+    setCopyModalOpen({
+      for: "copy-usecase",
+      open: true,
+      usecase: item.label,
+    });
+  };
+
+  const handleCopyUsecase = async (usecaseName: any) => {
+    setLoading(true);
+    setEditUsecaseforCopy("");
+    const aggragUserId = localStorage.getItem("aggrag-userId");
+    const response = await fetch(`${API_URL}app/copyusecase`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sourceUsecase: usecaseName,
+        targetUsecase: editUsecaseforCopy + "__" + aggragUserId,
+        aggrag_user_id: aggragUserId,
+      }),
+    });
+    const usecaseResponse = await response.json();
+    if (response.ok) {
+      if (!isUseCaseCreated) {
+        setIsUseCaseCreated(response.ok);
+      } else {
+        setIsUseCaseCreated(false);
+      }
+      setNotificationText({
+        text: "Usecase has been successfully copied",
+        title: "Copied",
+      });
+      setCopyModalOpen({
+        for: "",
+        open: false,
+        usecase: "",
+      });
+      const res_file_name =
+        usecaseResponse.iterations_info.length > 0 &&
+        usecaseResponse.iterations_info[0].files[0]
+          ? usecaseResponse.iterations_info[0].files[0]
+          : "";
+      const res_iteration_name =
+        usecaseResponse.iterations_info.length > 0
+          ? usecaseResponse.iterations_info[0].iteration_name
+          : "";
+      setActiveUseCase({
+        usecase: usecaseResponse.target_usecase_folder_name,
+        iteration: res_iteration_name,
+        fileName: res_file_name,
+        committed: false,
+      });
+      localStorage.setItem(
+        "current_usecase",
+        JSON.stringify({
+          parent_folder: usecaseResponse.target_usecase_folder_name,
+          iter_folder: res_iteration_name,
+          file_name: res_file_name,
+          committed: false,
+        }),
+      );
+      handleIterationFolderClick(
+        usecaseResponse.target_usecase_folder_name,
+        res_iteration_name,
+        [
+          {
+            isCommitted: false,
+            label: res_file_name,
+          },
+        ],
+      );
+      setEditUsecaseforCopy("");
+    } else {
+      setErrorMessage({ error: true, message: usecaseResponse.message });
+    }
+    setLoading(false);
   };
 
   const getLabelDefault = (label: string) => {
@@ -1693,7 +1865,7 @@ const App = () => {
               borderRadius: "8px",
               position: "absolute",
               marginLeft: "5px",
-              marginTop: "5px",
+              marginTop: "3px",
             }}
           >
             example
@@ -1724,7 +1896,9 @@ const App = () => {
       const newLabel = label.split("__");
       if (newLabel) {
         const items = newLabel.slice(0, -1);
-        const filteredItems = items.filter((item) => !item.includes("default"));
+        const filteredItems = items.filter(
+          (item) => !item.includes("__default"),
+        );
         const finalNameString = filteredItems.join("__");
         return finalNameString;
       } else {
@@ -1736,11 +1910,7 @@ const App = () => {
   };
 
   const handleDisableSave = () => {
-    if (
-      activeUseCase &&
-      activeUseCase.usecase.split("__")[1] === "default" &&
-      !(activeUseCase && activeUseCase.iteration.indexOf("copy") > -1)
-    ) {
+    if (activeUseCase && activeUseCase.usecase.split("__")[1] === "default") {
       return true;
     } else {
       return false;
@@ -1755,29 +1925,25 @@ const App = () => {
       item.label.split("__").length > 1 &&
       item.label.split("__")[1].toLowerCase() === "default"
     ) {
-      if (subItem.label.indexOf("copy") > -1) {
-        return true;
-      }
       return false;
     }
     return true;
   };
 
   const renderCopyIcon = (item: any, subItem: any) => {
-    if (subItem.subItems && subItem.subItems[0]?.isCommitted) {
-      return true;
-    } else if (
+    if (
       item.label &&
       item.label.split("__").length > 1 &&
       item.label.split("__")[1].toLowerCase() === "default"
     ) {
-      if (subItem.label.indexOf("copy") > -1) {
-        return false;
-      }
+      return false;
+    } else if (subItem.subItems && subItem.subItems[0]?.isCommitted) {
       return true;
+    } else {
+      return false;
     }
-    return false;
   };
+
   useEffect(() => {
     fetchFoldersAndContents();
   }, [isUseCaseCreated]);
@@ -1786,6 +1952,11 @@ const App = () => {
   useEffect(() => {
     if (confirmed) {
       if (modalOpen.for === "create-iteration") {
+        const data = localStorage.getItem("iteration-created");
+        const parsedData = data && JSON.parse(data);
+        if (parsedData && parsedData.iterationCreated) {
+          handleDeleteIteration(parsedData.usecase, parsedData.iteration);
+        }
         handleCreateIteration(modalOpen.usecase);
       } else if (modalOpen.for === "copy-iteration") {
         handleCopyIteration(
@@ -1794,11 +1965,20 @@ const App = () => {
           modalOpen.subItems[0]?.label,
         );
       } else if (modalOpen.for === "click-iteration") {
-        handleIterationFolderClick(
-          modalOpen.usecase,
-          modalOpen.iteration,
-          modalOpen.subItems,
-        );
+        const data = localStorage.getItem("iteration-created");
+        const parsedData = data && JSON.parse(data);
+        if (parsedData && parsedData.iterationCreated) {
+          handleDeleteIteration(parsedData.usecase, parsedData.iteration);
+          console.log("triggered");
+        } else {
+          handleIterationFolderClick(
+            modalOpen.usecase,
+            modalOpen.iteration,
+            modalOpen.subItems,
+          );
+        }
+      } else if (copyModalOpen.for === "copy-usecase") {
+        handleCopyUsecase(copyModalOpen.usecase);
       }
 
       setConfirmed(false);
@@ -1826,6 +2006,7 @@ const App = () => {
   }, []);
   useEffect(() => {
     const localStorageContent = localStorage.getItem("current_usecase");
+    const parsedData2 = localStorageContent && JSON.parse(localStorageContent);
     const userId = localStorage.getItem("aggrag-userId");
     if (userId === null) {
       const currentTimeStamp = new Date().getTime();
@@ -1855,7 +2036,7 @@ const App = () => {
           console.log("error in retrieving file data");
         }
       } else {
-        resetFlowAfterIterationCreation();
+        resetFlowToBlankCanvas();
       }
 
       if (parsedData.committed) {
@@ -1911,15 +2092,13 @@ const App = () => {
         <Text m="xl" size={"11pt"}>
           If you have any questions or need assistance, please don&apos;t
           hesitate to reach out on our{" "}
-          <a href="https://github.com/ianarawjo/ChainForge/issues">GitHub</a> by{" "}
-          <a href="https://github.com/ianarawjo/ChainForge/issues">
+          <a href="https://github.com/genai-apps/aggrag/issues">GitHub</a> by{" "}
+          <a href="https://github.com/genai-apps/aggrag/issues">
             opening an Issue.
           </a>
           &nbsp; (If you&apos;re a web developer, consider forking our
           repository and making a{" "}
-          <a href="https://github.com/ianarawjo/ChainForge/pulls">
-            Pull Request
-          </a>{" "}
+          <a href="https://github.com/genai-apps/aggrag/pulls">Pull Request</a>{" "}
           to support your particular browser.)
         </Text>
       </Box>
@@ -1940,6 +2119,85 @@ const App = () => {
           onConfirm={confirmationDialogProps.onConfirm}
         />
         <Modal
+          opened={copyModalOpen.open}
+          onClose={() => {
+            setCopyModalOpen({
+              for: "",
+              open: false,
+              usecase: "",
+            });
+          }}
+          title={<div style={{ fontWeight: "500" }}>Copy Use case</div>}
+          styles={{
+            header: { backgroundColor: "#228be6", color: "white" },
+            root: { position: "relative", left: "-5%" },
+            close: {
+              color: "#fff",
+              "&:hover": {
+                color: "black",
+              },
+            },
+          }}
+        >
+          <Box maw={400} mx="auto" mt="md" mb="md">
+            <Text>Use case name:</Text>
+            <Input
+              value={editUsecaseforCopy}
+              onChange={(e: any) => handleEditUsecaseForCopy(e.target.value)}
+              style={{ marginTop: "6px", marginBottom: "6px" }}
+              title="Use case name"
+            />
+            <div
+              style={{ color: "red", marginBottom: "10px", fontSize: "12px" }}
+            >
+              {errorMessage.message}
+            </div>
+            <Text>Description: </Text>
+            <Textarea
+              placeholder="Use Case Description (optional)"
+              style={{ marginTop: "10px" }}
+            />
+          </Box>
+          <Flex
+            mih={50}
+            gap="md"
+            justify="space-evenly"
+            align="center"
+            direction="row"
+            wrap="wrap"
+          >
+            <Button
+              variant="light"
+              color="orange"
+              type="submit"
+              w="40%"
+              onClick={() =>
+                setCopyModalOpen({
+                  for: "",
+                  open: false,
+                  usecase: "",
+                })
+              }
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="filled"
+              color="blue"
+              type="submit"
+              w="40%"
+              onClick={() => {
+                setConfirmed(true);
+              }}
+              disabled={!(editUsecaseforCopy.length > 0)}
+              loading={loading}
+            >
+              Confirm
+            </Button>
+          </Flex>
+        </Modal>
+
+        <Modal
           transitionProps={{ transition: "pop" }}
           title="Changes are not saved"
           opened={modalOpen.open}
@@ -1952,6 +2210,9 @@ const App = () => {
               for: "",
             })
           }
+          styles={{
+            root: { position: "relative", left: "-5%" },
+          }}
         >
           Are you sure you want to proceed? Any unsaved changes will be lost.
           <div style={{ display: "flex", gap: "12px", justifyContent: "end" }}>
@@ -1983,11 +2244,15 @@ const App = () => {
             </Button>
           </div>
         </Modal>
+
         <Modal
           transitionProps={{ transition: "pop" }}
           title="Create a use case"
           opened={openCreateUseCase}
           onClose={() => setOpenCreateUseCase(false)}
+          styles={{
+            root: { position: "relative", left: "-5%" },
+          }}
         >
           <TextInput
             value={useCaseName}
@@ -2034,6 +2299,9 @@ const App = () => {
           onClose={() =>
             setDeleteUsecaseOrIter({ usecase: "", iteration: "", open: false })
           }
+          styles={{
+            root: { position: "relative", left: "-5%" },
+          }}
         >
           Are you sure you want to delete this{" "}
           <b>
@@ -2094,6 +2362,7 @@ const App = () => {
             style={{ height: "100%", backgroundColor: "#eee", flexGrow: "1" }}
           >
             <ReactFlow
+              minZoom={0.7}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
@@ -2127,6 +2396,7 @@ const App = () => {
             >
               <Background color="#999" gap={16} />
               <Controls showZoom={true} />
+              {/* <MiniMap zoomable pannable /> */}
             </ReactFlow>
           </div>
         </div>
@@ -2189,7 +2459,6 @@ const App = () => {
                 position="top-start"
                 closeOnClickOutside={true}
                 closeOnEscape
-                opened={openMenu}
                 trigger="hover"
                 width={270}
               >
@@ -2243,37 +2512,70 @@ const App = () => {
                                 <Menu.Item
                                   className="menu-hover-item"
                                   rightSection={
-                                    <Tooltip label="Delete">
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        gap: "10px",
+                                      }}
+                                    >
+                                      <Tooltip label="Delete">
+                                        <div
+                                          onClick={() => {
+                                            setOpenMenu(false);
+                                            item.label &&
+                                              item.label.split("__").length >
+                                                1 &&
+                                              item.label
+                                                .split("__")[1]
+                                                .toLowerCase() !== "default" &&
+                                              setDeleteUsecaseOrIter({
+                                                usecase: item.label,
+                                                iteration: "",
+                                                open: true,
+                                              });
+                                          }}
+                                          style={{
+                                            display: "flex",
+                                            alignSelf: "center",
+                                            marginTop: "3px",
+                                          }}
+                                        >
+                                          {removeBinForDefaults(item.label)}
+                                        </div>
+                                      </Tooltip>
                                       <div
-                                        onClick={() => {
-                                          setOpenMenu(false);
-                                          item.label &&
-                                            item.label.split("__").length > 1 &&
-                                            item.label
-                                              .split("__")[1]
-                                              .toLowerCase() !== "default" &&
-                                            setDeleteUsecaseOrIter({
-                                              usecase: item.label,
-                                              iteration: "",
-                                              open: true,
-                                            });
-                                        }}
-                                        style={{
-                                          display: "flex",
-                                          alignSelf: "center",
-                                          marginTop: 2,
-                                        }}
+                                        style={{ marginTop: "4px" }}
+                                        onClick={() =>
+                                          handleCopyUsecaseModal(item)
+                                        }
                                       >
-                                        {removeBinForDefaults(item.label)}
+                                        <CopyIcon />
                                       </div>
-                                    </Tooltip>
+                                    </div>
                                   }
                                   style={{
                                     backgroundColor:
-                                      activeUseCase.usecase === item.label
+                                      activeUseCase.usecase === item.label ||
+                                      hoveredItem === item.label
                                         ? "#ececec"
                                         : "",
+                                    marginTop:
+                                      activeUseCase.usecase === item.label ||
+                                      hoveredItem === item.label
+                                        ? "2px"
+                                        : "",
+                                    marginBottom:
+                                      activeUseCase.usecase === item.label ||
+                                      hoveredItem === item.label
+                                        ? "2px"
+                                        : "",
                                   }}
+                                  onMouseEnter={() =>
+                                    setHoveredItem(item.label)
+                                  }
+                                  onMouseLeave={() => setHoveredItem(null)}
                                   // onClick={() => handleUseCaseFolderClick(item.label)}
                                   styles={{
                                     root: {
@@ -2319,6 +2621,12 @@ const App = () => {
                                         >
                                           <Menu.Target>
                                             <Menu.Item
+                                              onMouseEnter={() =>
+                                                setHoveredItem(item.label)
+                                              }
+                                              onMouseLeave={() =>
+                                                setHoveredItem(null)
+                                              }
                                               className="menu-hover-item"
                                               rightSection={
                                                 <div
@@ -2375,7 +2683,7 @@ const App = () => {
                                                   >
                                                     <div
                                                       style={{
-                                                        marginTop: "4px",
+                                                        marginTop: "2px",
                                                       }}
                                                       onClick={(e) => {
                                                         e.stopPropagation();
@@ -2406,7 +2714,8 @@ const App = () => {
                                                   </div>
                                                 </div>
                                               }
-                                              onClick={() => {
+                                              onClick={(e) => {
+                                                e.stopPropagation();
                                                 handleIterationFolderClick(
                                                   item.label,
                                                   subItem.label,
@@ -2449,6 +2758,7 @@ const App = () => {
                   </div>
                 </Menu.Dropdown>
               </Menu>
+
               <Menu
                 transitionProps={{ transition: "pop-top-left" }}
                 position="top-start"
@@ -2457,6 +2767,7 @@ const App = () => {
                 closeOnEscape
                 styles={{ item: { maxHeight: "28px" } }}
                 disabled={isCurrenFileLocked}
+                trigger="hover"
               >
                 <Menu.Target>
                   <Button
@@ -2468,7 +2779,7 @@ const App = () => {
                       (activeUseCase && activeUseCase.usecase === "") ||
                       isCurrenFileLocked
                     }
-                    onClick={() => setOpenMenu(false)} // to close use cases menu
+                    onClick={() => setOpenAddNode(!openAddNode)} // to close use cases menu
                   >
                     Add Node +
                   </Button>
@@ -2672,12 +2983,7 @@ const App = () => {
                     }}
                   >
                     <div ref={saveRef}>
-                      <Menu
-                        position="top-start"
-                        // disabled={isCurrenFileLocked}
-                        trigger="click"
-                        opened={saveAndCommitBtnOpen}
-                      >
+                      <Menu position="top-start" trigger="hover">
                         <div>
                           <Menu.Target>
                             <div
@@ -2718,18 +3024,17 @@ const App = () => {
                             </Menu.Item>
                             <Menu.Item
                               onClick={() => {
-                                setSaveDropdown("Deploy & Host");
-                                console.log("deploy");
+                                setSaveDropdown("Deploy in app");
                               }}
                               style={{
                                 backgroundColor:
-                                  saveDropdown === "Deploy & Host"
+                                  saveDropdown === "Deploy in app"
                                     ? "#e0e0e0"
                                     : "",
                               }}
                               disabled={!isCurrenFileLocked}
                             >
-                              Deploy & Host
+                              Deploy in app
                             </Menu.Item>
                           </Menu.Dropdown>
                         </div>
@@ -2740,7 +3045,6 @@ const App = () => {
               >
                 {saveDropdown}
               </Button>
-
               {isCurrenFileLocked && (
                 <span
                   style={{
@@ -2860,12 +3164,12 @@ const App = () => {
           }}
         >
           <a
-            href="https://forms.gle/AA82Rbn1X8zztcbj8"
+            href="https://github.com/genai-apps/aggrag/issues/new/choose"
             target="_blank"
             style={{ color: "#666", fontSize: "11pt" }}
             rel="noreferrer"
           >
-            Send us feedback
+            Suggest a feature / raise a bug
           </a>
         </div>
       </div>

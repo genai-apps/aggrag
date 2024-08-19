@@ -10,10 +10,12 @@ logger = logging.getLogger(__name__)
 
 dotenv_file = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenv_file)
+from dotenv import dotenv_values
+config = dotenv_values(".env")
 
 
 try:
-    ai_services_config_str = os.getenv('AI_SERVICES_CONFIG')
+    ai_services_config_str = config['AI_SERVICES_CONFIG']
     
     if ai_services_config_str is None or ai_services_config_str.strip() == "":
         raise ValueError("AI_SERVICES_CONFIG is not set or is empty.")
