@@ -30,7 +30,6 @@ parser = SimpleNodeParser.from_defaults(
 
 logger = logging.getLogger(__name__)
 
-# os.environ("LLAMA_CLOUD_API_KEY") == "llx-appqo6DYVbHYRUQ8UTyVEbsa1XnfaP4qiVFYx4TWKQPy8FQ1"
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -148,14 +147,10 @@ class TableBase:
         """
         self.DATA_DIR =DIR
         all_files = os.listdir(self.DATA_DIR)
-        print("+++++++++++")
-        print(all_files)
 
         # Filter out the PDF files
         pdf_files = [file for file in all_files if file.endswith('.pdf')]
         file_path = os.path.join(self.DATA_DIR, pdf_files[0])
-        print("------------------------------")
-        print("path: "+file_path)
         self.documents = LlamaParse(result_type="markdown").load_data(file_path)
 
         return self.documents
