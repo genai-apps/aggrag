@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useContext,
 } from "react";
+import Joyride, { CallBackProps, Placement, STATUS, Step } from "react-joyride";
 import ReactFlow, {
   Controls,
   Background,
@@ -106,8 +107,17 @@ import {
   isChromium,
 } from "react-device-detect";
 import MultiEvalNode from "./MultiEvalNode";
-import { BinIcon, Chevron, CopyIcon, LockIcon, TickMark } from "./SvgIcons";
+import {
+  BinIcon,
+  Chevron,
+  CloseIcon,
+  CopyIcon,
+  LightBulb,
+  LockIcon,
+  TickMark,
+} from "./SvgIcons";
 import "./CssStyles.css";
+import { cumsum } from "d3-array";
 const IS_ACCEPTED_BROWSER =
   (isChrome ||
     isChromium ||
@@ -132,6 +142,8 @@ const selector = (state: StoreHandles) => ({
   resetLLMColors: state.resetLLMColors,
   setAPIKeys: state.setAPIKeys,
   importState: state.importState,
+  triggerHint: state.triggerHint,
+  setTriggerHint: state.setTriggerHint,
 });
 
 // The initial LLM to use when new flows are created, or upon first load
@@ -252,8 +264,9 @@ const App = () => {
     resetLLMColors,
     setAPIKeys,
     importState,
+    triggerHint,
+    setTriggerHint,
   } = useStore(selector, shallow);
-
   const [isUseCaseCreated, setIsUseCaseCreated] = useState<any>();
   const [openCreateUseCase, setOpenCreateUseCase] = useState(false);
   const [useCaseName, setUseCaseName] = useState("");
@@ -310,6 +323,19 @@ const App = () => {
   });
   const [showNotification, setShowNotification] = useState(false);
   const [warning, setWarning] = useState({ warning: "", open: false });
+
+  const [steps, setSteps] = useState<Step[]>([
+    {
+      target: ".use-case",
+      title: "Hint",
+      content: "Create a new Use case and iteration to get started.",
+      placement: "bottom" as Placement,
+      disableBeacon: true,
+    },
+  ]);
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [runTour, setRunTour] = useState(true);
+  const [triggerSteps, setTriggerSteps] = useState(false);
   const API_URL = process.env.REACT_APP_API_URL;
   const [hoveredItem, setHoveredItem] = useState(null);
   const [editUsecaseforCopy, setEditUsecaseforCopy] = useState("");
@@ -387,6 +413,17 @@ const App = () => {
         y: y - 100 + (offsetY || 0),
       },
     });
+    console.log("type type", type);
+    if (type) {
+      setTriggerHint(type);
+    }
+    if (
+      type === "textfields" ||
+      type === "prompt" ||
+      type === "uploadfilefields"
+    ) {
+      setTriggerSteps(!triggerSteps);
+    }
     setIsChangesNotSaved(true);
     // following changes are for showing warning if we delete iter or usecase and again if we try to add nodes and save flow
     const data1: any = localStorage.getItem("current_usecase");
@@ -403,6 +440,7 @@ const App = () => {
         });
       }
     }
+    setOpenAddNode(false);
   };
 
   const addTextFieldsNode = () => addNode("textFieldsNode", "textfields");
@@ -1311,6 +1349,16 @@ const App = () => {
           fileName: "",
           committed: false,
         });
+        localStorage.setItem(
+          "iteration-created",
+          JSON.stringify({
+            usecase: temp_p_folder,
+            iteration: temp_iter_folder,
+            fileName: "",
+            committed: false,
+            iterationCreated: true,
+          }),
+        );
         const queryString = `?p_folder=${encodeURIComponent(temp_p_folder)}&i_folder=${temp_iter_folder}&file_name=${encodeURIComponent("")}`;
         setIsCurrentFileLocked(false);
         // Update the URL
@@ -1322,6 +1370,8 @@ const App = () => {
         // resetFlow();
         resetFlowToBlankCanvas();
         setIsChangesNotSaved(true);
+        setTriggerHint("created-usecase");
+        setTriggerSteps(!triggerSteps);
       } else {
         setLoading(false);
         console.log("error in creating usecase");
@@ -1601,6 +1651,8 @@ const App = () => {
           }),
         );
         // handleSaveFlow(false);
+        setTriggerHint("created-iteration");
+        setTriggerSteps(!triggerSteps);
       }
     } catch (e) {
       console.log("error in creating iteration");
@@ -2065,6 +2117,176 @@ const App = () => {
     }
   }, []);
 
+  const handleJoyrideCallback = useCallback((data: CallBackProps) => {
+    const { status, index } = data;
+
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      setRunTour(false); // Stop tour if finished or skipped
+    } else if (status === STATUS.RUNNING) {
+      setCurrentStep(index); // Update current step if the tour is running
+    }
+  }, []);
+
+  const handleClose = () => {
+    setRunTour(false);
+  };
+  useEffect(() => {
+    if (
+      triggerHint === "created-usecase" ||
+      triggerHint === "created-iteration"
+    ) {
+      const updatedSteps = [
+        ...steps,
+        {
+          target: ".add-node",
+          title: "Hint",
+          content: "Add a node from the list to get started with your work.",
+          placement: "left" as Placement,
+          disableBeacon: true,
+        },
+      ];
+      setSteps(updatedSteps);
+      setCurrentStep(updatedSteps.length - 1);
+      setRunTour(true);
+      setTimeout(() => {
+        setRunTour(false);
+      }, 3000);
+    } else if (triggerHint === "textfields") {
+      const updatedSteps = [
+        ...steps,
+        {
+          target: ".add-node",
+          title: "Hint",
+          content: "Now add a prompt node.",
+          placement: "bottom" as Placement,
+          disableBeacon: true,
+        },
+      ];
+
+      setSteps(updatedSteps);
+      setRunTour(false);
+      setTimeout(() => {
+        setCurrentStep(updatedSteps.length - 1);
+        setRunTour(true);
+      }, 100);
+      setTimeout(() => {
+        setRunTour(false);
+      }, 3000);
+    } else if (triggerHint === "textfields") {
+      const updatedSteps = [
+        ...steps,
+        {
+          target: ".text-fields-node",
+          title: "Hint",
+          content:
+            "You can connect the TextFields node to the prompt node, to get going.",
+          placement: "bottom" as Placement,
+          disableBeacon: true,
+        },
+      ];
+
+      setSteps(updatedSteps);
+      setRunTour(false);
+      setTimeout(() => {
+        setCurrentStep(updatedSteps.length - 1);
+        setRunTour(true);
+      }, 100);
+    } else if (triggerHint === "prompt") {
+      const updatedSteps = [
+        ...steps,
+        {
+          target: ".prompt-node",
+          title: "Hint",
+          // content: "You can add variables in the node like below:",
+          content: (
+            <div>
+              <div>You can add variables in the node like below:</div>
+              <br />
+              <br />
+              <span style={{ fontStyle: "italic", color: "#098BCB" }}>
+                {"{variable_name}"}
+              </span>
+            </div>
+          ),
+          placement: "right" as Placement,
+          disableBeacon: true,
+        },
+      ];
+
+      setSteps(updatedSteps);
+      setRunTour(false);
+      setTimeout(() => {
+        setCurrentStep(updatedSteps.length - 1);
+        setRunTour(true);
+      }, 100);
+      setTimeout(() => {
+        setRunTour(false);
+      }, 3000);
+    } else if (triggerHint === "uploadfilefields") {
+      const updatedSteps = [
+        ...steps,
+        {
+          target: ".file-fields-node",
+          title: "Hint",
+          // content: "You can add variables in the node like below:",
+          content:
+            "To connect FileFields Node to Prompt Node, add a RAG. Then you can connect the node and “Create Index”.",
+          placement: "bottom" as Placement,
+          disableBeacon: true,
+        },
+      ];
+
+      setSteps(updatedSteps);
+      setRunTour(false);
+      setTimeout(() => {
+        setCurrentStep(updatedSteps.length - 1);
+        setRunTour(true);
+      }, 100);
+      // setTimeout(() => {
+      //   setRunTour(false);
+      // }, 6000);
+    } else if (false) {
+      // Dont’t forget to add the associated API Keys for the LLM Models you have added.
+      const updatedSteps = [
+        ...steps,
+        {
+          target: ".settings-class",
+          title: "Hint",
+          content:
+            "Dont’t forget to add the associated API Keys for the LLM Models you have added.",
+          placement: "bottom" as Placement,
+          disableBeacon: true,
+        },
+      ];
+
+      setSteps(updatedSteps);
+      setRunTour(false);
+      setTimeout(() => {
+        setCurrentStep(updatedSteps.length - 1);
+        setRunTour(true);
+      }, 100);
+    } else if (triggerHint === "prompt-play") {
+      const updatedSteps = [
+        ...steps,
+        {
+          target: ".add-node",
+          title: "Hint",
+          content:
+            "Add an Evaluator or Visualizer Node node to evaluate/inspect/visualize the responses further.",
+          placement: "bottom" as Placement,
+          disableBeacon: true,
+        },
+      ];
+
+      setSteps(updatedSteps);
+      setRunTour(false);
+      setTimeout(() => {
+        setCurrentStep(updatedSteps.length - 1);
+        setRunTour(true);
+      }, 100);
+    }
+  }, [triggerSteps, triggerHint]);
+
   if (!IS_ACCEPTED_BROWSER) {
     return (
       <Box maw={600} mx="auto" mt="40px">
@@ -2357,10 +2579,52 @@ const App = () => {
           id="cf-root-container"
           style={{ display: "flex", height: "100vh" }}
           onPointerDown={hideContextMenu}
+          onClick={() => {
+            setOpenMenu(false);
+            setOpenAddNode(false);
+          }}
         >
           <div
             style={{ height: "100%", backgroundColor: "#eee", flexGrow: "1" }}
           >
+            {runTour && (
+              <Joyride
+                callback={handleJoyrideCallback}
+                continuous={true}
+                stepIndex={currentStep}
+                run={runTour}
+                steps={steps}
+                showSkipButton={true}
+                disableOverlay
+                showProgress
+                spotlightPadding={0}
+                styles={{
+                  tooltip: {
+                    borderRadius: "2px",
+                    padding: "20px",
+                    boxShadow: "0px 0px 10px rgba(0,0,0,0.1)",
+                    backgroundColor: "white",
+                    textAlign: "left",
+                  },
+                }}
+                tooltipComponent={({ step, tooltipProps }) => (
+                  <div {...tooltipProps} className="hint-container">
+                    <div className="hint-title-container">
+                      <div className="hint-title">
+                        <div className="light-bulb">
+                          <LightBulb />
+                        </div>
+                        <div>{step.title}</div>
+                      </div>
+                    </div>
+                    <div className="hint-close-icon" onClick={handleClose}>
+                      <CloseIcon />
+                    </div>
+                    <div className="hint-description">{step.content}</div>
+                  </div>
+                )}
+              />
+            )}
             <ReactFlow
               minZoom={0.7}
               onNodesChange={onNodesChange}
@@ -2393,6 +2657,7 @@ const App = () => {
               nodesFocusable={!isCurrenFileLocked}
               // draggable={!isCurrenFileLocked}
               elementsSelectable={!isCurrenFileLocked}
+              // onNodeDrag={handleNodeDrag}
             >
               <Background color="#999" gap={16} />
               <Controls showZoom={true} />
@@ -2459,8 +2724,9 @@ const App = () => {
                 position="top-start"
                 closeOnClickOutside={true}
                 closeOnEscape
-                trigger="hover"
+                trigger="click"
                 width={270}
+                opened={openMenu}
               >
                 <Menu.Target>
                   <Button
@@ -2470,8 +2736,10 @@ const App = () => {
                     onClick={() => {
                       setSaveAndCommitBtnOpen(false);
                       setOpenMenu(!openMenu);
+                      setOpenAddNode(false);
                     }}
                     variant="gradient"
+                    className="use-case"
                   >
                     Use Cases +
                   </Button>
@@ -2597,7 +2865,8 @@ const App = () => {
 
                               <Menu.Dropdown style={{ width: "400px" }}>
                                 <Menu.Item
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setSaveAndCommitBtnOpen(false);
                                     // handleCreateNewIteration(item.label);
                                     handleCreateIteration(item.label);
@@ -2767,10 +3036,12 @@ const App = () => {
                 closeOnEscape
                 styles={{ item: { maxHeight: "28px" } }}
                 disabled={isCurrenFileLocked}
-                trigger="hover"
+                trigger="click"
+                opened={openAddNode}
               >
                 <Menu.Target>
                   <Button
+                    className="add-node"
                     size="sm"
                     variant="gradient"
                     compact
@@ -2779,7 +3050,11 @@ const App = () => {
                       (activeUseCase && activeUseCase.usecase === "") ||
                       isCurrenFileLocked
                     }
-                    onClick={() => setOpenAddNode(!openAddNode)} // to close use cases menu
+                    onClick={() => {
+                      setOpenAddNode(!openAddNode);
+                      setOpenMenu(false);
+                    }} // to close use cases menu
+                    onFocus={() => setOpenMenu(false)}
                   >
                     Add Node +
                   </Button>
@@ -2980,10 +3255,11 @@ const App = () => {
                       e.stopPropagation();
                       setSaveAndCommitBtnOpen(!saveAndCommitBtnOpen);
                       setOpenMenu(false);
+                      setOpenAddNode(false);
                     }}
                   >
                     <div ref={saveRef}>
-                      <Menu position="top-start" trigger="hover">
+                      <Menu position="top-start">
                         <div>
                           <Menu.Target>
                             <div
@@ -3102,6 +3378,7 @@ const App = () => {
                 </Button>
               )}
               <Button
+                className="export-btn"
                 onClick={exportFlow}
                 size="sm"
                 variant="outline"
@@ -3149,6 +3426,7 @@ const App = () => {
                 size="sm"
                 variant="gradient"
                 compact
+                className="settings-class"
               >
                 <IconSettings size={"90%"} />
               </Button>

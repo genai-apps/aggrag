@@ -227,6 +227,7 @@ const PromptNode: React.FC<PromptNodeProps> = ({
 
   // Get state from the Zustand store:
   const edges = useStore((state) => state.edges);
+  const setTriggerHint = useStore((state) => state.setTriggerHint);
   const pullInputData = useStore((state) => state.pullInputData);
   const getImmediateInputNodeTypes = useStore(
     (state) => state.getImmediateInputNodeTypes,
@@ -1291,6 +1292,9 @@ Soft failing by replacing undefined with empty strings.`,
       .then(query_llms)
       .then(query_rags)
       .catch(rejected);
+
+    console.log("run hit");
+    setTriggerHint("prompt-play");
   };
 
   const handleStopClick = useCallback(() => {
