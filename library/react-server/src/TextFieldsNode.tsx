@@ -469,7 +469,7 @@ const TextFieldsNode: React.FC<TextFieldsNodeProps> = ({ data, id }) => {
 
   return (
     <BaseNode
-      classNames="text-fields-node"
+      classNames="text-fields-node text-fields-node-for-hint"
       nodeId={id}
       contextMenuExts={customContextMenuItems}
     >

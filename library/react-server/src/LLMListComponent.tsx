@@ -299,6 +299,7 @@ export const LLMListContainer = forwardRef<
 ) {
   // All available LLM providers, for the dropdown list
   const AvailableLLMs = useStore((state) => state.AvailableLLMs);
+  const setTriggerHint = useStore((state) => state.setTriggerHint);
   const { showContextMenu, hideContextMenu, isContextMenuVisible } =
     useContextMenu();
   // For some reason, when the AvailableLLMs list is updated in the store/, it is not
@@ -402,6 +403,7 @@ export const LLMListContainer = forwardRef<
 
       setLLMItems(new_items);
       if (onSelectModel) onSelectModel(item, new_items);
+      setTriggerHint("model-added");
     },
     [llmItemsCurrState, onSelectModel, selectModelAction, AvailableLLMs],
   );

@@ -117,7 +117,6 @@ import {
   TickMark,
 } from "./SvgIcons";
 import "./CssStyles.css";
-import { cumsum } from "d3-array";
 const IS_ACCEPTED_BROWSER =
   (isChrome ||
     isChromium ||
@@ -250,6 +249,16 @@ const MenuTooltip = ({
 // const connectionLineStyle = { stroke: '#ddd' };
 const snapGrid: [number, number] = [16, 16];
 
+type HintRunsType = {
+  prompt: number;
+  textField: number;
+  uploadfilefields: number;
+  usecase: number;
+  iteration: number;
+  prompthitplay: number;
+  model_added: number;
+};
+
 const App = () => {
   // Get nodes, edges, etc. state from the Zustand store:
   const {
@@ -335,10 +344,20 @@ const App = () => {
   ]);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [runTour, setRunTour] = useState(true);
-  const [triggerSteps, setTriggerSteps] = useState(false);
+  const [hintRuns, setHintRuns] = useState<HintRunsType>({
+    prompt: 0,
+    textField: 0,
+    uploadfilefields: 0,
+    usecase: 0,
+    iteration: 0,
+    prompthitplay: 0,
+    model_added: 0,
+  });
+
   const API_URL = process.env.REACT_APP_API_URL;
   const [hoveredItem, setHoveredItem] = useState(null);
   const [editUsecaseforCopy, setEditUsecaseforCopy] = useState("");
+
   // For saving / loading
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   const [autosavingInterval, setAutosavingInterval] = useState<
@@ -413,17 +432,20 @@ const App = () => {
         y: y - 100 + (offsetY || 0),
       },
     });
-    console.log("type type", type);
     if (type) {
       setTriggerHint(type);
     }
-    if (
-      type === "textfields" ||
-      type === "prompt" ||
-      type === "uploadfilefields"
-    ) {
-      setTriggerSteps(!triggerSteps);
+
+    console.log("type", type);
+
+    if (type === "prompt") {
+      incrementHintRun("prompt");
+    } else if (type === "textfields") {
+      incrementHintRun("textField");
+    } else if (type === "uploadfilefields") {
+      incrementHintRun("uploadfilefields");
     }
+
     setIsChangesNotSaved(true);
     // following changes are for showing warning if we delete iter or usecase and again if we try to add nodes and save flow
     const data1: any = localStorage.getItem("current_usecase");
@@ -1371,7 +1393,7 @@ const App = () => {
         resetFlowToBlankCanvas();
         setIsChangesNotSaved(true);
         setTriggerHint("created-usecase");
-        setTriggerSteps(!triggerSteps);
+        incrementHintRun("usecase");
       } else {
         setLoading(false);
         console.log("error in creating usecase");
@@ -1652,7 +1674,7 @@ const App = () => {
         );
         // handleSaveFlow(false);
         setTriggerHint("created-iteration");
-        setTriggerSteps(!triggerSteps);
+        incrementHintRun("iteration");
       }
     } catch (e) {
       console.log("error in creating iteration");
@@ -2130,6 +2152,14 @@ const App = () => {
   const handleClose = () => {
     setRunTour(false);
   };
+
+  const incrementHintRun = (type: keyof HintRunsType) => {
+    setHintRuns((prevState: HintRunsType) => ({
+      ...prevState,
+      [type]: prevState[type] + 1,
+    }));
+  };
+
   useEffect(() => {
     if (
       triggerHint === "created-usecase" ||
@@ -2151,7 +2181,7 @@ const App = () => {
       setTimeout(() => {
         setRunTour(false);
       }, 3000);
-    } else if (triggerHint === "textfields") {
+    } else if (triggerHint === "textfields" && hintRuns.textField <= 1) {
       const updatedSteps = [
         ...steps,
         {
@@ -2171,12 +2201,13 @@ const App = () => {
       }, 100);
       setTimeout(() => {
         setRunTour(false);
+        // setTriggerHint('textfields2')
       }, 3000);
-    } else if (triggerHint === "textfields") {
+    } else if (triggerHint === "textfields2") {
       const updatedSteps = [
         ...steps,
         {
-          target: ".text-fields-node",
+          target: ".text-fields-node-for-hint",
           title: "Hint",
           content:
             "You can connect the TextFields node to the prompt node, to get going.",
@@ -2191,13 +2222,12 @@ const App = () => {
         setCurrentStep(updatedSteps.length - 1);
         setRunTour(true);
       }, 100);
-    } else if (triggerHint === "prompt") {
+    } else if (triggerHint === "prompt" && hintRuns.prompt <= 1) {
       const updatedSteps = [
         ...steps,
         {
-          target: ".prompt-node",
+          target: ".prompt-field-fixed-for-hint",
           title: "Hint",
-          // content: "You can add variables in the node like below:",
           content: (
             <div>
               <div>You can add variables in the node like below:</div>
@@ -2221,14 +2251,17 @@ const App = () => {
       }, 100);
       setTimeout(() => {
         setRunTour(false);
-      }, 3000);
-    } else if (triggerHint === "uploadfilefields") {
+        setTriggerHint("textfields2");
+      }, 4000);
+    } else if (
+      triggerHint === "file-upload" &&
+      hintRuns.uploadfilefields <= 1
+    ) {
       const updatedSteps = [
         ...steps,
         {
           target: ".file-fields-node",
           title: "Hint",
-          // content: "You can add variables in the node like below:",
           content:
             "To connect FileFields Node to Prompt Node, add a RAG. Then you can connect the node and “Create Index”.",
           placement: "bottom" as Placement,
@@ -2245,7 +2278,7 @@ const App = () => {
       // setTimeout(() => {
       //   setRunTour(false);
       // }, 6000);
-    } else if (false) {
+    } else if (triggerHint === "model-added" && hintRuns.model_added <= 1) {
       // Dont’t forget to add the associated API Keys for the LLM Models you have added.
       const updatedSteps = [
         ...steps,
@@ -2261,11 +2294,14 @@ const App = () => {
 
       setSteps(updatedSteps);
       setRunTour(false);
+      incrementHintRun("model_added");
       setTimeout(() => {
         setCurrentStep(updatedSteps.length - 1);
         setRunTour(true);
       }, 100);
-    } else if (triggerHint === "prompt-play") {
+
+      // setTriggerHint("");
+    } else if (triggerHint === "prompt-play" && hintRuns.prompthitplay <= 1) {
       const updatedSteps = [
         ...steps,
         {
@@ -2280,12 +2316,13 @@ const App = () => {
 
       setSteps(updatedSteps);
       setRunTour(false);
+      incrementHintRun("prompthitplay");
       setTimeout(() => {
         setCurrentStep(updatedSteps.length - 1);
         setRunTour(true);
       }, 100);
     }
-  }, [triggerSteps, triggerHint]);
+  }, [triggerHint]);
 
   if (!IS_ACCEPTED_BROWSER) {
     return (
@@ -2616,10 +2653,11 @@ const App = () => {
                         </div>
                         <div>{step.title}</div>
                       </div>
+                      <div className="hint-close-icon" onClick={handleClose}>
+                        <CloseIcon />
+                      </div>
                     </div>
-                    <div className="hint-close-icon" onClick={handleClose}>
-                      <CloseIcon />
-                    </div>
+
                     <div className="hint-description">{step.content}</div>
                   </div>
                 )}

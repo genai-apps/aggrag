@@ -86,9 +86,10 @@
 }
 
 .hint-close-icon {
-  position: absolute;
-  right: 17px;
-  top: 31px;
+  /* position: absolute; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 .hint-title-container {
@@ -96,6 +97,7 @@
   font-size: 14px;
   font-weight: 500;
   display: flex;
+  justify-content: space-between;
 }
 .light-bulb {
   display: flex;
@@ -112,7 +114,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
   margin-left: 10px;
 }
 .hint-description {

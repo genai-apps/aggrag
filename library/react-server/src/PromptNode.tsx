@@ -1507,7 +1507,7 @@ Soft failing by replacing undefined with empty strings.`,
               "(Past conversation)",
               <Textarea
                 key={0}
-                className="prompt-field-fixed nodrag nowheel"
+                className="prompt-field-fixed nodrag nowheel "
                 minRows={4}
                 defaultValue={data.prompt}
                 onChange={handleInputChange}
@@ -1529,7 +1529,7 @@ Soft failing by replacing undefined with empty strings.`,
         <Textarea
           ref={setRef}
           autosize
-          className="prompt-field-fixed nodrag nowheel"
+          className="prompt-field-fixed nodrag nowheel prompt-field-fixed-for-hint"
           minRows={4}
           maxRows={12}
           defaultValue={data.prompt}
