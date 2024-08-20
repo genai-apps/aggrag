@@ -2941,6 +2941,136 @@ const Meta_langRagSettings: ModelSettingsDict = {
   postprocessors: {},
 };
 
+const TableBaseRagSettings: ModelSettingsDict = {
+  fullName: "Table Base",
+  schema: {
+    type: "object",
+    required: ["shortname"],
+    properties: {
+      shortname: {
+        type: "string",
+        title: "Nickname",
+        description: "Unique identifier to appear in Aggrag. Keep it short.",
+        default: "tableBase",
+      },
+      description: {
+        type: "string",
+        title: "Description",
+        description: "Description to appear in Aggrag. Keep it short.",
+        default: "User description",
+      },
+      ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+          {
+            const: "Nvidia",
+            title: "Nvidia",
+          },
+        ],
+        title: "AI service",
+        type: "string",
+      },
+      chunk_size: {
+        default: 512,
+        maximum: 2048,
+        minimum: 0,
+        title: "Chunk Size",
+        type: "integer",
+        "ui:widget": "range",
+      },
+      embed_model: {
+        default: "text-embedding-ada-002",
+        oneOf: [
+          {
+            const: "text-embedding-ada-002",
+            title: "text-ada-002",
+          },
+          {
+            const: "text-ada-003",
+            title: "text-ada-003",
+          },
+        ],
+        title: "Embedding Model",
+        type: "string",
+      },
+      index_name: {
+        default: "tableBase_index",
+        description: "Index name to be used",
+        title: "Index Name",
+        type: "string",
+        readOnly: true,
+      },
+      llm_model: {
+        default: "gpt-35-turbo-16k",
+        oneOf: [
+          {
+            const: "gpt-35-turbo-16k",
+            title: "gpt_35_turbo_16k",
+          },
+          {
+            const: "gpt-4",
+            title: "gpt-4-turbo",
+          },
+          {
+            const: "gpt-4o",
+            title: "GPT-4O",
+          },
+        ],
+        title: "LLM Model",
+        type: "string",
+      },
+      engine_prompt: {
+        default:
+          "\nAs a professional summarizer, create a concise and comprehensive summary of the provided text,\nbe it a research paper, article, post, conversation, or passage with as much detail as possible.\n",
+        description: "The prompt for the system.",
+        title: "Prompt",
+        type: "string",
+      },
+      temperature: {
+        default: 0.2,
+        description: "Controls the 'creativity' or randomness of the response.",
+        maximum: 1,
+        minimum: 0,
+        multipleOf: 0.01,
+        title: "temperature",
+        type: "number",
+      },
+    },
+  },
+  uiSchema: {
+    "ui:submitButtonOptions": {
+      props: {
+        disabled: false,
+        className: "mantine-UnstyledButton-root mantine-Button-root",
+      },
+      norender: false,
+      submitText: "Submit",
+    },
+    shortname: {
+      "ui:autofocus": true,
+    },
+    description: {},
+    summary_prompt: {
+      "ui:cols": 50,
+      "ui:rows": 10,
+      "ui:widget": "textarea",
+    },
+    temperature: {
+      "ui:help": "Defaults to 0.2",
+      "ui:widget": "range",
+    },
+  },
+  postprocessors: {},
+};
+
 // A lookup table indexed by base_model.
 export const ModelSettings: Dict<ModelSettingsDict> = {
   "gpt-3.5-turbo": ChatGPTSettings,
@@ -2967,6 +3097,7 @@ export const ModelSettings: Dict<ModelSettingsDict> = {
   raptor: RaptorRagSettings,
   meta_llama: Meta_llamaRagSettings,
   meta_lang: Meta_langRagSettings,
+  tableBase: TableBaseRagSettings,
 };
 
 export function getSettingsSchemaForLLM(
@@ -3012,6 +3143,7 @@ export function getSettingsSchemaForRAG(
     [RAGProvider.Raptor]: RaptorRagSettings,
     [RAGProvider.Meta_llama]: Meta_llamaRagSettings,
     [RAGProvider.Meta_lang]: Meta_langRagSettings,
+    [RAGProvider.TableBase]: TableBaseRagSettings,
   };
 
   if (rag_provider === RAGProvider.Custom) return ModelSettings[rag_name];

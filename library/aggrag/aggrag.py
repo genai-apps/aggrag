@@ -8,9 +8,9 @@ from typing import Optional
 
 from library.aggrag.core.config import AzureOpenAIModelNames, AzureOpenAIModelEngines
 
-from library.aggrag.ragstore import SubQA, Base, Raptor, MetaLlama, MetaLang
+from library.aggrag.ragstore import SubQA, Base, Raptor, MetaLlama, MetaLang, TableBase
 
-from library.aggrag.core.schema import RagStoreBool, RagStore, RagStoreSettings, BaseRagSetting, RaptorRagSetting, SubQARagSetting, MetaLlamaRagSetting, MetaLangRagSetting
+from library.aggrag.core.schema import RagStoreBool, RagStore, RagStoreSettings, BaseRagSetting, RaptorRagSetting, SubQARagSetting, MetaLlamaRagSetting, MetaLangRagSetting, TableBaseRagSetting
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,7 @@ class AggRAG:
                  ragstore_settings: Optional[RagStoreSettings] = None):
 
         self.documents = None
+        self.table_docs = None
         self.index = None
         from library.aggrag.core.schema import UserConfig
 
@@ -96,6 +97,13 @@ class AggRAG:
                     meta_lang_rag_setting=self.ragstore_settings.meta_lang_rag_setting if self.ragstore_settings.meta_lang_rag_setting else MetaLangRagSetting()
                 ) if ragstore_bool.meta_lang else None,
 
+                tableBase=TableBase(
+                    usecase_name=self.usecase_name,
+                    iteration=self.iteration,
+                    DATA_DIR=self.DATA_DIR,
+                    tableBase_rag_setting=self.ragstore_settings.tableBase_rag_setting if self.ragstore_settings.tableBase_rag_setting else TableBaseRagSetting()
+                ) if ragstore_bool.tableBase else None,
+
             )
 
         self.ragstore: RagStore = create_ragstore(ragstore_bool)
@@ -110,6 +118,8 @@ class AggRAG:
         if not os.path.exists(self.DATA_DIR):
             logger.error(f"Data directory does not exist: {self.DATA_DIR}")
             raise FileNotFoundError(f"Data directory does not exist: {self.DATA_DIR}")
+        if self.ragstore.tableBase:
+            self.table_docs = self.ragstore.tableBase.documents_loader(self.DATA_DIR)
         self.documents = SimpleDirectoryReader(self.DATA_DIR, recursive=True, exclude_hidden=True).load_data()
         return self.documents
 
@@ -138,6 +148,9 @@ class AggRAG:
 
         if self.ragstore.meta_lang and self.ragstore.meta_lang.name not in exclude:
             tasks.append(self.ragstore.meta_lang.create_index_async(documents)) 
+        
+        if self.ragstore.tableBase and self.ragstore.tableBase.name not in exclude:
+            tasks.append(self.ragstore.tableBase.create_index_async(self.table_docs)) 
 
 
 
@@ -167,6 +180,9 @@ class AggRAG:
         if self.ragstore.meta_lang:
             tasks.append(self.ragstore.meta_lang.retrieve_index_async())
 
+        if self.ragstore.tableBase:
+            tasks.append(self.ragstore.tableBase.retrieve_index_async())
+
         # Wait for all index creation tasks to complete
         indexes = await asyncio.gather(*tasks)
         logger.info(f"Retrieved indexes: {indexes}")
@@ -182,6 +198,8 @@ class AggRAG:
             tasks.append(self.ragstore.raptor.get_chat_engine())
         if self.ragstore.subqa:
             tasks.append(self.ragstore.subqa.get_chat_engine())
+        if self.ragstore.tableBase:
+            tasks.append(self.ragstore.tableBase.get_chat_engine())
 
         chat_engine = await asyncio.gather(*tasks)
 
@@ -242,8 +260,12 @@ class AggRAG:
         elif self.ragstore.meta_lang:
             tasks.append(self.ragstore.meta_lang.achat(query, chat_history, _evaluation))        
     
+        if self.ragstore.tableBase:
+            if not self.ragstore.tableBase.chat_engine:
+                await self.ragstore.tableBase.get_chat_engine()
 
-
+            if self.ragstore.tableBase.chat_engine:
+                tasks.append(self.ragstore.tableBase.achat(query, chat_history, _evaluation))
 
 
         response = await asyncio.gather(*tasks)

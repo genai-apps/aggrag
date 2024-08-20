@@ -149,3 +149,4 @@ xxhash==3.4.1
 yarl==1.9.4
 plotly==5.22.0
 llama-index-packs-raptor
+llama-index-vector-stores-lancedb== 0.1.7
