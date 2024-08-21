@@ -25,8 +25,6 @@ import {
   Modal,
   Textarea,
   TextInput,
-  Notification,
-  Transition,
   Input,
   Flex,
 } from "@mantine/core";
@@ -47,6 +45,7 @@ import {
   IconCheck,
   IconX,
 } from "@tabler/icons-react";
+import { useNotification } from "./Notification";
 import RemoveEdge from "./RemoveEdge";
 import TextFieldsNode from "./TextFieldsNode"; // Import a custom node
 import UploadFileFieldsNode from "./UploadFileFieldsNode"; // Import a custom node
@@ -276,6 +275,8 @@ const App = () => {
     triggerHint,
     setTriggerHint,
   } = useStore(selector, shallow);
+
+  const { showNotification } = useNotification();
   const [isUseCaseCreated, setIsUseCaseCreated] = useState<any>();
   const [openCreateUseCase, setOpenCreateUseCase] = useState(false);
   const [useCaseName, setUseCaseName] = useState("");
@@ -323,14 +324,6 @@ const App = () => {
     open: false,
     for: "",
   });
-  const [notificationText, setNotificationText] = useState<{
-    title: string;
-    text: string;
-  }>({
-    title: "",
-    text: "",
-  });
-  const [showNotification, setShowNotification] = useState(false);
   const [warning, setWarning] = useState({ warning: "", open: false });
 
   const [steps, setSteps] = useState<Step[]>([
@@ -452,10 +445,11 @@ const App = () => {
     const localData = JSON.parse(data1);
     if (localData != null) {
       if (!localData.file_name && !localData.iter_folder && warning.open) {
-        setNotificationText({
-          title: "Failed",
-          text: "Please select use case and iteration, otherwise changes will be lost",
-        });
+        showNotification(
+          "Failed",
+          "Please select use case and iteration, otherwise changes will be lost",
+          "red",
+        );
         setWarning({
           warning: "",
           open: false,
@@ -747,10 +741,11 @@ const App = () => {
       })
         .then((response) => {
           if (!response.ok) {
-            setNotificationText({
-              title: "Failed",
-              text: "File not saved, please select one of the usecase(path)",
-            });
+            showNotification(
+              "Failed",
+              "File not saved, please select one of the usecase(path)",
+              "red",
+            );
             throw new Error("Failed to save flow.");
           }
           return response.json();
@@ -787,15 +782,15 @@ const App = () => {
 
           const queryString = `?p_folder=${encodeURIComponent(currUseCase.parent_folder)}&i_folder=${encodeURIComponent(currUseCase.iter_folder)}&file_name=${encodeURIComponent(temp_file_name)}`;
           if (saveAndCommit) {
-            setNotificationText({
-              title: "Saved & Committed",
-              text: "File has been successfully saved & committed!",
-            });
+            showNotification(
+              "Saved & Committed",
+              "File has been successfully saved & committed!",
+            );
           } else if (!iterationCreation) {
-            setNotificationText({
-              title: "Saved",
-              text: `File has been successfully saved (${currUseCase.iter_folder} of ${currUseCase && currUseCase.parent_folder.split("__")[0]})`,
-            });
+            showNotification(
+              "Saved",
+              `File has been successfully saved (${currUseCase.iter_folder} of ${currUseCase && currUseCase.parent_folder.split("__")[0]})`,
+            );
           }
           // Update the URL
           !saveAndCommit && window.history.pushState({}, "", queryString);
@@ -1386,10 +1381,7 @@ const App = () => {
         setIsCurrentFileLocked(false);
         // Update the URL
         window.history.pushState({}, "", queryString);
-        setNotificationText({
-          title: "Created!",
-          text: "Use case has been successfully created",
-        });
+        showNotification("Created!", "Use case has been successfully created");
         // resetFlow();
         resetFlowToBlankCanvas();
         setIsChangesNotSaved(true);
@@ -1398,19 +1390,13 @@ const App = () => {
       } else {
         setLoading(false);
         console.log("error in creating usecase");
-        setNotificationText({
-          title: "Failed",
-          text: "Error in creating usecase!",
-        });
+        showNotification("Failed", "Error in creating usecase!", "red");
         setErrorMessage({ error: true, message: res.message });
       }
     } catch (error) {
       setLoading(false);
       console.log("error in creating usecase");
-      setNotificationText({
-        title: "Failed",
-        text: "Error in creating usecase!",
-      });
+      showNotification("Failed", "Error in creating usecase!", "red");
       setErrorMessage({ error: true, message: "Error in creating usecase" });
     }
   };
@@ -1475,10 +1461,11 @@ const App = () => {
         parsedIterCreated = parsedData.iterationCreated;
       }
       if (!parsedIterCreated) {
-        setNotificationText({
-          title: "",
-          text: `Iteration (${iterationName} of ${usecaseName && usecaseName.split("__")[0]}) has been successfully deleted!`,
-        });
+        showNotification(
+          "",
+          `Iteration (${iterationName} of ${usecaseName && usecaseName.split("__")[0]}) has been successfully deleted!`,
+          "red",
+        );
       }
       // when a user creates an iteration and then clicks on another iteration without
       // saving previous iteration then
@@ -1659,10 +1646,7 @@ const App = () => {
         setSaveAndCommitBtnOpen(false);
         resetFlowToBlankCanvas();
         setOpenMenu(false);
-        setNotificationText({
-          title: "Created",
-          text: "Iteration has been created successfully",
-        });
+        showNotification("Created", "Iteration has been created successfully");
         localStorage.setItem(
           "iteration-created",
           JSON.stringify({
@@ -1679,10 +1663,7 @@ const App = () => {
       }
     } catch (e) {
       console.log("error in creating iteration");
-      setNotificationText({
-        title: "Failed",
-        text: "Error in creating iteration",
-      });
+      showNotification("Failed", "Error in creating iteration", "red");
     }
   };
 
@@ -1789,10 +1770,7 @@ const App = () => {
           label: res.file_name,
         },
       ]);
-      setNotificationText({
-        title: "Copied",
-        text: `Iteration has been copied successfully`,
-      });
+      showNotification("Copied", `Iteration has been copied successfully`);
     }
   };
 
@@ -1831,10 +1809,10 @@ const App = () => {
       // Update the URL
       window.history.pushState({}, "", "/");
       setDeleteUsecaseOrIter({ usecase: "", iteration: "", open: false });
-      setNotificationText({
-        title: "",
-        text: `Use case (${usecasename && usecasename.split("__")[0]}) has been successfully deleted!`,
-      });
+      showNotification(
+        "",
+        `Use case (${usecasename && usecasename.split("__")[0]}) has been successfully deleted!`,
+      );
       resetFlowToBlankCanvas();
       setOpenMenu(false);
       setWarning({ warning: "", open: true });
@@ -1873,10 +1851,7 @@ const App = () => {
       } else {
         setIsUseCaseCreated(false);
       }
-      setNotificationText({
-        text: "Usecase has been successfully copied",
-        title: "Copied",
-      });
+      showNotification("Copied", "Usecase has been successfully copied");
       setCopyModalOpen({
         for: "",
         open: false,
@@ -2061,24 +2036,31 @@ const App = () => {
   }, [confirmed]);
 
   useEffect(() => {
-    let timer: string | number | NodeJS.Timeout | undefined;
-    if (notificationText.text.length > 0) {
-      setShowNotification(true);
-      timer = setTimeout(() => {
-        setShowNotification(false);
-        setNotificationText({ title: "", text: "" });
-        clearTimeout(timer);
-      }, 5000);
-    }
-    return () => clearTimeout(timer);
-  }, [notificationText]);
-
-  useEffect(() => {
     // Cleanup the autosaving interval upon component unmount:
     return () => {
       clearInterval(autosavingInterval); // Clear the interval when the component is unmounted
     };
   }, []);
+
+  useEffect(() => {
+    window.addEventListener("error", (e) => {
+      if (e.message.startsWith("ResizeObserver loop")) {
+        const resizeObserverErrDiv = document.getElementById(
+          "webpack-dev-server-client-overlay-div",
+        );
+        const resizeObserverErr = document.getElementById(
+          "webpack-dev-server-client-overlay",
+        );
+        if (resizeObserverErr) {
+          resizeObserverErr.setAttribute("style", "display: none");
+        }
+        if (resizeObserverErrDiv) {
+          resizeObserverErrDiv.setAttribute("style", "display: none");
+        }
+      }
+    });
+  }, []);
+
   useEffect(() => {
     const localStorageContent = localStorage.getItem("current_usecase");
     const parsedData2 = localStorageContent && JSON.parse(localStorageContent);
@@ -2130,13 +2112,37 @@ const App = () => {
         };
         console.error("Global error logging: ", errorData);
         // Send errorData to a logging service (e.g., via an HTTP request)
-        setNotificationText({
-          title: "Failed",
-          text: errorData && errorData.message.toString(),
-        });
-        // Return true to prevent the default browser error handling
-        return true;
+        if (
+          typeof errorData.message === "string" &&
+          errorData.message.startsWith("ResizeObserver loop")
+        ) {
+          console.warn(
+            "Ignored: ResizeObserver loop error: ",
+            errorData.message,
+          );
+          return false;
+        } else {
+          showNotification(
+            "Failed",
+            errorData && errorData.message.toString(),
+            "red",
+          );
+          // Return true to prevent the default browser error handling
+          return true;
+        }
       };
+
+      // Handle unhandled promise rejections
+      window.addEventListener("unhandledrejection", function (event) {
+        const errorData = {
+          message: event.reason.message,
+          stack: event.reason.stack,
+        };
+        console.error("Unhandled promise rejection: ", errorData);
+        showNotification("Failed", errorData.message, "red");
+        // Prevent the default handling (e.g., logging to the console)
+        event.preventDefault();
+      });
     }
   }, []);
 
@@ -2572,7 +2578,11 @@ const App = () => {
           }
           opened={deleteusecaseOrIter.open}
           onClose={() =>
-            setDeleteUsecaseOrIter({ usecase: "", iteration: "", open: false })
+            setDeleteUsecaseOrIter({
+              usecase: "",
+              iteration: "",
+              open: false,
+            })
           }
           styles={{
             root: { position: "relative", left: "-5%" },
@@ -2623,10 +2633,10 @@ const App = () => {
         </Modal>
 
         {/* <Modal title={'Welcome to Aggrag'} size='400px' opened={welcomeModalOpened} onClose={closeWelcomeModal} yOffset={'6vh'} styles={{header: {backgroundColor: '#FFD700'}, root: {position: 'relative', left: '-80px'}}}>
-        <Box m='lg' mt='xl'>
-          <Text>To get started, click the Settings icon in the top-right corner.</Text>
-        </Box>
-      </Modal> */}
+          <Box m='lg' mt='xl'>
+            <Text>To get started, click the Settings icon in the top-right corner.</Text>
+          </Box>
+        </Modal> */}
 
         <div
           id="cf-root-container"
@@ -2725,35 +2735,6 @@ const App = () => {
             </ReactFlow>
           </div>
         </div>
-        <Transition
-          mounted={showNotification}
-          transition="slide-right"
-          duration={300}
-          timingFunction="ease"
-        >
-          {(styles) => (
-            <Notification
-              color={notificationText.title === "Failed" ? "red" : "teal"}
-              title={notificationText.title}
-              style={{
-                ...styles,
-                position: "absolute",
-                zIndex: 10,
-                bottom: 30,
-              }}
-              onClose={() => setShowNotification(false)}
-              icon={
-                notificationText.title === "Failed" ? (
-                  <IconX />
-                ) : (
-                  <IconCheck style={{ width: 20, height: 20 }} />
-                )
-              }
-            >
-              {notificationText.text}
-            </Notification>
-          )}
-        </Transition>
         <Tooltip
           multiline
           width={300}
@@ -2966,7 +2947,9 @@ const App = () => {
                                                   }}
                                                 >
                                                   <div
-                                                    style={{ marginTop: "8px" }}
+                                                    style={{
+                                                      marginTop: "8px",
+                                                    }}
                                                   >
                                                     {subItem.subItems &&
                                                       subItem.subItems[0]
@@ -2975,7 +2958,9 @@ const App = () => {
                                                       )}
                                                   </div>
                                                   <div
-                                                    style={{ marginTop: "8px" }}
+                                                    style={{
+                                                      marginTop: "8px",
+                                                    }}
                                                     onClick={(e) => {
                                                       e.stopPropagation();
                                                       setOpenMenu(false);
@@ -3323,7 +3308,10 @@ const App = () => {
                         <div>
                           <Menu.Target>
                             <div
-                              style={{ display: "flex", alignItems: "center" }}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                              }}
                             >
                               <Chevron />
                             </div>
