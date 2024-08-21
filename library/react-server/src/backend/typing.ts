@@ -150,6 +150,7 @@ export interface ModelSettingsDict {
     required: string[];
     properties: Dict<Dict<JSONCompatible>>;
     description?: string;
+    allOf?: Dict<JSONCompatible> | any;
   };
   uiSchema: Dict<JSONCompatible>;
   postprocessors: Dict<(val: string | number | boolean) => any>;

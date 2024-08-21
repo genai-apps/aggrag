@@ -61,6 +61,10 @@ const ModelSettingsModal = forwardRef<
   const [initModelName, setInitModelName] = useState<string | undefined>(
     undefined,
   );
+  const [aiService, setAiService] = useState<string | undefined>(undefined);
+  const [embedAiService, setEmbedAiService] = useState<string | undefined>(
+    undefined,
+  );
 
   // Totally necessary emoji picker
   const [modelEmoji, setModelEmoji] = useState("");
@@ -177,7 +181,14 @@ const ModelSettingsModal = forwardRef<
 
         setInitModelName(modelname);
       }
-
+      if (aiService !== state.formData.ai_service) {
+        setAiService(state.formData.ai_service as string | undefined);
+        state.formData.llm_model = null;
+      }
+      if (embedAiService !== state.formData.ai_service) {
+        setEmbedAiService(state.formData.ai_service as string | undefined);
+        state.formData.embed_model = null;
+      }
       setFormData(state.formData);
     }
   };
@@ -252,6 +263,9 @@ const ModelSettingsModal = forwardRef<
         formData={formData}
         // @ts-expect-error This is literally the example code from react-json-schema; no idea why it wouldn't typecheck correctly.
         validator={validator}
+        experimental_defaultFormStateBehavior={{
+          allOf: "populateDefaults",
+        }}
         // @ts-expect-error Expect format is LLMSpec.
         onChange={onFormDataChange}
         // @ts-expect-error Expect format is LLMSpec.
