@@ -141,7 +141,15 @@ class AggRAG:
                     usecase_name=self.usecase_name,
                     iteration=self.iteration,
                     DATA_DIR=self.DATA_DIR,
-                    tableBase_rag_setting=self.ragstore_settings.tableBase_rag_setting if self.ragstore_settings.tableBase_rag_setting else TableBaseRagSetting()
+                    tableBase_rag_setting=self.ragstore_settings.tableBase_rag_setting if self.ragstore_settings.tableBase_rag_setting else TableBaseRagSetting(),
+                    llm=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.tableBase_rag_setting.ai_service,
+                            llm_model=self.ragstore_settings.tableBase_rag_setting.llm_model,
+                        ).llm,
+                    embed_model=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.tableBase_rag_setting.embed_ai_service,
+                            embed_model=self.ragstore_settings.tableBase_rag_setting.embed_model,
+                        ).embed_model  
                 ) if ragstore_bool.tableBase else None,
 
             )

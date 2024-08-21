@@ -151,6 +151,7 @@ class Settings(BaseSettings):
     AZURE_API_BASE: str
     REACT_APP_API_URL:str
     REPLICATE_API_TOKEN: Optional[str] = None
+    LLAMA_CLOUD_API_KEY: Optional[str] = None
     # Log
     LOGGING_LEVEL: str = 'INFO'
 

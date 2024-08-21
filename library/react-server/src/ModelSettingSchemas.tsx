@@ -2284,7 +2284,7 @@ const CommonRagSettings = {
         properties: {
           llm_model: {
             default: "mixtral_8x7b_instruct",
-            enum: ["mixtral_8x7b_instruct"],
+            enum: ["mixtral_8x7b_instruct", "meta-llama/Llama-2-70b-chat-hf", "meta-llama/Llama-3-70b-chat-hf", "google/gemma-7b-it", "togethercomputer/Llama-2-7B-32K-Instruct","mistralai/Mixtral-8x22B-Instruct-v0.1"],
             title: "LLM Model",
             type: "string",
           },
@@ -3140,7 +3140,7 @@ const Table_baseRagSettings: ModelSettingsDict = {
       engine_prompt: {
         default: "",
         description: "The prompt for the system.",
-        title: "Summary Prompt",
+        title: "Engine Prompt",
         type: "string",
       },
       temperature: {

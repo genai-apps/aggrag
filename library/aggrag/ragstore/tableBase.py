@@ -88,22 +88,8 @@ class TableBase:
 
         self.system_prompt=tableBase_rag_setting.engine_prompt
         
-        self.llm = llm or AzureOpenAI(
-            model= tableBase_rag_setting.llm_model,
-            deployment_name= tableBase_rag_setting.llm_deployment,
-            api_key=settings.AZURE_OPENAI_KEY, 
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-            temperature = tableBase_rag_setting.temperature
-            )
-        self.embed_model = embed_model or AzureOpenAIEmbedding(
-            model = tableBase_rag_setting.embed_model,
-            deployment_name= tableBase_rag_setting.embed_deployment,
-            api_key=settings.AZURE_OPENAI_KEY,
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-        )
-
+        self.llm = llm
+        self.embed_model = embed_model
         self.documents = None
         self.index_name = tableBase_rag_setting.index_name or "tableBase_index"
         
@@ -153,7 +139,7 @@ class TableBase:
         # Filter out the PDF files
         pdf_files = [file for file in all_files if file.endswith('.pdf')]
         file_path = os.path.join(self.DATA_DIR, pdf_files[0])
-        self.documents = LlamaParse(result_type="markdown").load_data(file_path)
+        self.documents = LlamaParse(result_type="markdown", api_key=settings.LLAMA_CLOUD_API_KEY).load_data(file_path)
 
         return self.documents
 
