@@ -62,7 +62,9 @@ class TableBase:
                  iteration: str,
                  DATA_DIR: Optional[str] = None,
                  upload_type: Optional[str] = None,
-                 tableBase_rag_setting= None):
+                 tableBase_rag_setting= None,
+                 llm: str = None,
+                 embed_model: str = None):
         
         """
         Initializes a tableBase configuration for RAG with given parameters, setting up directories and logging essential information.
@@ -86,7 +88,7 @@ class TableBase:
 
         self.system_prompt=tableBase_rag_setting.engine_prompt
         
-        self.llm = AzureOpenAI(
+        self.llm = llm or AzureOpenAI(
             model= tableBase_rag_setting.llm_model.value,
             deployment_name= tableBase_rag_setting.llm_deployment.value,
             api_key=settings.AZURE_OPENAI_KEY, 
@@ -94,7 +96,7 @@ class TableBase:
             api_version=settings.OPENAI_API_VERSION,
             temperature = tableBase_rag_setting.temperature
             )
-        self.embed_model = AzureOpenAIEmbedding(
+        self.embed_model = embed_model or AzureOpenAIEmbedding(
             model = tableBase_rag_setting.embed_model.value,
             deployment_name= tableBase_rag_setting.embed_deployment.value,
             api_key=settings.AZURE_OPENAI_KEY,
