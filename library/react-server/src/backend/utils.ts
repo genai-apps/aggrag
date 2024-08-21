@@ -2318,6 +2318,8 @@ export async function index_file(params: Dict): Promise<Dict> {
     query.ragstore_settings.meta_lang_rag_setting = params.settings || {};
   else if (rag_provider === RAGProvider.Meta_llama)
     query.ragstore_settings.meta_llama_rag_setting = params.settings || {};
+  else if (rag_provider === RAGProvider.TableBase)
+    query.ragstore_settings.tableBase_rag_setting = params.settings || {};
   const { response, error } = await call_flask_backend("indexRAGFiles", query);
 
   // Fail if an error is encountered
@@ -2349,6 +2351,8 @@ export async function rag_store_chat(
     query.ragstore_settings.meta_lang_rag_setting = params.settings || {};
   else if (rag_provider === RAGProvider.Meta_llama)
     query.ragstore_settings.meta_llama_rag_setting = params.settings || {};
+  else if (rag_provider === RAGProvider.TableBase)
+    query.ragstore_settings.tableBase_rag_setting = params.settings || {};
 
   let response: Array<Dict> = [];
   // Abort if canceled

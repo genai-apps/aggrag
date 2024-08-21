@@ -2,20 +2,23 @@ from pydantic import BaseModel, Field, model_validator
 from typing import Optional, Any, Dict, Union
 from library.aggrag.core.config import settings, AzureOpenAIModelNames, AzureOpenAIModelEngines, OpenAIModelNames
 
-from library.aggrag.ragstore import Raptor, Base, SubQA, MetaLlama, MetaLang
+from library.aggrag.ragstore import Raptor, Base, SubQA, MetaLlama, MetaLang, TableBase
 from pydantic import BaseModel
 from library.aggrag.core.config import ai_services_config, all_ai_services
 
 from typing import Literal
-from library.aggrag.prompts import ( DEFAULT_CONTEXT_PROMPT, 
-                                        DEFAULT_SYSTEM_PROMPT, 
-                                        CHAT_REFINE_PROMPT_TMPL_MSGS_CONTENT, 
-                                        INDEX_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT, 
-                                        SUBQ_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT,
-                                        DEFAULT_OPENAI_SUB_QUESTION_PROMPT_TMPL,
-                                        INDEX_TEXT_QA_SYSTEM_PROMPT_CONTENT,
-                                        SUBQ_TEXT_QA_SYSTEM_PROMPT_CONTENT,
-                                        SUMMARY_PROMPT)
+from library.aggrag.prompts import (
+    DEFAULT_CONTEXT_PROMPT,
+    DEFAULT_SYSTEM_PROMPT,
+    CHAT_REFINE_PROMPT_TMPL_MSGS_CONTENT,
+    INDEX_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT,
+    SUBQ_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT,
+    DEFAULT_OPENAI_SUB_QUESTION_PROMPT_TMPL,
+    INDEX_TEXT_QA_SYSTEM_PROMPT_CONTENT,
+    SUBQ_TEXT_QA_SYSTEM_PROMPT_CONTENT,
+    SUMMARY_PROMPT,
+    DEFAULT_TABLEBASE_PROMPT
+)
 
 
 class BaseRagSetting(BaseModel):
@@ -304,12 +307,29 @@ class RaptorRagSetting(BaseModel):
     # class Config:
     #     extra = 'forbid'
 
+class TableBaseRagSetting(BaseModel):
+    ai_service: Literal["AzureOpenAI", "OpenAI", "NVIDIA"] = "AzureOpenAI"
+    chunk_size: int = 512
+    llm_model: AzureOpenAIModelNames = AzureOpenAIModelNames.gpt_35_turbo_16k
+    llm_deployment: AzureOpenAIModelEngines = AzureOpenAIModelEngines.gpt_35_turbo_16k
+    embed_model: AzureOpenAIModelNames = AzureOpenAIModelNames.text_embedding_ada_002
+    embed_deployment: AzureOpenAIModelEngines = (
+        AzureOpenAIModelEngines.text_embedding_ada_002
+    )
+    engine_prompt: str = DEFAULT_TABLEBASE_PROMPT
+    temperature: float = 0.1
+    index_name: str = "tableBase_index"
+    # class Config:
+    #     extra = 'forbid'
+
+
 class RagStoreSettings(BaseModel):
     base_rag_setting: Optional[BaseRagSetting] = None
     raptor_rag_setting: Optional[RaptorRagSetting] = None
     subqa_rag_setting: Optional[SubQARagSetting] = None
     meta_llama_rag_setting: Optional[MetaLlamaRagSetting] = None
     meta_lang_rag_setting: Optional[MetaLangRagSetting] = None
+    tableBase_rag_setting: Optional[TableBaseRagSetting] = None
 
 
 class RagStore(BaseModel):
@@ -318,6 +338,8 @@ class RagStore(BaseModel):
     subqa: Optional[SubQA] = None
     meta_llama: Optional[MetaLlama] = None
     meta_lang: Optional[MetaLang] = None
+    tableBase: Optional[TableBase] = None
+
     class Config:
         arbitrary_types_allowed = True
 
@@ -328,6 +350,7 @@ class RagStoreBool(BaseModel):
     subqa: Optional[bool] = False
     meta_llama: Optional[bool] = False
     meta_lang: Optional[bool] = False
+    tableBase: Optional[bool] = False
 
 
 class UserConfig(BaseModel):
