@@ -1284,6 +1284,9 @@ Soft failing by replacing undefined with empty strings.`,
           pingOutputNodes(id);
         });
       }
+      if (promptText) {
+        setTriggerHint("prompt-play");
+      }
     };
 
     // Now put it all together!
@@ -1292,9 +1295,6 @@ Soft failing by replacing undefined with empty strings.`,
       .then(query_llms)
       .then(query_rags)
       .catch(rejected);
-
-    console.log("run hit");
-    setTriggerHint("prompt-play");
   };
 
   const handleStopClick = useCallback(() => {

@@ -2151,6 +2151,9 @@ const App = () => {
 
   const handleClose = () => {
     setRunTour(false);
+    if (triggerHint === "prompt") {
+      setTriggerHint("textfields2");
+    }
   };
 
   const incrementHintRun = (type: keyof HintRunsType) => {
@@ -2178,9 +2181,6 @@ const App = () => {
       setSteps(updatedSteps);
       setCurrentStep(updatedSteps.length - 1);
       setRunTour(true);
-      setTimeout(() => {
-        setRunTour(false);
-      }, 3000);
     } else if (triggerHint === "textfields" && hintRuns.textField <= 1) {
       const updatedSteps = [
         ...steps,
@@ -2199,10 +2199,6 @@ const App = () => {
         setCurrentStep(updatedSteps.length - 1);
         setRunTour(true);
       }, 100);
-      setTimeout(() => {
-        setRunTour(false);
-        // setTriggerHint('textfields2')
-      }, 3000);
     } else if (triggerHint === "textfields2") {
       const updatedSteps = [
         ...steps,
@@ -2249,10 +2245,6 @@ const App = () => {
         setCurrentStep(updatedSteps.length - 1);
         setRunTour(true);
       }, 100);
-      setTimeout(() => {
-        setRunTour(false);
-        setTriggerHint("textfields2");
-      }, 4000);
     } else if (
       triggerHint === "file-upload" &&
       hintRuns.uploadfilefields <= 1
@@ -2275,18 +2267,14 @@ const App = () => {
         setCurrentStep(updatedSteps.length - 1);
         setRunTour(true);
       }, 100);
-      // setTimeout(() => {
-      //   setRunTour(false);
-      // }, 6000);
     } else if (triggerHint === "model-added" && hintRuns.model_added <= 1) {
-      // Dont’t forget to add the associated API Keys for the LLM Models you have added.
       const updatedSteps = [
         ...steps,
         {
           target: ".settings-class",
           title: "Hint",
           content:
-            "Dont’t forget to add the associated API Keys for the LLM Models you have added.",
+            "Dont’t forget to add the associated API keys for the LLM Models you have added.",
           placement: "bottom" as Placement,
           disableBeacon: true,
         },
@@ -2299,8 +2287,6 @@ const App = () => {
         setCurrentStep(updatedSteps.length - 1);
         setRunTour(true);
       }, 100);
-
-      // setTriggerHint("");
     } else if (triggerHint === "prompt-play" && hintRuns.prompthitplay <= 1) {
       const updatedSteps = [
         ...steps,
@@ -2623,7 +2609,12 @@ const App = () => {
           }}
         >
           <div
-            style={{ height: "100%", backgroundColor: "#eee", flexGrow: "1" }}
+            style={{
+              height: "100%",
+              backgroundColor: "#eee",
+              flexGrow: "1",
+              overflow: "hidden",
+            }}
           >
             {runTour && (
               <Joyride
