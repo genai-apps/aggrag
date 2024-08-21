@@ -2619,6 +2619,7 @@ const App = () => {
           onClick={() => {
             setOpenMenu(false);
             setOpenAddNode(false);
+            setSaveAndCommitBtnOpen(false);
           }}
         >
           <div
