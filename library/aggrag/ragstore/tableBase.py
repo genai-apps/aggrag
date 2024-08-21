@@ -89,16 +89,16 @@ class TableBase:
         self.system_prompt=tableBase_rag_setting.engine_prompt
         
         self.llm = llm or AzureOpenAI(
-            model= tableBase_rag_setting.llm_model.value,
-            deployment_name= tableBase_rag_setting.llm_deployment.value,
+            model= tableBase_rag_setting.llm_model,
+            deployment_name= tableBase_rag_setting.llm_deployment,
             api_key=settings.AZURE_OPENAI_KEY, 
             azure_endpoint=settings.AZURE_API_BASE,
             api_version=settings.OPENAI_API_VERSION,
             temperature = tableBase_rag_setting.temperature
             )
         self.embed_model = embed_model or AzureOpenAIEmbedding(
-            model = tableBase_rag_setting.embed_model.value,
-            deployment_name= tableBase_rag_setting.embed_deployment.value,
+            model = tableBase_rag_setting.embed_model,
+            deployment_name= tableBase_rag_setting.embed_deployment,
             api_key=settings.AZURE_OPENAI_KEY,
             azure_endpoint=settings.AZURE_API_BASE,
             api_version=settings.OPENAI_API_VERSION,

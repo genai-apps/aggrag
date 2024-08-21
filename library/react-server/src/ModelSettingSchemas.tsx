@@ -3054,6 +3054,133 @@ const Meta_langRagSettings: ModelSettingsDict = {
   postprocessors: {},
 };
 
+const Table_baseRagSettings: ModelSettingsDict = {
+  fullName: "Table_base",
+  schema: {
+    type: "object",
+    required: ["shortname"],
+    properties: {
+      shortname: {
+        type: "string",
+        title: "Nickname",
+        description: "Unique identifier to appear in Aggrag. Keep it short.",
+        default: "table_base",
+      },
+      description: {
+        type: "string",
+        title: "Description",
+        description: "Description to appear in Aggrag. Keep it short.",
+        default: "User description",
+      },
+      ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+          {
+            const: "Nvidia",
+            title: "Nvidia",
+          },
+          {
+            const: "Replicate",
+            title: "Replicate",
+          },
+          {
+            const: "Together",
+            title: "Together",
+          },
+        ],
+        title: "AI service",
+        type: "string",
+      },
+      llm_model: {
+        title: "LLM Model",
+        type: "string",
+      },
+      embed_ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+        ],
+        title: "Embedding AI service",
+        type: "string",
+      },
+      embed_model: {
+        title: "Embedding Model",
+        type: "string",
+      },
+      chunk_size: {
+        default: 512,
+        maximum: 2048,
+        minimum: 0,
+        title: "Chunk Size",
+        type: "integer",
+        "ui:widget": "range",
+      },
+      index_name: {
+        default: "table_base_index",
+        description: "Index name to be used",
+        title: "Index Name",
+        type: "string",
+        readOnly: true,
+      },
+      engine_prompt: {
+        default: "",
+        description: "The prompt for the system.",
+        title: "Summary Prompt",
+        type: "string",
+      },
+      temperature: {
+        default: 0.2,
+        description: "Controls the 'creativity' or randomness of the response.",
+        maximum: 1,
+        minimum: 0,
+        multipleOf: 0.01,
+        title: "temperature",
+        type: "number",
+      },
+    },
+    allOf: CommonRagSettings.allOf,
+  },
+  uiSchema: {
+    "ui:submitButtonOptions": {
+      props: {
+        disabled: false,
+        className: "mantine-UnstyledButton-root mantine-Button-root",
+      },
+      norender: false,
+      submitText: "Submit",
+    },
+    shortname: {
+      "ui:autofocus": true,
+    },
+    description: {},
+    engine_prompt: {
+      "ui:cols": 50,
+      "ui:rows": 10,
+      "ui:widget": "textarea",
+    },
+    temperature: {
+      "ui:help": "Defaults to 0.2",
+      "ui:widget": "range",
+    },
+  },
+  postprocessors: {},
+};
+
 // A lookup table indexed by base_model.
 export const ModelSettings: Dict<ModelSettingsDict> = {
   "gpt-3.5-turbo": ChatGPTSettings,
@@ -3080,6 +3207,7 @@ export const ModelSettings: Dict<ModelSettingsDict> = {
   raptor: RaptorRagSettings,
   meta_llama: Meta_llamaRagSettings,
   meta_lang: Meta_langRagSettings,
+  tableBase: Table_baseRagSettings,
 };
 
 export function getSettingsSchemaForLLM(
@@ -3125,6 +3253,7 @@ export function getSettingsSchemaForRAG(
     [RAGProvider.Raptor]: RaptorRagSettings,
     [RAGProvider.Meta_llama]: Meta_llamaRagSettings,
     [RAGProvider.Meta_lang]: Meta_langRagSettings,
+    [RAGProvider.TableBase]: Table_baseRagSettings,
   };
 
   if (rag_provider === RAGProvider.Custom) return ModelSettings[rag_name];
