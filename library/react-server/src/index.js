@@ -5,14 +5,17 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { ContextMenuProvider } from "mantine-contextmenu";
 import { AlertModalProvider } from "./AlertModal";
+import { NotificationProvider } from "./Notification";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <AlertModalProvider>
-      <ContextMenuProvider>
-        <App />
-      </ContextMenuProvider>
+      <NotificationProvider>
+        <ContextMenuProvider>
+          <App />
+        </ContextMenuProvider>
+      </NotificationProvider>
     </AlertModalProvider>
   </React.StrictMode>,
 );
