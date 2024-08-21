@@ -183,6 +183,7 @@ export enum NativeRAG {
   Raptor = "raptor",
   Meta_llama = "meta_llama",
   Meta_lang = "meta_lang",
+  TableBase = "tableBase",
 }
 
 export type RAG = string | NativeRAG;
@@ -245,6 +246,7 @@ export enum RAGProvider {
   Raptor = "raptor",
   Meta_llama = "meta_llama",
   Meta_lang = "meta_lang",
+  TableBase = "tableBase",
   Custom = "__custom",
 }
 
@@ -260,6 +262,7 @@ export function getRAGProvider(rag: LLM): RAGProvider | undefined {
   else if (rag_name?.startsWith("Raptor")) return RAGProvider.Raptor;
   else if (rag_name?.startsWith("Meta_llama")) return RAGProvider.Meta_llama;
   else if (rag_name?.startsWith("Meta_lang")) return RAGProvider.Meta_lang;
+  else if (rag_name?.startsWith("TableBase")) return RAGProvider.TableBase;
   else if (rag.toString().startsWith("__custom/")) return RAGProvider.Custom;
 
   return undefined;

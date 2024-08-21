@@ -17,6 +17,7 @@ from library.aggrag.core.schema import (
     RaptorRagSetting,
     MetaLlamaRagSetting,
     MetaLangRagSetting,
+    TableBaseRagSetting,
 )
 from library.providers.dalai import call_dalai
 from library.providers import ProviderRegistry
@@ -968,8 +969,7 @@ def indexRAGFiles():
 
     raw_docs_path = os.path.dirname(working_dir)
 
-    rag_models = ["base", "raptor", "subqa", "meta_llama", "meta_lang"]
-
+    rag_models = ["base", "raptor", "subqa", "meta_llama", "meta_lang", "tableBase"]
     if rag_name not in rag_models:
         return jsonify(
             {
@@ -988,11 +988,12 @@ def indexRAGFiles():
         "raptor_rag_setting",
         "meta_llama_rag_setting",
         "meta_lang_rag_setting",
+        "tableBase_rag_setting",
     }
     if not set(ragstore_settings.keys()).issubset(allowed_rag_settings):
         return jsonify(
             {
-                "error": 'ragstore_settings should be one of ["base_rag_setting", "subqa_rag_setting", "raptor_rag_setting", "meta_llama_rag_setting", "meta_lang_rag_setting"]'
+                "error": 'ragstore_settings should be one of ["base_rag_setting", "subqa_rag_setting", "raptor_rag_setting", "meta_llama_rag_setting", "meta_lang_rag_setting", "tableBase_rag_setting"]'
             }
         )
 
@@ -1023,6 +1024,11 @@ def indexRAGFiles():
             meta_lang_rag_setting=(
                 MetaLangRagSetting(**ragstore_settings.get("meta_lang_rag_setting"))
                 if ragstore_settings.get("meta_lang_rag_setting")
+                else None
+            ),
+            tableBase_rag_setting=(
+                TableBaseRagSetting(**ragstore_settings.get("tableBase_rag_setting"))
+                if ragstore_settings.get("tableBase_rag_setting")
                 else None
             ),
         )
@@ -1545,7 +1551,7 @@ def RAGStoreChat():
 
     use_case_name = working_dir.split("/")[-2]
     iteration = working_dir.split("/")[-1]
-    rag_models = ["base", "raptor", "subqa", "meta_llama", "meta_lang"]
+    rag_models = ["base", "raptor", "subqa", "meta_llama", "meta_lang", "tableBase"]
 
     if rag_name not in rag_models:
         return jsonify(
@@ -1563,11 +1569,12 @@ def RAGStoreChat():
         "raptor_rag_setting",
         "meta_llama_rag_setting",
         "meta_lang_rag_setting",
+        "tableBase_rag_setting",
     }
     if not set(ragstore_settings.keys()).issubset(allowed_rag_settings):
         return jsonify(
             {
-                "error": 'ragstore_settings should be one of ["base_rag_setting", "subqa_rag_setting", "raptor_rag_setting", "meta_llama_rag_setting", "meta_lang_rag_setting"]'
+                "error": 'ragstore_settings should be one of ["base_rag_setting", "subqa_rag_setting", "raptor_rag_setting", "meta_llama_rag_setting", "meta_lang_rag_setting", "tableBase_rag_setting]'
             }
         )
 
@@ -1600,6 +1607,11 @@ def RAGStoreChat():
                 if ragstore_settings.get("meta_lang_rag_setting")
                 else None
             ),
+            tableBase_rag_setting=(
+                TableBaseRagSetting(**ragstore_settings.get("tableBase_rag_setting"))
+                if ragstore_settings.get("tableBase_rag_setting")
+                else None
+            ),
         )
 
     except ValidationError as e:
@@ -1616,27 +1628,28 @@ def RAGStoreChat():
     working_dir = os.getcwd()
     print(f"current working dir: {working_dir} ")
     print(f"data dir: {aggrag.BASE_DIR} {aggrag.DATA_DIR} ")
-
-    directory_path = f"{working_dir}{aggrag.BASE_DIR}/index/{rag_name}_index"
+    index_folder = os.listdir(f"{working_dir}{aggrag.BASE_DIR}/index/")[0]
+    directory_path = f"{working_dir}{aggrag.BASE_DIR}/index/{index_folder}"
     print(f"directory path: {directory_path}. Is dir: {os.path.isdir(directory_path)}")
     # _ = aggrag.documents_loader(DIR=f"{working_dir}{aggrag.DATA_DIR}")
     try:
 
         loop = get_event_loop()
-        # if os.path.isdir(directory_path):
-        #     print(f"The directory '{directory_path}' exists.")
-        # else:
-        #     print(f"Creating index as the directory '{directory_path}' does not exist. ")
-        #     _ = aggrag.documents_loader(DIR=f"{working_dir}{aggrag.DATA_DIR}")
+        if os.path.isdir(directory_path):
+            print(f"The directory '{directory_path}' exists.")
+        else:
+            print(
+                f"Creating index as the directory '{directory_path}' does not exist. "
+            )
+            _ = aggrag.documents_loader(DIR=f"{working_dir}{aggrag.DATA_DIR}")
 
-        #     index = asyncio.run( aggrag.create_all_index_async(
-        #             documents=aggrag.documents,
-        #             exclude=[]
-        #         ))
+            index = asyncio.run(
+                aggrag.create_all_index_async(documents=aggrag.documents, exclude=[])
+            )
 
-        # index = asyncio.run(aggrag.retrieve_all_index_async())
+        index = asyncio.run(aggrag.retrieve_all_index_async())
 
-        # asyncio.run(aggrag.load_chat_engines())
+        asyncio.run(aggrag.load_chat_engines())
 
         chat_answer = loop.run_until_complete(aggrag.ragstore_chat(query=query))
         print(
