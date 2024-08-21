@@ -818,6 +818,7 @@ const App = () => {
   ) => {
     try {
       setOpenMenu(false);
+      setTriggerHint("");
       if (isChangesNotSaved) {
         if (
           activeUseCase.usecase === ItemLabel &&
@@ -2152,6 +2153,8 @@ const App = () => {
   const handleClose = () => {
     setRunTour(false);
     if (triggerHint === "prompt") {
+      setTriggerHint("textfields3");
+    } else if (triggerHint === "textfields") {
       setTriggerHint("textfields2");
     }
   };
@@ -2173,7 +2176,8 @@ const App = () => {
         {
           target: ".add-node",
           title: "Hint",
-          content: "Add a node from the list to get started with your work.",
+          content:
+            "Add a Input Data/Knowledge base node from the list to get started with your work.",
           placement: "left" as Placement,
           disableBeacon: true,
         },
@@ -2181,7 +2185,30 @@ const App = () => {
       setSteps(updatedSteps);
       setCurrentStep(updatedSteps.length - 1);
       setRunTour(true);
+      setTriggerHint("");
     } else if (triggerHint === "textfields" && hintRuns.textField <= 1) {
+      // Specify input text to prompt or chat nodes. You can also declare variables in brackets to chain TextFields together
+      const updatedSteps = [
+        ...steps,
+        {
+          target: ".text-fields-node-for-hint",
+          title: "Hint",
+          content:
+            "Specify input text to prompt or chat nodes. You can also declare variables in brackets to chain TextFields together",
+          placement: "left" as Placement,
+          disableBeacon: true,
+        },
+      ];
+
+      setSteps(updatedSteps);
+      setRunTour(false);
+      setTimeout(() => {
+        setCurrentStep(updatedSteps.length - 1);
+        setRunTour(true);
+      }, 100);
+    }
+    // here we are using "textfields" because we have type directly coming from addNode method
+    else if (triggerHint === "textfields2" && hintRuns.textField <= 1) {
       const updatedSteps = [
         ...steps,
         {
@@ -2199,7 +2226,7 @@ const App = () => {
         setCurrentStep(updatedSteps.length - 1);
         setRunTour(true);
       }, 100);
-    } else if (triggerHint === "textfields2") {
+    } else if (triggerHint === "textfields3") {
       const updatedSteps = [
         ...steps,
         {
@@ -2217,6 +2244,7 @@ const App = () => {
       setTimeout(() => {
         setCurrentStep(updatedSteps.length - 1);
         setRunTour(true);
+        setTriggerHint("");
       }, 100);
     } else if (triggerHint === "prompt" && hintRuns.prompt <= 1) {
       const updatedSteps = [
@@ -2255,7 +2283,7 @@ const App = () => {
           target: ".file-fields-node",
           title: "Hint",
           content:
-            "To connect FileFields Node to Prompt Node, add a RAG. Then you can connect the node and “Create Index”.",
+            "'Add a RAG' to connect the FileFields Node to the Prompt Node, first. Then, connect the nodes and select 'Create Index'.",
           placement: "bottom" as Placement,
           disableBeacon: true,
         },
@@ -2266,6 +2294,7 @@ const App = () => {
       setTimeout(() => {
         setCurrentStep(updatedSteps.length - 1);
         setRunTour(true);
+        setTriggerHint("");
       }, 100);
     } else if (triggerHint === "model-added" && hintRuns.model_added <= 1) {
       const updatedSteps = [
@@ -2286,6 +2315,7 @@ const App = () => {
       setTimeout(() => {
         setCurrentStep(updatedSteps.length - 1);
         setRunTour(true);
+        setTriggerHint("");
       }, 100);
     } else if (triggerHint === "prompt-play" && hintRuns.prompthitplay <= 1) {
       const updatedSteps = [
@@ -2691,7 +2721,7 @@ const App = () => {
             >
               <Background color="#999" gap={16} />
               <Controls showZoom={true} />
-              {/* <MiniMap zoomable pannable /> */}
+              <MiniMap zoomable pannable />
             </ReactFlow>
           </div>
         </div>
@@ -3289,7 +3319,7 @@ const App = () => {
                     }}
                   >
                     <div ref={saveRef}>
-                      <Menu position="top-start">
+                      <Menu position="top-start" opened={saveAndCommitBtnOpen}>
                         <div>
                           <Menu.Target>
                             <div
