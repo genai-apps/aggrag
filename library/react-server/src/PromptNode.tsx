@@ -308,6 +308,8 @@ const PromptNode: React.FC<PromptNodeProps> = ({
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
 
+  const [varConnected, setVarConnected] = useState(false);
+
   const triggerAlert = useCallback(
     (msg: string) => {
       setProgress(undefined);
@@ -411,13 +413,13 @@ const PromptNode: React.FC<PromptNodeProps> = ({
       id,
     ],
   );
-
   const handleOnConnect = useCallback(() => {
     if (node_type === "chat") return; // always show when chat node
     // Re-pull data and update show cont toggle:
     try {
       const pulled_data = pullInputData(templateVars, id);
       updateShowContToggle(pulled_data);
+      setVarConnected(true);
     } catch (err) {
       console.error(err);
     }
@@ -1284,7 +1286,8 @@ Soft failing by replacing undefined with empty strings.`,
           pingOutputNodes(id);
         });
       }
-      if (promptText) {
+      // code for showing hint when play button is clicked
+      if (promptText && varConnected) {
         setTriggerHint("prompt-play");
       }
     };

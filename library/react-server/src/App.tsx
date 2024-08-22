@@ -330,7 +330,7 @@ const App = () => {
     {
       target: ".use-case",
       title: "Hint",
-      content: "Create a new Use case and iteration to get started.",
+      content: "Create a new use case and iteration to get started.",
       placement: "bottom" as Placement,
       disableBeacon: true,
     },
@@ -602,8 +602,8 @@ const App = () => {
         rf_inst.setViewport({
           x: flow.viewport.x || 0,
           y: flow.viewport.y || 0,
-          // zoom: flow.viewport.zoom || 1,
-          zoom: 0.2,
+          zoom: flow.viewport.zoom || 1,
+          // zoom: (flow.viewport.x > 400 ? 0.2 : flow.viewport.zoom) || 1,
         });
       else rf_inst.setViewport({ x: 0, y: 0, zoom: 1 });
     }
@@ -2184,7 +2184,7 @@ const App = () => {
           target: ".add-node",
           title: "Hint",
           content:
-            "Add a Input Data/Knowledge base node from the list to get started with your work.",
+            "Add a Input Data/Knowledge Base node from the list to get started with your work.",
           placement: "left" as Placement,
           disableBeacon: true,
         },
@@ -2201,7 +2201,7 @@ const App = () => {
           target: ".text-fields-node-for-hint",
           title: "Hint",
           content:
-            "Specify input text to prompt or chat nodes. You can also declare variables in brackets to chain TextFields together",
+            "Specify your input text here. You can also declare variables in brackets to chain TextFields together.",
           placement: "left" as Placement,
           disableBeacon: true,
         },
@@ -2262,7 +2262,6 @@ const App = () => {
           content: (
             <div>
               <div>You can add variables in the node like below:</div>
-              <br />
               <br />
               <span style={{ fontStyle: "italic", color: "#098BCB" }}>
                 {"{variable_name}"}
@@ -2331,7 +2330,7 @@ const App = () => {
           target: ".add-node",
           title: "Hint",
           content:
-            "Add an Evaluator or Visualizer Node node to evaluate/inspect/visualize the responses further.",
+            "Add an Evaluator or Visualizer Node to evaluate/inspect/visualize the responses further.",
           placement: "bottom" as Placement,
           disableBeacon: true,
         },
@@ -2731,7 +2730,9 @@ const App = () => {
               // onNodeDrag={handleNodeDrag}
             >
               <Background color="#999" gap={16} />
-              <Controls showZoom={true} />
+              <div>
+                <Controls showZoom={true} />
+              </div>
               <MiniMap zoomable pannable />
             </ReactFlow>
           </div>
@@ -2766,9 +2767,8 @@ const App = () => {
                 position="top-start"
                 closeOnClickOutside={true}
                 closeOnEscape
-                trigger="click"
+                trigger="hover"
                 width={270}
-                opened={openMenu}
               >
                 <Menu.Target>
                   <Button
@@ -2778,7 +2778,6 @@ const App = () => {
                     onClick={() => {
                       setSaveAndCommitBtnOpen(false);
                       setOpenMenu(!openMenu);
-                      setOpenAddNode(false);
                     }}
                     variant="gradient"
                     className="use-case"
@@ -3082,8 +3081,7 @@ const App = () => {
                 closeOnEscape
                 styles={{ item: { maxHeight: "28px" } }}
                 disabled={isCurrenFileLocked}
-                trigger="click"
-                opened={openAddNode}
+                trigger="hover"
               >
                 <Menu.Target>
                   <Button
@@ -3096,11 +3094,7 @@ const App = () => {
                       (activeUseCase && activeUseCase.usecase === "") ||
                       isCurrenFileLocked
                     }
-                    onClick={() => {
-                      setOpenAddNode(!openAddNode);
-                      setOpenMenu(false);
-                    }} // to close use cases menu
-                    onFocus={() => setOpenMenu(false)}
+                    onClick={() => setOpenAddNode(!openAddNode)} // to close use cases menu
                   >
                     Add Node +
                   </Button>
