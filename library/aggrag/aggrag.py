@@ -1,3 +1,4 @@
+import json
 import logging
 import asyncio
 import os
@@ -16,7 +17,7 @@ from library.aggrag.core.schema import RagStoreBool, RagStore, RagStoreSettings,
 logger = logging.getLogger(__name__)
 
 
-class AggRAG:
+class AggRAGBase:
     def __init__(self, 
                  DATA_DIR: str, 
                  ragstore_bool: RagStoreBool, 
@@ -176,6 +177,9 @@ class AggRAG:
         Using multiprocessing might cause more overhead then only running asyncio in case of creating index.
         TODO: Add async for loop to create multiple index may be using multiprocessing or only async
         It will be a good idea however to use different embedding/llm models for each rag to avoid "rush" initially.
+
+        Note:
+        The function does not create indexes for 'meta_llama' and 'meta_lang' RAGs.
         """
         if not documents:
             documents = self.documents
@@ -192,13 +196,13 @@ class AggRAG:
             tasks.append(self.ragstore.subqa.create_index_async(documents))
 
         if self.ragstore.meta_llama and self.ragstore.meta_llama.name not in exclude:
-            tasks.append(self.ragstore.meta_llama.create_index_async(documents))        
+            tasks.append(self.ragstore.meta_llama.create_index_async(documents))
 
         if self.ragstore.meta_lang and self.ragstore.meta_lang.name not in exclude:
             tasks.append(self.ragstore.meta_lang.create_index_async(documents)) 
         
         if self.ragstore.tableBase and self.ragstore.tableBase.name not in exclude:
-            tasks.append(self.ragstore.tableBase.create_index_async(self.table_docs)) 
+            tasks.append(self.ragstore.tableBase.create_index_async(self.table_docs))
 
 
 
@@ -324,3 +328,95 @@ class AggRAG:
         except Exception as e:
             logger.error(f"Error in ragstorechat: {str(e)}")
             raise 
+
+class AggRAG(AggRAGBase):
+    def __init__(
+            self,
+            usecase_name=None,
+            iteration=None,
+            ragstore_bool: RagStoreBool = RagStoreBool(base=True),
+            upload_type=None,
+            DATA_DIR=None,
+            ragstore_settings: Optional[RagStoreSettings] = None,
+            cforge_file_path: str = None
+    ):
+        if cforge_file_path:
+            ragstore_bool, ragstore_settings, DATA_DIR, iteration, usecase_name = self.__parse_cforge_file(
+                file_path=cforge_file_path
+            )
+
+        super().__init__(
+            usecase_name=usecase_name,
+            iteration=iteration,
+            ragstore_bool=ragstore_bool,
+            upload_type=upload_type,
+            DATA_DIR=DATA_DIR,
+            ragstore_settings=ragstore_settings
+        )
+
+    def __parse_cforge_file(self, file_path: str) -> tuple[RagStoreBool, RagStoreSettings, str, str, str]:
+        """
+            Parses the cforge file to extract configuration details.
+
+            param file_path: The path to the cforge file.
+            return: Extracted ragstore_bool, ragstore_settings, working_dir, iteration, usecase_name.
+        """
+        try:
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+
+            rags_list = list(
+                next(
+                    map(
+                        lambda x: x.get('data', {}).get('rags'),
+                        filter(lambda x: bool(x.get('data', {}).get('rags')), data['flow']['nodes'])
+                    ),
+                    None
+                )
+            )
+            if not rags_list:
+                raise Exception(f"Unable to parse rag list from the file")
+
+            # Extract ragstore_bool, ragstore_settings from the rags data
+            ragstore_bool, ragstore_settings = self.__extract_rag_store_and_settings_from_rags_data(rags_list)
+
+            # Extract working_dir, iteration, usecase_name from the file path
+            working_dir, iteration, usecase_name = self.__extract_properties_from_file_path(file_path)
+
+            return ragstore_bool, ragstore_settings, working_dir, iteration, usecase_name
+
+        except Exception as e:
+            raise Exception(f"Unable to parse cforge file with reason -> {e}")
+
+    def __extract_rag_store_and_settings_from_rags_data(self, rags_list: list) -> tuple[RagStoreBool, RagStoreSettings]:
+        rag_settings_property_name_mapping = {
+            'base': 'base_rag_setting',
+            'raptor': 'raptor_rag_setting',
+            'subqa': 'subqa_rag_setting',
+            'meta_llama': 'meta_llama_rag_setting',
+            'meta_lang': 'meta_lang_rag_setting',
+        }
+        rags_dict, rag_settings = {}, {}
+        for rag in rags_list:
+            rag_name = rag.get('model')
+            rags_dict[rag_name] = True
+            rag_settings[rag_settings_property_name_mapping.get(rag_name)] = rag.get('settings')
+
+        return RagStoreBool(**rags_dict), RagStoreSettings(**rag_settings)
+
+    def __extract_properties_from_file_path(self, file_path: str) -> tuple[str, str, str]:
+        """
+        Extracts the Working DIR, Iteration, Use Case Name from the given file path.
+
+        param file_path: The path to the cforge file.
+        return: Tuple(Working DIR, Iteration, Use Case Name).
+        """
+        try:
+            working_dir = os.path.dirname(file_path)
+            path_params = working_dir.split('/')
+
+            iteration = path_params[-1]
+            usecase_name = path_params[-2]
+            return working_dir, iteration, usecase_name
+        except IndexError as e:
+            raise Exception(f"Error extracting params from {file_path}: {e}")

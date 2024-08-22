@@ -1,152 +1,646 @@
 aiofiles==23.2.1
-aiohttp==3.9.5
+    # via -r requirements.in
+aiohappyeyeballs==2.3.5
+    # via aiohttp
+aiohttp==3.10.3
+    # via
+    #   datasets
+    #   fsspec
+    #   langchain
+    #   langchain-community
+    #   llama-index-core
+    #   llama-index-legacy
 aiosignal==1.3.1
+    # via aiohttp
 annotated-types==0.7.0
+    # via pydantic
 anthropic==0.28.0
+    # via -r requirements.in
 anyio==4.4.0
+    # via
+    #   anthropic
+    #   httpx
+    #   openai
 appdirs==1.4.4
+    # via ragas
 asgiref==3.8.1
-attrs==23.2.0
+    # via -r requirements.in
+async-timeout==4.0.3
+    # via
+    #   aiohttp
+    #   langchain
+attrs==24.2.0
+    # via
+    #   aiohttp
+    #   lancedb
 azure-core==1.30.2
-azure-identity==1.16.0
+    # via azure-identity
+azure-identity==1.17.1
+    # via llama-index-llms-azure-openai
 beautifulsoup4==4.12.3
+    # via llama-index-readers-file
 bidict==0.23.1
+    # via python-socketio
 blinker==1.8.2
-boto3==1.34.122
-botocore==1.34.122
-cachetools==5.3.3
-certifi==2024.6.2
-cffi==1.16.0
+    # via flask
+boto3==1.34.160
+    # via cohere
+botocore==1.34.160
+    # via
+    #   boto3
+    #   s3transfer
+build==1.2.1
+    # via pip-tools
+cachetools==5.4.0
+    # via
+    #   google-auth
+    #   lancedb
+certifi==2024.7.4
+    # via
+    #   httpcore
+    #   httpx
+    #   requests
+cffi==1.17.0
+    # via cryptography
 charset-normalizer==3.3.2
+    # via requests
 click==8.1.7
+    # via
+    #   flask
+    #   nltk
+    #   pip-tools
 cohere==5.5.6
+    # via -r requirements.in
 cryptography==42.0.8
+    # via
+    #   azure-identity
+    #   msal
+    #   pyjwt
 dalaipy==2.0.2
+    # via -r requirements.in
 dataclasses-json==0.6.7
-datasets==2.19.2
-Deprecated==1.2.14
+    # via
+    #   langchain-community
+    #   llama-index-core
+    #   llama-index-legacy
+datasets==2.21.0
+    # via ragas
+decorator==5.1.1
+    # via retry
+deprecated==1.2.14
+    # via
+    #   llama-index-core
+    #   llama-index-legacy
+deprecation==2.1.0
+    # via lancedb
 dill==0.3.8
+    # via
+    #   datasets
+    #   multiprocess
 dirtyjson==1.0.8
+    # via
+    #   llama-index-core
+    #   llama-index-legacy
 distro==1.9.0
-fastavro==1.9.4
-filelock==3.14.0
-Flask==3.0.3
-Flask-Cors==4.0.1
+    # via
+    #   anthropic
+    #   openai
+exceptiongroup==1.2.2
+    # via anyio
+fastavro==1.9.5
+    # via cohere
+filelock==3.15.4
+    # via
+    #   datasets
+    #   huggingface-hub
+flask==3.0.3
+    # via
+    #   -r requirements.in
+    #   flask-cors
+flask-cors==4.0.1
+    # via -r requirements.in
 frozenlist==1.4.1
-fsspec==2024.3.1
+    # via
+    #   aiohttp
+    #   aiosignal
+fsspec[http]==2024.6.1
+    # via
+    #   datasets
+    #   huggingface-hub
+    #   llama-index-core
+    #   llama-index-legacy
 google-ai-generativelanguage==0.6.4
-google-api-core==2.19.0
-google-api-python-client==2.132.0
-google-auth==2.30.0
+    # via google-generativeai
+google-api-core[grpc]==2.19.1
+    # via
+    #   google-ai-generativelanguage
+    #   google-api-python-client
+    #   google-generativeai
+google-api-python-client==2.140.0
+    # via google-generativeai
+google-auth==2.33.0
+    # via
+    #   google-ai-generativelanguage
+    #   google-api-core
+    #   google-api-python-client
+    #   google-auth-httplib2
+    #   google-generativeai
 google-auth-httplib2==0.2.0
+    # via google-api-python-client
 google-generativeai==0.6.0
-googleapis-common-protos==1.63.1
+    # via -r requirements.in
+googleapis-common-protos==1.63.2
+    # via
+    #   google-api-core
+    #   grpcio-status
 greenlet==3.0.3
-grpcio==1.64.1
+    # via sqlalchemy
+grpcio==1.65.4
+    # via
+    #   google-api-core
+    #   grpcio-status
 grpcio-status==1.62.2
+    # via
+    #   -r requirements.in
+    #   google-api-core
 h11==0.14.0
+    # via
+    #   httpcore
+    #   wsproto
 httpcore==1.0.5
+    # via httpx
 httplib2==0.22.0
+    # via
+    #   google-api-python-client
+    #   google-auth-httplib2
 httpx==0.27.0
+    # via
+    #   anthropic
+    #   cohere
+    #   llama-index-core
+    #   llama-index-legacy
+    #   llama-index-llms-azure-openai
+    #   llamaindex-py-client
+    #   openai
 httpx-sse==0.4.0
-huggingface-hub==0.23.3
+    # via cohere
+huggingface-hub==0.24.5
+    # via
+    #   datasets
+    #   tokenizers
 idna==3.7
+    # via
+    #   anyio
+    #   httpx
+    #   requests
+    #   yarl
+importlib-metadata==8.2.0
+    # via
+    #   build
+    #   flask
 itsdangerous==2.2.0
-Jinja2==3.1.4
-jiter==0.4.1
+    # via flask
+jinja2==3.1.4
+    # via flask
+jiter==0.5.0
+    # via
+    #   anthropic
+    #   openai
 jmespath==1.0.1
+    # via
+    #   boto3
+    #   botocore
 joblib==1.4.2
+    # via
+    #   nltk
+    #   pynndescent
+    #   scikit-learn
 jsonpatch==1.33
-jsonpointer==2.4
-langchain==0.2.3
-langchain-community==0.2.4
-langchain-core==0.2.5
-langchain-openai==0.1.8
-langchain-text-splitters==0.2.1
-langsmith==0.1.75
+    # via langchain-core
+jsonpointer==3.0.0
+    # via jsonpatch
+lancedb==0.12.0
+    # via llama-index-vector-stores-lancedb
+langchain==0.2.13
+    # via
+    #   langchain-community
+    #   ragas
+langchain-community==0.2.12
+    # via ragas
+langchain-core==0.2.30
+    # via
+    #   langchain
+    #   langchain-community
+    #   langchain-openai
+    #   langchain-text-splitters
+    #   ragas
+langchain-openai==0.1.21
+    # via ragas
+langchain-text-splitters==0.2.2
+    # via langchain
+langsmith==0.1.99
+    # via
+    #   langchain
+    #   langchain-community
+    #   langchain-core
 llama-index==0.10.43
-llama-index-agent-openai==0.2.7
-llama-index-cli==0.1.12
+    # via -r requirements.in
+llama-index-agent-openai==0.2.9
+    # via
+    #   llama-index
+    #   llama-index-program-openai
+llama-index-cli==0.1.13
+    # via llama-index
 llama-index-core==0.10.43
+    # via
+    #   llama-index
+    #   llama-index-agent-openai
+    #   llama-index-cli
+    #   llama-index-embeddings-azure-openai
+    #   llama-index-embeddings-openai
+    #   llama-index-indices-managed-llama-cloud
+    #   llama-index-llms-azure-openai
+    #   llama-index-llms-openai
+    #   llama-index-multi-modal-llms-openai
+    #   llama-index-packs-raptor
+    #   llama-index-program-openai
+    #   llama-index-question-gen-openai
+    #   llama-index-readers-file
+    #   llama-index-readers-llama-parse
+    #   llama-index-vector-stores-lancedb
+    #   llama-parse
 llama-index-embeddings-azure-openai==0.1.10
-llama-index-embeddings-openai==0.1.10
+    # via -r requirements.in
+llama-index-embeddings-openai==0.1.11
+    # via
+    #   llama-index
+    #   llama-index-cli
+    #   llama-index-embeddings-azure-openai
 llama-index-indices-managed-llama-cloud==0.1.6
+    # via llama-index
 llama-index-legacy==0.9.48
-llama-index-llms-azure-openai==0.1.8
-llama-index-llms-openai==0.1.22
-llama-index-multi-modal-llms-openai==0.1.6
+    # via llama-index
+llama-index-llms-azure-openai==0.1.10
+    # via llama-index-embeddings-azure-openai
+llama-index-llms-openai==0.1.26
+    # via
+    #   llama-index
+    #   llama-index-agent-openai
+    #   llama-index-cli
+    #   llama-index-llms-azure-openai
+    #   llama-index-multi-modal-llms-openai
+    #   llama-index-packs-raptor
+    #   llama-index-program-openai
+    #   llama-index-question-gen-openai
+llama-index-multi-modal-llms-openai==0.1.9
+    # via llama-index
+llama-index-packs-raptor==0.1.3
+    # via -r requirements.in
 llama-index-program-openai==0.1.6
+    # via
+    #   llama-index
+    #   llama-index-question-gen-openai
 llama-index-question-gen-openai==0.1.3
-llama-index-readers-file==0.1.23
-llama-index-readers-llama-parse==0.1.4
-llama-parse==0.4.4
+    # via llama-index
+llama-index-readers-file==0.1.33
+    # via llama-index
+llama-index-readers-llama-parse==0.1.6
+    # via llama-index
+llama-index-vector-stores-lancedb==0.1.7
+    # via -r requirements.in
+llama-parse==0.4.9
+    # via llama-index-readers-llama-parse
 llamaindex-py-client==0.1.19
-MarkupSafe==2.1.5
+    # via
+    #   llama-index-core
+    #   llama-index-indices-managed-llama-cloud
+llvmlite==0.43.0
+    # via
+    #   numba
+    #   pynndescent
+markupsafe==2.1.5
+    # via
+    #   jinja2
+    #   werkzeug
 marshmallow==3.21.3
+    # via dataclasses-json
 mistune==3.0.2
-msal==1.28.0
-msal-extensions==1.1.0
+    # via -r requirements.in
+msal==1.30.0
+    # via
+    #   azure-identity
+    #   msal-extensions
+msal-extensions==1.2.0
+    # via azure-identity
 multidict==6.0.5
+    # via
+    #   aiohttp
+    #   yarl
 multiprocess==0.70.16
+    # via datasets
 mypy-extensions==1.0.0
+    # via typing-inspect
 nest-asyncio==1.6.0
+    # via
+    #   llama-index-core
+    #   llama-index-legacy
+    #   ragas
 networkx==3.2.1
+    # via
+    #   llama-index-core
+    #   llama-index-legacy
 nltk==3.8.1
+    # via
+    #   llama-index-core
+    #   llama-index-legacy
+numba==0.60.0
+    # via
+    #   pynndescent
+    #   umap-learn
 numpy==1.26.4
-openai==1.33.0
-orjson==3.10.3
-packaging==23.2
+    # via
+    #   datasets
+    #   langchain
+    #   langchain-community
+    #   llama-index-core
+    #   llama-index-legacy
+    #   numba
+    #   pandas
+    #   pyarrow
+    #   pylance
+    #   ragas
+    #   scikit-learn
+    #   scipy
+    #   umap-learn
+openai==1.40.6
+    # via
+    #   langchain-openai
+    #   llama-index-agent-openai
+    #   llama-index-core
+    #   llama-index-legacy
+    #   ragas
+orjson==3.10.7
+    # via langsmith
+overrides==7.7.0
+    # via lancedb
+packaging==24.1
+    # via
+    #   build
+    #   datasets
+    #   deprecation
+    #   huggingface-hub
+    #   lancedb
+    #   langchain-core
+    #   marshmallow
+    #   plotly
 pandas==2.2.2
+    # via
+    #   datasets
+    #   llama-index-core
+    #   llama-index-legacy
 parameterized==0.9.0
-pillow==10.3.0
-portalocker==2.8.2
-proto-plus==1.23.0
-protobuf==4.25.3
-pyarrow==16.1.0
-pyarrow-hotfix==0.6
+    # via cohere
+pillow==10.4.0
+    # via llama-index-core
+pip-tools==7.4.1
+    # via -r requirements.in
+plotly==5.22.0
+    # via -r requirements.in
+portalocker==2.10.1
+    # via msal-extensions
+proto-plus==1.24.0
+    # via
+    #   google-ai-generativelanguage
+    #   google-api-core
+protobuf==4.25.4
+    # via
+    #   google-ai-generativelanguage
+    #   google-api-core
+    #   google-generativeai
+    #   googleapis-common-protos
+    #   grpcio-status
+    #   proto-plus
+py==1.11.0
+    # via retry
+pyarrow==17.0.0
+    # via
+    #   datasets
+    #   pylance
 pyasn1==0.6.0
-pyasn1_modules==0.4.0
+    # via
+    #   pyasn1-modules
+    #   rsa
+pyasn1-modules==0.4.0
+    # via google-auth
 pycparser==2.22
-pydantic==2.7.3
+    # via cffi
+pydantic==2.8.2
+    # via
+    #   anthropic
+    #   cohere
+    #   google-generativeai
+    #   lancedb
+    #   langchain
+    #   langchain-core
+    #   langsmith
+    #   llamaindex-py-client
+    #   openai
+    #   pydantic-settings
+pydantic-core==2.20.1
+    # via pydantic
 pydantic-settings==2.3.1
-pydantic_core==2.18.4
-PyJWT==2.8.0
+    # via -r requirements.in
+pyjwt[crypto]==2.9.0
+    # via
+    #   msal
+    #   pyjwt
+pylance==0.16.0
+    # via lancedb
+pynndescent==0.5.13
+    # via umap-learn
 pyparsing==3.1.2
-pypdf==4.2.0
+    # via httplib2
+pypdf==4.3.1
+    # via llama-index-readers-file
+pyproject-hooks==1.1.0
+    # via
+    #   build
+    #   pip-tools
 pysbd==0.3.4
+    # via ragas
 python-dateutil==2.9.0.post0
+    # via
+    #   botocore
+    #   pandas
 python-dotenv==1.0.1
+    # via pydantic-settings
 python-engineio==4.9.1
-python-socketio==5.11.2
+    # via python-socketio
+python-socketio==5.11.3
+    # via dalaipy
 pytz==2024.1
-PyYAML==6.0.1
+    # via pandas
+pyyaml==6.0.2
+    # via
+    #   datasets
+    #   huggingface-hub
+    #   langchain
+    #   langchain-community
+    #   langchain-core
+    #   llama-index-core
 ragas==0.1.9
-regex==2024.5.15
+    # via -r requirements.in
+ratelimiter==1.2.0.post0
+    # via lancedb
+regex==2024.7.24
+    # via
+    #   nltk
+    #   tiktoken
 requests==2.32.3
+    # via
+    #   azure-core
+    #   cohere
+    #   datasets
+    #   google-api-core
+    #   huggingface-hub
+    #   lancedb
+    #   langchain
+    #   langchain-community
+    #   langsmith
+    #   llama-index-core
+    #   llama-index-legacy
+    #   msal
+    #   tiktoken
+retry==0.9.2
+    # via lancedb
 rsa==4.9
-s3transfer==0.10.1
+    # via google-auth
+s3transfer==0.10.2
+    # via boto3
+scikit-learn==1.5.1
+    # via
+    #   llama-index-packs-raptor
+    #   pynndescent
+    #   umap-learn
+scipy==1.13.1
+    # via
+    #   pynndescent
+    #   scikit-learn
+    #   umap-learn
 simple-websocket==1.0.0
+    # via python-engineio
 six==1.16.0
+    # via
+    #   azure-core
+    #   python-dateutil
 sniffio==1.3.1
-soupsieve==2.5
-SQLAlchemy==2.0.30
+    # via
+    #   anthropic
+    #   anyio
+    #   httpx
+    #   openai
+soupsieve==2.6
+    # via beautifulsoup4
+sqlalchemy[asyncio]==2.0.32
+    # via
+    #   langchain
+    #   langchain-community
+    #   llama-index-core
+    #   llama-index-legacy
+    #   sqlalchemy
 striprtf==0.0.26
-tenacity==8.3.0
+    # via llama-index-readers-file
+tantivy==0.22.0
+    # via llama-index-vector-stores-lancedb
+tenacity==8.5.0
+    # via
+    #   langchain
+    #   langchain-community
+    #   langchain-core
+    #   llama-index-core
+    #   llama-index-legacy
+    #   plotly
+threadpoolctl==3.5.0
+    # via scikit-learn
 tiktoken==0.7.0
+    # via
+    #   langchain-openai
+    #   llama-index-core
+    #   llama-index-legacy
+    #   ragas
 tokenizers==0.15.2
-tqdm==4.66.4
+    # via
+    #   anthropic
+    #   cohere
+tomli==2.0.1
+    # via
+    #   build
+    #   pip-tools
+tqdm==4.66.5
+    # via
+    #   datasets
+    #   google-generativeai
+    #   huggingface-hub
+    #   lancedb
+    #   llama-index-core
+    #   nltk
+    #   openai
+    #   umap-learn
 types-requests==2.31.0.6
+    # via cohere
 types-urllib3==1.26.25.14
+    # via types-requests
+typing-extensions==4.12.2
+    # via
+    #   anthropic
+    #   anyio
+    #   asgiref
+    #   azure-core
+    #   azure-identity
+    #   cohere
+    #   google-generativeai
+    #   huggingface-hub
+    #   langchain-core
+    #   llama-index-core
+    #   llama-index-legacy
+    #   openai
+    #   pydantic
+    #   pydantic-core
+    #   pypdf
+    #   sqlalchemy
+    #   typing-inspect
 typing-inspect==0.9.0
-typing_extensions==4.12.2
+    # via
+    #   dataclasses-json
+    #   llama-index-core
+    #   llama-index-legacy
 tzdata==2024.1
+    # via pandas
+umap-learn==0.5.6
+    # via llama-index-packs-raptor
 uritemplate==4.1.1
-urllib3==1.26.6
-Werkzeug==3.0.3
+    # via google-api-python-client
+urllib3==1.26.19
+    # via
+    #   botocore
+    #   requests
+werkzeug==3.0.3
+    # via flask
+wheel==0.44.0
+    # via pip-tools
 wrapt==1.16.0
+    # via
+    #   deprecated
+    #   llama-index-core
 wsproto==1.2.0
+    # via simple-websocket
 xxhash==3.4.1
+    # via datasets
 yarl==1.9.4
+    # via aiohttp
+zipp==3.20.0
+    # via importlib-metadata
+
 plotly==5.22.0
 llama-index-packs-raptor
 llama-index-llms-together==0.1.3

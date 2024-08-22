@@ -32,6 +32,7 @@ import {
   makeSafeForCSLFormat,
   prepareItemsNodeData,
 } from "./ItemsNode";
+import { useNotification } from "./Notification";
 
 // Helper funcs
 const union = (setA: Set<any>, setB: Set<any>) => {
@@ -66,6 +67,7 @@ const FileFieldsNode: React.FC<FileFieldsNodeProps> = ({ data, id }) => {
   const removeNode = useStore((state) => state.removeNode);
   const setDataPropsForNode = useStore((state) => state.setDataPropsForNode);
   const pingOutputNodes = useStore((state) => state.pingOutputNodes);
+  const { showNotification } = useNotification();
 
   const [filefieldsValues, setFilefieldsValues] = useState<Dict<string>>(
     data.fields ?? {},
@@ -249,9 +251,10 @@ const FileFieldsNode: React.FC<FileFieldsNodeProps> = ({ data, id }) => {
           const response = await upload_raw_docs_file(formData);
           const file_path = `${urlParams.get("p_folder")}/${urlParams.get("i_folder")}/raw_docs/${fid}_${timestamp}/${event.target.files[0].name}`;
           handleFileFieldChange(field_id, file_path, false);
-          console.log("File uploaded successfully!", response);
         } catch (error) {
-          console.error("Error uploading file:", error);
+          event.target.value = null;
+          showNotification("Failed", "Error uploading file", "red");
+          setIsLoading(false);
         }
       }
     }
