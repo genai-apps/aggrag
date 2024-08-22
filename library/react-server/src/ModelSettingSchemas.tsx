@@ -2215,12 +2215,7 @@ const CommonRagSettings = {
         properties: {
           llm_model: {
             default: "gpt-4",
-            enum: [
-              "gpt-4",
-              "gpt-3.5-turbo",
-              "gpt-4-turbo",
-              "gpt-4o",
-            ],
+            enum: ["gpt-4", "gpt-3.5-turbo", "gpt-4-turbo", "gpt-4o"],
             title: "LLM Model",
             type: "string",
           },
@@ -2283,7 +2278,14 @@ const CommonRagSettings = {
         properties: {
           llm_model: {
             default: "mixtral_8x7b_instruct",
-            enum: ["mixtral_8x7b_instruct", "meta-llama/Llama-2-70b-chat-hf", "meta-llama/Llama-3-70b-chat-hf", "google/gemma-7b-it", "togethercomputer/Llama-2-7B-32K-Instruct","mistralai/Mixtral-8x22B-Instruct-v0.1"],
+            enum: [
+              "mixtral_8x7b_instruct",
+              "meta-llama/Llama-2-70b-chat-hf",
+              "meta-llama/Llama-3-70b-chat-hf",
+              "google/gemma-7b-it",
+              "togethercomputer/Llama-2-7B-32K-Instruct",
+              "mistralai/Mixtral-8x22B-Instruct-v0.1",
+            ],
             title: "LLM Model",
             type: "string",
           },
