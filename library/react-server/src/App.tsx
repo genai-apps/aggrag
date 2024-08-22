@@ -2987,6 +2987,7 @@ const App = () => {
                 size="sm"
                 variant="outline"
                 compact
+                bg="#eee"
                 mr="xs"
                 onClick={() => {
                   handleSaveDropdown();
