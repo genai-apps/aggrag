@@ -35,7 +35,7 @@ from langchain_core.documents import Document
 
 from library.aggrag.utils.json_to_pydantic_converter import json_schema_to_pydantic_model
 from library.aggrag.core.config import settings
-
+from llama_index.llms.openai import OpenAI
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -93,7 +93,9 @@ class MetaLang:
                  iteration=None,
                  upload_type=None,
                  DATA_DIR=None,
-                 meta_lang_rag_setting= None):
+                 meta_lang_rag_setting= None,
+                 llm:str=None,
+                 embed_model:str=None):
         """
         Initializes a base configuration for RAG with given parameters, setting up directories and logging essential information.
 
@@ -114,22 +116,9 @@ class MetaLang:
         self.chunk_size = meta_lang_rag_setting.chunk_size
         self.metadata_json_schema = meta_lang_rag_setting.metadata_json_schema
         
-        self.llm = AzureOpenAI(
-            model= meta_lang_rag_setting.llm_model.value,
-            deployment_name= meta_lang_rag_setting.llm_deployment.value,
-            api_key=settings.AZURE_OPENAI_KEY, 
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-            temperature = meta_lang_rag_setting.temperature
-            )
+        self.llm = llm
         # self.llm = llm
-        self.embed_model = AzureOpenAIEmbedding(
-            model = meta_lang_rag_setting.embed_model.value,
-            deployment_name= meta_lang_rag_setting.embed_deployment.value,
-            api_key=settings.AZURE_OPENAI_KEY,
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-        )
+        self.embed_model = embed_model
 
         self.documents = None
         self.index_name = meta_lang_rag_setting.index_name or "meta_lang_index"
@@ -243,22 +232,24 @@ class MetaLang:
         Returns:
             dict: A dictionary containing the chat response, evaluation score, and additional metadata.
         """
-        logger.debug(f"Chat engine: {self.chat_engine}")   
-        start_time = time.time() 
-        # 
-        await self.get_chat_engine()
+        try:
+            logger.debug(f"Chat engine: {self.chat_engine}")   
+            start_time = time.time() 
+            # 
+            await self.get_chat_engine()
 
-        documents=self.documents_loader(self.DATA_DIR) 
-        
-        response = await self.metadata_extract_async(query, documents)  
-        interim_time = time.time()
-        final_time = time.time()
+            documents=self.documents_loader(self.DATA_DIR) 
+            response = await self.metadata_extract_async(query, documents)  
+            interim_time = time.time()
+            final_time = time.time()
 
-        return {"response":response, 
-                "time_taken": get_time_taken(start_time, interim_time, final_time),
-                "rag_name": self.name
-                }
-
+            return {"response":response, 
+                    "time_taken": get_time_taken(start_time, interim_time, final_time),
+                    "rag_name": self.name
+                    }
+        except Exception as e:
+            logger.error(f"Error in achat: {str(e)}")
+            raise
 
 
     
@@ -300,8 +291,12 @@ class MetaLang:
         if not os.path.exists(self.DATA_DIR):
             logger.error('Data directory does not exist.')
             return {"Metadata": "Not found", "Error": "Data directory does not exist."}
-
-        llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k", openai_api_key=settings.OPENAI_API_KEY)
+        # Check if self.llm is an instance of AzureOpenAI or OpenAI
+        if  isinstance(self.llm, (AzureOpenAI, OpenAI)):
+            llm = ChatOpenAI(temperature=0, model=self.llm.model, openai_api_key=settings.OPENAI_API_KEY)
+        else:
+            logger.error("self.llm is not an instance of AzureOpenAI or OpenAI.")
+            raise Exception("Metalang accepts OpenAI and AzureOpenAI models only")
 
         if len(documents) < 3:
             raise ValueError("Document is too short; it should at least contain 3 pages.")

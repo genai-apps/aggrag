@@ -8,6 +8,7 @@ from llama_index.core import SimpleDirectoryReader
 from typing import Optional
 
 from library.aggrag.core.config import AzureOpenAIModelNames, AzureOpenAIModelEngines
+from library.aggrag.core.ai_service import AIServiceFactory
 
 from library.aggrag.ragstore import SubQA, Base, Raptor, MetaLlama, MetaLang, TableBase
 
@@ -63,46 +64,93 @@ class AggRAGBase:
                 RagStore: An instance of RagStore with the specified components initialized.
             """
             return RagStore(
-
                 base=Base(
                     usecase_name=self.usecase_name,
                     iteration=self.iteration,
-                    base_rag_setting=self.ragstore_settings.base_rag_setting if self.ragstore_settings.base_rag_setting else BaseRagSetting()
+                    base_rag_setting=self.ragstore_settings.base_rag_setting if self.ragstore_settings.base_rag_setting else BaseRagSetting(),
+                    llm=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.base_rag_setting.ai_service,
+                            llm_model=self.ragstore_settings.base_rag_setting.llm_model,
+                        ).llm,
+                    embed_model=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.base_rag_setting.embed_ai_service,
+                            embed_model=self.ragstore_settings.base_rag_setting.embed_model,
+                        ).embed_model
                 ) if ragstore_bool.base else None,
 
                 subqa=SubQA(
                     usecase_name=self.usecase_name,
                     iteration=self.iteration,
                     DATA_DIR=self.DATA_DIR,
-                    subqa_rag_setting=self.ragstore_settings.subqa_rag_setting if self.ragstore_settings.subqa_rag_setting else SubQARagSetting()
+                    subqa_rag_setting=self.ragstore_settings.subqa_rag_setting if self.ragstore_settings.subqa_rag_setting else SubQARagSetting(),
+                    llm=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.subqa_rag_setting.ai_service,
+                            llm_model=self.ragstore_settings.subqa_rag_setting.llm_model,
+                        ).llm,
+                    embed_model=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.subqa_rag_setting.embed_ai_service,
+                            embed_model=self.ragstore_settings.subqa_rag_setting.embed_model,
+                        ).embed_model
                 ) if ragstore_bool.subqa else None,
 
                 raptor=Raptor(
                     usecase_name=self.usecase_name,
                     iteration=self.iteration,
                     DATA_DIR=self.DATA_DIR,
-                    raptor_rag_setting=self.ragstore_settings.raptor_rag_setting if self.ragstore_settings.raptor_rag_setting else RaptorRagSetting()
+                    raptor_rag_setting=self.ragstore_settings.raptor_rag_setting if self.ragstore_settings.raptor_rag_setting else RaptorRagSetting(),
+                    llm=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.raptor_rag_setting.ai_service,
+                            llm_model=self.ragstore_settings.raptor_rag_setting.llm_model,
+                        ).llm,
+                    embed_model=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.raptor_rag_setting.embed_ai_service,
+                            embed_model=self.ragstore_settings.raptor_rag_setting.embed_model,
+                        ).embed_model
                 ) if ragstore_bool.raptor else None,
 
                 meta_llama=MetaLlama(
                     usecase_name=self.usecase_name,
                     iteration=self.iteration,
                     DATA_DIR=self.DATA_DIR,
-                    meta_llama_rag_setting=self.ragstore_settings.meta_llama_rag_setting if self.ragstore_settings.meta_llama_rag_setting else MetaLlamaRagSetting()
+                    meta_llama_rag_setting=self.ragstore_settings.meta_llama_rag_setting if self.ragstore_settings.meta_llama_rag_setting else MetaLlamaRagSetting(),
+                    llm=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.meta_llama_rag_setting.ai_service,
+                            llm_model=self.ragstore_settings.meta_llama_rag_setting.llm_model,
+                        ).llm,
+                    embed_model=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.meta_llama_rag_setting.embed_ai_service,
+                            embed_model=self.ragstore_settings.meta_llama_rag_setting.embed_model,
+                        ).embed_model                        
                 ) if ragstore_bool.meta_llama else None,
 
                 meta_lang=MetaLang(
                     usecase_name=self.usecase_name,
                     iteration=self.iteration,
                     DATA_DIR=self.DATA_DIR,
-                    meta_lang_rag_setting=self.ragstore_settings.meta_lang_rag_setting if self.ragstore_settings.meta_lang_rag_setting else MetaLangRagSetting()
+                    meta_lang_rag_setting=self.ragstore_settings.meta_lang_rag_setting if self.ragstore_settings.meta_lang_rag_setting else MetaLangRagSetting(),
+                    llm=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.meta_lang_rag_setting.ai_service,
+                            llm_model=self.ragstore_settings.meta_lang_rag_setting.llm_model,
+                        ).llm,
+                    embed_model=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.meta_lang_rag_setting.embed_ai_service,
+                            embed_model=self.ragstore_settings.meta_lang_rag_setting.embed_model,
+                        ).embed_model  
                 ) if ragstore_bool.meta_lang else None,
 
                 tableBase=TableBase(
                     usecase_name=self.usecase_name,
                     iteration=self.iteration,
                     DATA_DIR=self.DATA_DIR,
-                    tableBase_rag_setting=self.ragstore_settings.tableBase_rag_setting if self.ragstore_settings.tableBase_rag_setting else TableBaseRagSetting()
+                    tableBase_rag_setting=self.ragstore_settings.tableBase_rag_setting if self.ragstore_settings.tableBase_rag_setting else TableBaseRagSetting(),
+                    llm=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.tableBase_rag_setting.ai_service,
+                            llm_model=self.ragstore_settings.tableBase_rag_setting.llm_model,
+                        ).llm,
+                    embed_model=AIServiceFactory.get_ai_service(
+                            ai_service=self.ragstore_settings.tableBase_rag_setting.embed_ai_service,
+                            embed_model=self.ragstore_settings.tableBase_rag_setting.embed_model,
+                        ).embed_model  
                 ) if ragstore_bool.tableBase else None,
 
             )
@@ -231,52 +279,55 @@ class AggRAGBase:
         """
 
         """ TODO: Run parallel chats with all rags in the ragstore"""
-        _evaluation = False  # to come from the settings
-         # Initialize tasks for creating indexes for each RAG in the RagStore
-        chat_history=None
-        tasks = []
+        try:
+            _evaluation = False  # to come from the settings
+            # Initialize tasks for creating indexes for each RAG in the RagStore
+            chat_history=None
+            tasks = []
 
-        if self.ragstore.base and streaming:
-            tasks.append(self.ragstore.base.astream_chat(query, chat_history, _evaluation))
-        elif self.ragstore.base:
-            tasks.append(self.ragstore.base.achat(query, chat_history, _evaluation))
+            if self.ragstore.base and streaming:
+                tasks.append(self.ragstore.base.astream_chat(query, chat_history, _evaluation))
+            elif self.ragstore.base:
+                tasks.append(self.ragstore.base.achat(query, chat_history, _evaluation))
 
-        if self.ragstore.raptor:
-            if not self.ragstore.raptor.chat_engine:
-                await self.ragstore.raptor.get_chat_engine()
+            if self.ragstore.raptor:
+                if not self.ragstore.raptor.chat_engine:
+                    await self.ragstore.raptor.get_chat_engine()
 
-            if self.ragstore.raptor.chat_engine:
-                tasks.append(self.ragstore.raptor.achat(query, chat_history, _evaluation))
+                if self.ragstore.raptor.chat_engine:
+                    tasks.append(self.ragstore.raptor.achat(query, chat_history, _evaluation))
 
-        if self.ragstore.subqa and streaming:
-            tasks.append(self.ragstore.subqa.astream_chat(query, chat_history))
-        elif self.ragstore.subqa:
-            tasks.append(self.ragstore.subqa.achat(query, chat_history, _evaluation))
+            if self.ragstore.subqa and streaming:
+                tasks.append(self.ragstore.subqa.astream_chat(query, chat_history))
+            elif self.ragstore.subqa:
+                tasks.append(self.ragstore.subqa.achat(query, chat_history, _evaluation))
 
-        if self.ragstore.meta_llama and streaming:
-            tasks.append(self.ragstore.meta_llama.astream_chat(query, chat_history))
-        elif self.ragstore.meta_llama:
-            tasks.append(self.ragstore.meta_llama.achat(query, chat_history, _evaluation))
+            if self.ragstore.meta_llama and streaming:
+                tasks.append(self.ragstore.meta_llama.astream_chat(query, chat_history))
+            elif self.ragstore.meta_llama:
+                tasks.append(self.ragstore.meta_llama.achat(query, chat_history, _evaluation))
 
 
-        if self.ragstore.meta_lang and streaming:
-            tasks.append(self.ragstore.meta_lang.astream_chat(query, chat_history))
-        elif self.ragstore.meta_lang:
-            tasks.append(self.ragstore.meta_lang.achat(query, chat_history, _evaluation))        
+            if self.ragstore.meta_lang and streaming:
+                tasks.append(self.ragstore.meta_lang.astream_chat(query, chat_history))
+            elif self.ragstore.meta_lang:
+                tasks.append(self.ragstore.meta_lang.achat(query, chat_history, _evaluation))        
     
-        if self.ragstore.tableBase:
-            if not self.ragstore.tableBase.chat_engine:
-                await self.ragstore.tableBase.get_chat_engine()
+            if self.ragstore.tableBase:
+                if not self.ragstore.tableBase.chat_engine:
+                    await self.ragstore.tableBase.get_chat_engine()
 
-            if self.ragstore.tableBase.chat_engine:
-                tasks.append(self.ragstore.tableBase.achat(query, chat_history, _evaluation))
+                if self.ragstore.tableBase.chat_engine:
+                    tasks.append(self.ragstore.tableBase.achat(query, chat_history, _evaluation))
 
 
-        response = await asyncio.gather(*tasks)
+            response = await asyncio.gather(*tasks)
 
-        logger.debug(f"Response received: {response}")
-        return response
-
+            logger.debug(f"Response received: {response}")
+            return response
+        except Exception as e:
+            logger.error(f"Error in ragstorechat: {str(e)}")
+            raise 
 
 class AggRAG(AggRAGBase):
     def __init__(
