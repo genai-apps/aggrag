@@ -456,7 +456,6 @@ const App = () => {
         });
       }
     }
-    setOpenAddNode(false);
   };
 
   const addTextFieldsNode = () => addNode("textFieldsNode", "textfields");
@@ -602,8 +601,8 @@ const App = () => {
         rf_inst.setViewport({
           x: flow.viewport.x || 0,
           y: flow.viewport.y || 0,
-          zoom: flow.viewport.zoom || 1,
-          // zoom: (flow.viewport.x > 400 ? 0.2 : flow.viewport.zoom) || 1,
+          // zoom: flow.viewport.zoom || 1,
+          zoom: (flow.viewport.x > 400 ? 0.2 : flow.viewport.zoom) || 1,
         });
       else rf_inst.setViewport({ x: 0, y: 0, zoom: 1 });
     }
@@ -1368,16 +1367,6 @@ const App = () => {
           fileName: "",
           committed: false,
         });
-        localStorage.setItem(
-          "iteration-created",
-          JSON.stringify({
-            usecase: temp_p_folder,
-            iteration: temp_iter_folder,
-            fileName: "",
-            committed: false,
-            iterationCreated: true,
-          }),
-        );
         const queryString = `?p_folder=${encodeURIComponent(temp_p_folder)}&i_folder=${temp_iter_folder}&file_name=${encodeURIComponent("")}`;
         setIsCurrentFileLocked(false);
         // Update the URL
@@ -2649,12 +2638,7 @@ const App = () => {
           }}
         >
           <div
-            style={{
-              height: "100%",
-              backgroundColor: "#eee",
-              flexGrow: "1",
-              overflow: "hidden",
-            }}
+            style={{ height: "100%", backgroundColor: "#eee", flexGrow: "1" }}
           >
             {runTour && (
               <Joyride
@@ -2727,13 +2711,10 @@ const App = () => {
               nodesFocusable={!isCurrenFileLocked}
               // draggable={!isCurrenFileLocked}
               elementsSelectable={!isCurrenFileLocked}
-              // onNodeDrag={handleNodeDrag}
             >
               <Background color="#999" gap={16} />
-              <div>
-                <Controls showZoom={true} />
-              </div>
-              <MiniMap zoomable pannable />
+              <Controls showZoom={true} />
+              {/* <MiniMap zoomable pannable /> */}
             </ReactFlow>
           </div>
         </div>
@@ -2906,8 +2887,7 @@ const App = () => {
 
                               <Menu.Dropdown style={{ width: "400px" }}>
                                 <Menu.Item
-                                  onClick={(e) => {
-                                    e.stopPropagation();
+                                  onClick={() => {
                                     setSaveAndCommitBtnOpen(false);
                                     // handleCreateNewIteration(item.label);
                                     handleCreateIteration(item.label);
@@ -3295,11 +3275,10 @@ const App = () => {
                       e.stopPropagation();
                       setSaveAndCommitBtnOpen(!saveAndCommitBtnOpen);
                       setOpenMenu(false);
-                      setOpenAddNode(false);
                     }}
                   >
                     <div ref={saveRef}>
-                      <Menu position="top-start" opened={saveAndCommitBtnOpen}>
+                      <Menu position="top-start" trigger="hover">
                         <div>
                           <Menu.Target>
                             <div
