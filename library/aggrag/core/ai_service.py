@@ -64,7 +64,7 @@ class OpenAIService:
     def __init__(self, model=None, deployment_name=None, api_key=None, azure_endpoint=None, api_version=None, embed_model=None):
 
         self.llm = OpenAI(
-            model=model or OpenAIModelNames.gpt_35_turbo.value,
+            model=model or OpenAIModelNames.gpt_4_turbo.value,
             api_key=settings.OPENAI_API_KEY,
         )
         
