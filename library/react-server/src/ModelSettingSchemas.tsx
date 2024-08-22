@@ -2201,6 +2201,138 @@ BedrockLlama3Settings.uiSchema.model = {
   "ui:help": "Defaults to Llama3Instruct8b",
 };
 
+const CommonRagSettings = {
+  allOf: [
+    {
+      if: {
+        properties: {
+          ai_service: {
+            const: "OpenAI",
+          },
+        },
+      },
+      then: {
+        properties: {
+          llm_model: {
+            default: "gpt-4",
+            enum: ["gpt-4", "gpt-3.5-turbo", "gpt-4-turbo", "gpt-4o"],
+            title: "LLM Model",
+            type: "string",
+          },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          ai_service: {
+            const: "AzureOpenAI",
+          },
+        },
+      },
+      then: {
+        properties: {
+          llm_model: {
+            default: "gpt-35-turbo-16k",
+            enum: [
+              "gpt-35-turbo-16k",
+              "gpt-35-turbo",
+              "gpt-4",
+              "gpt-4-32k",
+              "gpt-4o",
+            ],
+            title: "LLM Model",
+            type: "string",
+          },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          ai_service: {
+            const: "Replicate",
+          },
+        },
+      },
+      then: {
+        properties: {
+          llm_model: {
+            default: "meta_llama_3_70b_instruct",
+            enum: ["meta_llama_3_70b_instruct"],
+            title: "LLM Model",
+            type: "string",
+          },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          ai_service: {
+            const: "Together",
+          },
+        },
+      },
+      then: {
+        properties: {
+          llm_model: {
+            default: "mixtral_8x7b_instruct",
+            enum: [
+              "mixtral_8x7b_instruct",
+              "meta-llama/Llama-2-70b-chat-hf",
+              "meta-llama/Llama-3-70b-chat-hf",
+              "google/gemma-7b-it",
+              "togethercomputer/Llama-2-7B-32K-Instruct",
+              "mistralai/Mixtral-8x22B-Instruct-v0.1",
+            ],
+            title: "LLM Model",
+            type: "string",
+          },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          embed_ai_service: {
+            const: "OpenAI",
+          },
+        },
+      },
+      then: {
+        properties: {
+          embed_model: {
+            default: "text-embedding-ada-002",
+            enum: ["text-embedding-ada-002", "text-embedding-ada-003"],
+            title: "Embedding Model",
+            type: "string",
+          },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          embed_ai_service: {
+            const: "AzureOpenAI",
+          },
+        },
+      },
+      then: {
+        properties: {
+          embed_model: {
+            default: "text-embedding-ada-002",
+            enum: ["text-embedding-ada-002", "text-embedding-ada-003"],
+            title: "Embedding Model",
+            type: "string",
+          },
+        },
+      },
+    },
+  ],
+};
+
 const BaseRagSettings: ModelSettingsDict = {
   fullName: "Base",
   schema: {
@@ -2234,8 +2366,31 @@ const BaseRagSettings: ModelSettingsDict = {
             const: "Nvidia",
             title: "Nvidia",
           },
+          {
+            const: "Replicate",
+            title: "Replicate",
+          },
+          {
+            const: "Together",
+            title: "Together",
+          },
         ],
         title: "AI service",
+        type: "string",
+      },
+      embed_ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+        ],
+        title: "Embedding AI service",
         type: "string",
       },
       chunk_size: {
@@ -2253,46 +2408,12 @@ const BaseRagSettings: ModelSettingsDict = {
         title: "Context Prompt",
         type: "string",
       },
-      embed_model: {
-        default: "text-embedding-ada-002",
-        oneOf: [
-          {
-            const: "text-embedding-ada-002",
-            title: "text-ada-002",
-          },
-          {
-            const: "text-ada-003",
-            title: "text-ada-003",
-          },
-        ],
-        title: "Embedding Model",
-        type: "string",
-      },
       index_name: {
         default: "base_index",
         description: "The index to be used.",
         title: "Index Name",
         type: "string",
         readOnly: true,
-      },
-      llm_model: {
-        default: "gpt-35-turbo-16k",
-        oneOf: [
-          {
-            const: "gpt-35-turbo-16k",
-            title: "gpt_35_turbo_16k",
-          },
-          {
-            const: "gpt-4",
-            title: "gpt-4-turbo",
-          },
-          {
-            const: "gpt-4o",
-            title: "GPT-4O",
-          },
-        ],
-        title: "LLM Model",
-        type: "string",
       },
       system_prompt: {
         default:
@@ -2311,6 +2432,7 @@ const BaseRagSettings: ModelSettingsDict = {
         type: "number",
       },
     },
+    allOf: CommonRagSettings.allOf,
   },
   uiSchema: {
     "ui:submitButtonOptions": {
@@ -2418,8 +2540,39 @@ const SubQARagSettings: ModelSettingsDict = {
             const: "Nvidia",
             title: "Nvidia",
           },
+          {
+            const: "Replicate",
+            title: "Replicate",
+          },
+          {
+            const: "Together",
+            title: "Together",
+          },
         ],
         title: "AI service",
+        type: "string",
+      },
+      llm_model: {
+        title: "LLM Model",
+        type: "string",
+      },
+      embed_ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+        ],
+        title: "Embedding AI service",
+        type: "string",
+      },
+      embed_model: {
+        title: "Embedding Model",
         type: "string",
       },
       chunk_size: {
@@ -2430,46 +2583,12 @@ const SubQARagSettings: ModelSettingsDict = {
         type: "integer",
         "ui:widget": "range",
       },
-      embed_model: {
-        default: "text-embedding-ada-002",
-        oneOf: [
-          {
-            const: "text-embedding-ada-002",
-            title: "text-ada-002",
-          },
-          {
-            const: "text-ada-003",
-            title: "text-ada-003",
-          },
-        ],
-        title: "Embedding Model",
-        type: "string",
-      },
       index_name: {
         default: "subqa_index",
         description: "Index name to be used",
         title: "Index Name",
         type: "string",
         readOnly: true,
-      },
-      llm_model: {
-        default: "gpt-35-turbo-16k",
-        oneOf: [
-          {
-            const: "gpt-35-turbo-16k",
-            title: "gpt_35_turbo_16k",
-          },
-          {
-            const: "gpt-4",
-            title: "gpt-4-turbo",
-          },
-          {
-            const: "gpt-4o",
-            title: "GPT-4O",
-          },
-        ],
-        title: "LLM Model",
-        type: "string",
       },
       temperature: {
         default: 0.2,
@@ -2481,6 +2600,7 @@ const SubQARagSettings: ModelSettingsDict = {
         type: "number",
       },
     },
+    allOf: CommonRagSettings.allOf,
   },
   uiSchema: {
     "ui:submitButtonOptions": {
@@ -2566,8 +2686,39 @@ const RaptorRagSettings: ModelSettingsDict = {
             const: "Nvidia",
             title: "Nvidia",
           },
+          {
+            const: "Replicate",
+            title: "Replicate",
+          },
+          {
+            const: "Together",
+            title: "Together",
+          },
         ],
         title: "AI service",
+        type: "string",
+      },
+      llm_model: {
+        title: "LLM Model",
+        type: "string",
+      },
+      embed_ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+        ],
+        title: "Embedding AI service",
+        type: "string",
+      },
+      embed_model: {
+        title: "Embedding Model",
         type: "string",
       },
       chunk_size: {
@@ -2578,46 +2729,12 @@ const RaptorRagSettings: ModelSettingsDict = {
         type: "integer",
         "ui:widget": "range",
       },
-      embed_model: {
-        default: "text-embedding-ada-002",
-        oneOf: [
-          {
-            const: "text-embedding-ada-002",
-            title: "text-ada-002",
-          },
-          {
-            const: "text-ada-003",
-            title: "text-ada-003",
-          },
-        ],
-        title: "Embedding Model",
-        type: "string",
-      },
       index_name: {
         default: "raptor_index",
         description: "Index name to be used",
         title: "Index Name",
         type: "string",
         readOnly: true,
-      },
-      llm_model: {
-        default: "gpt-35-turbo-16k",
-        oneOf: [
-          {
-            const: "gpt-35-turbo-16k",
-            title: "gpt_35_turbo_16k",
-          },
-          {
-            const: "gpt-4",
-            title: "gpt-4-turbo",
-          },
-          {
-            const: "gpt-4o",
-            title: "GPT-4O",
-          },
-        ],
-        title: "LLM Model",
-        type: "string",
       },
       summary_prompt: {
         default:
@@ -2636,6 +2753,7 @@ const RaptorRagSettings: ModelSettingsDict = {
         type: "number",
       },
     },
+    allOf: CommonRagSettings.allOf,
   },
   uiSchema: {
     "ui:submitButtonOptions": {
@@ -2703,8 +2821,39 @@ const Meta_llamaRagSettings: ModelSettingsDict = {
             const: "Nvidia",
             title: "Nvidia",
           },
+          {
+            const: "Replicate",
+            title: "Replicate",
+          },
+          {
+            const: "Together",
+            title: "Together",
+          },
         ],
         title: "AI service",
+        type: "string",
+      },
+      llm_model: {
+        title: "LLM Model",
+        type: "string",
+      },
+      embed_ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+        ],
+        title: "Embedding AI service",
+        type: "string",
+      },
+      embed_model: {
+        title: "Embedding Model",
         type: "string",
       },
       chunk_size: {
@@ -2715,46 +2864,12 @@ const Meta_llamaRagSettings: ModelSettingsDict = {
         type: "integer",
         "ui:widget": "range",
       },
-      embed_model: {
-        default: "text-embedding-ada-002",
-        oneOf: [
-          {
-            const: "text-embedding-ada-002",
-            title: "text-ada-002",
-          },
-          {
-            const: "text-ada-003",
-            title: "text-ada-003",
-          },
-        ],
-        title: "Embedding Model",
-        type: "string",
-      },
       index_name: {
         default: "meta_llama_index",
         description: "The index to be used.",
         title: "Index Name",
         type: "string",
         readOnly: true,
-      },
-      llm_model: {
-        default: "gpt-35-turbo-16k",
-        oneOf: [
-          {
-            const: "gpt-35-turbo-16k",
-            title: "gpt_35_turbo_16k",
-          },
-          {
-            const: "gpt-4",
-            title: "gpt-4-turbo",
-          },
-          {
-            const: "gpt-4o",
-            title: "GPT-4O",
-          },
-        ],
-        title: "LLM Model",
-        type: "string",
       },
       metadata_json_schema: {
         default: "",
@@ -2772,6 +2887,7 @@ const Meta_llamaRagSettings: ModelSettingsDict = {
         type: "number",
       },
     },
+    allOf: CommonRagSettings.allOf,
   },
   uiSchema: {
     "ui:submitButtonOptions": {
@@ -2842,8 +2958,39 @@ const Meta_langRagSettings: ModelSettingsDict = {
             const: "Nvidia",
             title: "Nvidia",
           },
+          {
+            const: "Replicate",
+            title: "Replicate",
+          },
+          {
+            const: "Together",
+            title: "Together",
+          },
         ],
         title: "AI service",
+        type: "string",
+      },
+      llm_model: {
+        title: "LLM Model",
+        type: "string",
+      },
+      embed_ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+        ],
+        title: "Embedding AI service",
+        type: "string",
+      },
+      embed_model: {
+        title: "Embedding Model",
         type: "string",
       },
       chunk_size: {
@@ -2854,46 +3001,12 @@ const Meta_langRagSettings: ModelSettingsDict = {
         type: "integer",
         "ui:widget": "range",
       },
-      embed_model: {
-        default: "text-embedding-ada-002",
-        oneOf: [
-          {
-            const: "text-embedding-ada-002",
-            title: "text-ada-002",
-          },
-          {
-            const: "text-ada-003",
-            title: "text-ada-003",
-          },
-        ],
-        title: "Embedding Model",
-        type: "string",
-      },
       index_name: {
         default: "meta_lang_index",
         description: "The index to be used.",
         title: "Index Name",
         type: "string",
         readOnly: true,
-      },
-      llm_model: {
-        default: "gpt-35-turbo-16k",
-        oneOf: [
-          {
-            const: "gpt-35-turbo-16k",
-            title: "gpt_35_turbo_16k",
-          },
-          {
-            const: "gpt-4",
-            title: "gpt-4-turbo",
-          },
-          {
-            const: "gpt-4o",
-            title: "GPT-4O",
-          },
-        ],
-        title: "LLM Model",
-        type: "string",
       },
       metadata_json_schema: {
         default: "",
@@ -2911,6 +3024,7 @@ const Meta_langRagSettings: ModelSettingsDict = {
         type: "number",
       },
     },
+    allOf: CommonRagSettings.allOf,
   },
   uiSchema: {
     "ui:submitButtonOptions": {
@@ -2941,8 +3055,8 @@ const Meta_langRagSettings: ModelSettingsDict = {
   postprocessors: {},
 };
 
-const TableBaseRagSettings: ModelSettingsDict = {
-  fullName: "Table Base",
+const Table_baseRagSettings: ModelSettingsDict = {
+  fullName: "Table_base",
   schema: {
     type: "object",
     required: ["shortname"],
@@ -2951,7 +3065,7 @@ const TableBaseRagSettings: ModelSettingsDict = {
         type: "string",
         title: "Nickname",
         description: "Unique identifier to appear in Aggrag. Keep it short.",
-        default: "tableBase",
+        default: "table_base",
       },
       description: {
         type: "string",
@@ -2974,8 +3088,39 @@ const TableBaseRagSettings: ModelSettingsDict = {
             const: "Nvidia",
             title: "Nvidia",
           },
+          {
+            const: "Replicate",
+            title: "Replicate",
+          },
+          {
+            const: "Together",
+            title: "Together",
+          },
         ],
         title: "AI service",
+        type: "string",
+      },
+      llm_model: {
+        title: "LLM Model",
+        type: "string",
+      },
+      embed_ai_service: {
+        default: "AzureOpenAI",
+        oneOf: [
+          {
+            const: "OpenAI",
+            title: "OpenAI",
+          },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
+        ],
+        title: "Embedding AI service",
+        type: "string",
+      },
+      embed_model: {
+        title: "Embedding Model",
         type: "string",
       },
       chunk_size: {
@@ -2986,52 +3131,17 @@ const TableBaseRagSettings: ModelSettingsDict = {
         type: "integer",
         "ui:widget": "range",
       },
-      embed_model: {
-        default: "text-embedding-ada-002",
-        oneOf: [
-          {
-            const: "text-embedding-ada-002",
-            title: "text-ada-002",
-          },
-          {
-            const: "text-ada-003",
-            title: "text-ada-003",
-          },
-        ],
-        title: "Embedding Model",
-        type: "string",
-      },
       index_name: {
-        default: "tableBase_index",
+        default: "table_base_index",
         description: "Index name to be used",
         title: "Index Name",
         type: "string",
         readOnly: true,
       },
-      llm_model: {
-        default: "gpt-35-turbo-16k",
-        oneOf: [
-          {
-            const: "gpt-35-turbo-16k",
-            title: "gpt_35_turbo_16k",
-          },
-          {
-            const: "gpt-4",
-            title: "gpt-4-turbo",
-          },
-          {
-            const: "gpt-4o",
-            title: "GPT-4O",
-          },
-        ],
-        title: "LLM Model",
-        type: "string",
-      },
       engine_prompt: {
-        default:
-          "\nAs a professional summarizer, create a concise and comprehensive summary of the provided text,\nbe it a research paper, article, post, conversation, or passage with as much detail as possible.\n",
+        default: "",
         description: "The prompt for the system.",
-        title: "Prompt",
+        title: "Engine Prompt",
         type: "string",
       },
       temperature: {
@@ -3044,6 +3154,7 @@ const TableBaseRagSettings: ModelSettingsDict = {
         type: "number",
       },
     },
+    allOf: CommonRagSettings.allOf,
   },
   uiSchema: {
     "ui:submitButtonOptions": {
@@ -3058,7 +3169,7 @@ const TableBaseRagSettings: ModelSettingsDict = {
       "ui:autofocus": true,
     },
     description: {},
-    summary_prompt: {
+    engine_prompt: {
       "ui:cols": 50,
       "ui:rows": 10,
       "ui:widget": "textarea",
@@ -3097,7 +3208,7 @@ export const ModelSettings: Dict<ModelSettingsDict> = {
   raptor: RaptorRagSettings,
   meta_llama: Meta_llamaRagSettings,
   meta_lang: Meta_langRagSettings,
-  tableBase: TableBaseRagSettings,
+  tableBase: Table_baseRagSettings,
 };
 
 export function getSettingsSchemaForLLM(
@@ -3143,7 +3254,7 @@ export function getSettingsSchemaForRAG(
     [RAGProvider.Raptor]: RaptorRagSettings,
     [RAGProvider.Meta_llama]: Meta_llamaRagSettings,
     [RAGProvider.Meta_lang]: Meta_langRagSettings,
-    [RAGProvider.TableBase]: TableBaseRagSettings,
+    [RAGProvider.TableBase]: Table_baseRagSettings,
   };
 
   if (rag_provider === RAGProvider.Custom) return ModelSettings[rag_name];
