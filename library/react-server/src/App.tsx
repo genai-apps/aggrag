@@ -603,7 +603,7 @@ const App = () => {
           x: flow.viewport.x || 0,
           y: flow.viewport.y || 0,
           // zoom: flow.viewport.zoom || 1,
-          zoom: (flow.viewport.x > 400 ? 0.2 : flow.viewport.zoom) || 1,
+          zoom: 0.2,
         });
       else rf_inst.setViewport({ x: 0, y: 0, zoom: 1 });
     }
@@ -683,6 +683,7 @@ const App = () => {
   ) => {
     setLoading(true);
     setOpenMenu(false);
+    setTriggerHint("");
     const iterationCreation = forIterationCreation ?? false;
     if (menuData.length === 0) {
       return;
