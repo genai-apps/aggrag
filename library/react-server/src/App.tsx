@@ -626,7 +626,8 @@ const App = () => {
     setLoading(true);
     setOpenMenu(false);
     const iterationCreation = forIterationCreation ?? false;
-    if (menuData.length === 0) {
+    if (menuData && menuData.length === 0) {
+      setLoading(false);
       return;
     }
     localStorage.setItem(
@@ -2999,6 +3000,7 @@ const App = () => {
                       e.stopPropagation();
                       setSaveAndCommitBtnOpen(!saveAndCommitBtnOpen);
                       setOpenMenu(false);
+                      setOpenAddNode(false);
                     }}
                   >
                     <div ref={saveRef}>
