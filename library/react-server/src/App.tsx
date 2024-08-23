@@ -3004,7 +3004,11 @@ const App = () => {
                     }}
                   >
                     <div ref={saveRef}>
-                      <Menu position="top-start" opened={saveAndCommitBtnOpen}>
+                      <Menu
+                        position="top-start"
+                        opened={saveAndCommitBtnOpen}
+                        transitionProps={{ transition: "pop" }}
+                      >
                         <div>
                           <Menu.Target>
                             <div
