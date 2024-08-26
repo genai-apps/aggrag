@@ -310,7 +310,6 @@ const App = () => {
   const [autosavingInterval, setAutosavingInterval] = useState<
     NodeJS.Timeout | undefined
   >(undefined);
-  const effectRan = useRef(false);
   // For 'share' button
   const clipboard = useClipboard({ timeout: 1500 });
   const [waitingForShare, setWaitingForShare] = useState(false);
