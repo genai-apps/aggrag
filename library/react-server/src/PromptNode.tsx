@@ -398,6 +398,7 @@ const PromptNode: React.FC<PromptNodeProps> = ({
       const hasPromptInput = getImmediateInputNodeTypes(templateVars, id).some(
         (t) => ["prompt", "chat"].includes(t),
       );
+
       setShowContToggle(
         hasPromptInput || (pulled_data && countNumLLMs(pulled_data) > 0),
       );
@@ -425,8 +426,11 @@ const PromptNode: React.FC<PromptNodeProps> = ({
   const removeFromTemplateHooks = useCallback(
     (text: string) => {
       // Update template var fields + handles
-      const found_template_vars = new Set(templateVars);
+      const found_template_vars = new Set(
+        extractBracketedSubstrings(promptText),
+      );
       found_template_vars.delete(text);
+
       setTemplateVars(Array.from(found_template_vars));
     },
     [setTemplateVars, templateVars],
@@ -1339,6 +1343,7 @@ Soft failing by replacing undefined with empty strings.`,
       pulled_vars = getImmediateInputNode(["rag_knowledge_base"], id).filter(
         (t) => t.type === "uploadfilefields",
       );
+
       ragListContainer?.current?.setZeroPercProgress();
       pulled_vars.forEach((node_obj) => {
         Object.keys(node_obj?.data?.fields)?.forEach((key) => {

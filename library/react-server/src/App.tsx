@@ -538,7 +538,7 @@ const App = () => {
     if (rf_inst) {
       if (flow.viewport) {
         if (rf_inst && flow.nodes.length > 10) {
-          rf_inst.setViewport({ x: 400, y: 0, zoom: 0.3 });
+          rf_inst.setViewport({ x: 0, y: 0, zoom: 0.3 });
         } else
           rf_inst.setViewport({
             x: flow.viewport.x || 0,
