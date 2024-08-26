@@ -1972,10 +1972,6 @@ const App = () => {
   }, [confirmed]);
 
   useEffect(() => {
-    // Prevent effect from running multiple times
-    if (effectRan.current) return;
-    effectRan.current = true;
-
     const localStorageContent = localStorage.getItem("current_usecase");
     const userId = localStorage.getItem("aggrag-userId");
 
