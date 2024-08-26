@@ -27,7 +27,18 @@ from werkzeug.utils import secure_filename
 from werkzeug.datastructures import ImmutableMultiDict
 from library.aggrag.core.log_config import app_loger
 from openai import OpenAIError
-
+from library.aggrag.evals.evaluator import Evaluator
+from ragas.metrics import (
+    answer_similarity,
+    answer_correctness
+)
+from datasets import Dataset
+from deepeval.metrics import GEval
+from deepeval.test_case import LLMTestCaseParams
+from deepeval import evaluate
+from deepeval.test_case import LLMTestCase
+from deepeval.dataset import EvaluationDataset
+from library.aggrag.evals.eval_utils import load_llm_for_deepeval, load_llms_for_ragas
 
 """ =================
     SETUP AND GLOBALS
@@ -1722,6 +1733,116 @@ def delete_usecase():
     else:
         return jsonify({"message": "Folder does not exist."}), 404
 
+@app.route('/app/ragasevaluation', methods=['POST'])
+def ragas_evaluation():
+    # data = request.get_json()
+    metrics = [
+        answer_similarity,
+        # faithfulness,
+        # answer_relevancy,
+        answer_correctness,
+        # context_precision
+    ]
+
+    eval_data = {
+    "question": ["What does the term catadioptric mean in the context of Apple's optical technology?",
+                "What is the estimated battery power range for the Apple Vision Pro according to the article?",
+                "What criticism has been made about the AR passthrough quality of the Meta Quest Pro?",
+                "What technology did Apple develop to avoid paying royalties to Adobe for font rendering?",
+                "What is the recommended Scale and Layout percentage for the Meta Quest Pro's Horizon's virtual monitor according to Windows?"
+    ],
+    "ground_truth": [
+        "$Catadioptric in the context of Apple's optical technology refers to a lens system that combines refractive and reflective elements to achieve high sharpness and clarity, potentially based on designs from the company Limbak.",
+        "35 to 50Wh",
+        "The criticism of the Meta Quest Pro's AR passthrough quality is that it is not truly seamless, with issues such as awkward transitions, interruptions, and disparities, and it may not be comfortable or natural for the human visual system.",
+        "$TrueType",
+        "150%"
+    ],
+    "answer": [
+        "The term catadioptric in the context of Apple's optical technology refers to a combination of refractive and reflective optical elements. This combination is used in Apple's optical designs to achieve incredible sharpness and clarity. Apple recently acquired an optics design company known for their catadioptric designs, suggesting that Apple's optical technology involves the use of these elements.",
+        "The estimated battery power range for the Apple Vision Pro, according to the article, is between 35Wh and 50Wh.",
+        "The criticism of the Meta Quest Pro's AR passthrough quality is that it is not truly seamless, with issues such as awkward transitions, interruptions, and disparities, and it may not be comfortable or natural for the human visual system.",
+        "$TrueType",
+        "150%"
+    ]
+    }
+
+    llm, embed_llm = load_llms_for_ragas()
+    dataset = Dataset.from_dict(eval_data)
+
+    evaluator = Evaluator(response_dataset=dataset, llm_model=llm, llm_embeddings=embed_llm, metrics=metrics)
+    score_df = evaluator.evaluate_models()
+    print(score_df.to_json())
+    # score_df.to_csv(eval_result_file_path, index=False)
+
+    return score_df.to_json()
+
+@app.route('/app/deepevalevaluation', methods=['POST'])
+def deepeval_evaluation():
+    
+    eval_data = {
+    "question": ["What does the term catadioptric mean in the context of Apple's optical technology?",
+                "What is the estimated battery power range for the Apple Vision Pro according to the article?",
+                "What criticism has been made about the AR passthrough quality of the Meta Quest Pro?",
+                "What technology did Apple develop to avoid paying royalties to Adobe for font rendering?",
+                "What is the recommended Scale and Layout percentage for the Meta Quest Pro's Horizon's virtual monitor according to Windows?"
+    ],
+    "ground_truth": [
+        "$Catadioptric in the context of Apple's optical technology refers to a lens system that combines refractive and reflective elements to achieve high sharpness and clarity, potentially based on designs from the company Limbak.",
+        "35 to 50Wh",
+        "The criticism of the Meta Quest Pro's AR passthrough quality is that it is not truly seamless, with issues such as awkward transitions, interruptions, and disparities, and it may not be comfortable or natural for the human visual system.",
+        "$TrueType",
+        "150%"
+    ],
+    "answer": [
+        "The term catadioptric in the context of Apple's optical technology refers to a combination of refractive and reflective optical elements. This combination is used in Apple's optical designs to achieve incredible sharpness and clarity. Apple recently acquired an optics design company known for their catadioptric designs, suggesting that Apple's optical technology involves the use of these elements.",
+        "The estimated battery power range for the Apple Vision Pro, according to the article, is between 35Wh and 50Wh.",
+        "The criticism of the Meta Quest Pro's AR passthrough quality is that it is not truly seamless, with issues such as awkward transitions, interruptions, and disparities, and it may not be comfortable or natural for the human visual system.",
+        "$TrueType",
+        "150%"
+    ]
+    }
+
+    if eval_data:
+        questions = eval_data['question']
+        ground_truth_answers = eval_data['ground_truth']
+        rag_answers = eval_data['answer']
+        test_cases = []
+
+        for question, ground_truth_answer, rag_answer in zip(questions, ground_truth_answers, rag_answers):
+            test_case = LLMTestCase(input=question, expected_output=ground_truth_answer, actual_output=rag_answer)
+            test_cases.append(test_case)
+
+        dataset = EvaluationDataset(test_cases=test_cases)
+
+
+    correctness_metric = GEval(
+    name="Correctness",
+    criteria="Determine whether the actual output is factually correct based on the expected output.",
+    # NOTE: you can only provide either criteria or evaluation_steps, and not both
+    evaluation_steps=[
+        "Check whether the facts in 'actual output' contradicts any facts in 'expected output'",
+        "You should also heavily penalize omission of detail",
+        "Vague language, or contradicting OPINIONS, are OK"
+    ],
+    evaluation_params=[LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT, LLMTestCaseParams.EXPECTED_OUTPUT], model=load_llm_for_deepeval())
+
+    metrics = [correctness_metric]
+
+    test_results = evaluate(dataset, metrics=metrics, print_results=False, write_cache=True, use_cache=True)
+    json_data = []
+    for test_result in test_results:
+        response_dict = {
+                    "question": test_result.input,
+                    "answer": test_result.actual_output,
+                    "ground_truth": test_result.expected_output
+        }
+        for met in test_result.metrics_metadata:
+            response_dict[met.metric] = met.score
+
+        json_data.append(response_dict)
+    print(json_data)
+    return json_data
 
 @app.route("/app/healthCheck", methods=["GET"])
 def get_health_check():
