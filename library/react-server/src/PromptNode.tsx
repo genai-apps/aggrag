@@ -1349,7 +1349,7 @@ Soft failing by replacing undefined with empty strings.`,
         .map((each: any) => each.data?.fields?.f1)
         .filter((f1: any) => f1 !== undefined && f1 !== null);
 
-      if (uploadedFilePath) {
+      if (uploadedFilePath && uploadedFilePath.length > 0) {
         if (uploadedFilePath[0].length > 0) {
           isFileUploaded = true;
         }
