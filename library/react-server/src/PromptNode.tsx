@@ -1350,7 +1350,7 @@ Soft failing by replacing undefined with empty strings.`,
         .filter((f1: any) => f1 !== undefined && f1 !== null);
 
       if (uploadedFilePath) {
-        if (uploadedFilePath.length > 0) {
+        if (uploadedFilePath[0].length > 0) {
           isFileUploaded = true;
         }
       }
