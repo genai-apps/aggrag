@@ -1735,40 +1735,14 @@ def delete_usecase():
 
 @app.route('/app/ragasevaluation', methods=['POST'])
 def ragas_evaluation():
-    # data = request.get_json()
+    data = request.get_json()
     metrics = [
         answer_similarity,
-        # faithfulness,
-        # answer_relevancy,
-        answer_correctness,
-        # context_precision
+        answer_correctness
     ]
-
-    eval_data = {
-    "question": ["What does the term catadioptric mean in the context of Apple's optical technology?",
-                "What is the estimated battery power range for the Apple Vision Pro according to the article?",
-                "What criticism has been made about the AR passthrough quality of the Meta Quest Pro?",
-                "What technology did Apple develop to avoid paying royalties to Adobe for font rendering?",
-                "What is the recommended Scale and Layout percentage for the Meta Quest Pro's Horizon's virtual monitor according to Windows?"
-    ],
-    "ground_truth": [
-        "$Catadioptric in the context of Apple's optical technology refers to a lens system that combines refractive and reflective elements to achieve high sharpness and clarity, potentially based on designs from the company Limbak.",
-        "35 to 50Wh",
-        "The criticism of the Meta Quest Pro's AR passthrough quality is that it is not truly seamless, with issues such as awkward transitions, interruptions, and disparities, and it may not be comfortable or natural for the human visual system.",
-        "$TrueType",
-        "150%"
-    ],
-    "answer": [
-        "The term catadioptric in the context of Apple's optical technology refers to a combination of refractive and reflective optical elements. This combination is used in Apple's optical designs to achieve incredible sharpness and clarity. Apple recently acquired an optics design company known for their catadioptric designs, suggesting that Apple's optical technology involves the use of these elements.",
-        "The estimated battery power range for the Apple Vision Pro, according to the article, is between 35Wh and 50Wh.",
-        "The criticism of the Meta Quest Pro's AR passthrough quality is that it is not truly seamless, with issues such as awkward transitions, interruptions, and disparities, and it may not be comfortable or natural for the human visual system.",
-        "$TrueType",
-        "150%"
-    ]
-    }
 
     llm, embed_llm = load_llms_for_ragas()
-    dataset = Dataset.from_dict(eval_data)
+    dataset = Dataset.from_dict(data)
 
     evaluator = Evaluator(response_dataset=dataset, llm_model=llm, llm_embeddings=embed_llm, metrics=metrics)
     score_df = evaluator.evaluate_models()
@@ -1788,41 +1762,18 @@ def ragas_evaluation():
 
 @app.route('/app/deepevalevaluation', methods=['POST'])
 def deepeval_evaluation():
-    
-    eval_data = {
-    "question": ["What does the term catadioptric mean in the context of Apple's optical technology?",
-                "What is the estimated battery power range for the Apple Vision Pro according to the article?",
-                "What criticism has been made about the AR passthrough quality of the Meta Quest Pro?",
-                "What technology did Apple develop to avoid paying royalties to Adobe for font rendering?",
-                "What is the recommended Scale and Layout percentage for the Meta Quest Pro's Horizon's virtual monitor according to Windows?"
-    ],
-    "ground_truth": [
-        "$Catadioptric in the context of Apple's optical technology refers to a lens system that combines refractive and reflective elements to achieve high sharpness and clarity, potentially based on designs from the company Limbak.",
-        "35 to 50Wh",
-        "The criticism of the Meta Quest Pro's AR passthrough quality is that it is not truly seamless, with issues such as awkward transitions, interruptions, and disparities, and it may not be comfortable or natural for the human visual system.",
-        "$TrueType",
-        "150%"
-    ],
-    "answer": [
-        "The term catadioptric in the context of Apple's optical technology refers to a combination of refractive and reflective optical elements. This combination is used in Apple's optical designs to achieve incredible sharpness and clarity. Apple recently acquired an optics design company known for their catadioptric designs, suggesting that Apple's optical technology involves the use of these elements.",
-        "The estimated battery power range for the Apple Vision Pro, according to the article, is between 35Wh and 50Wh.",
-        "The criticism of the Meta Quest Pro's AR passthrough quality is that it is not truly seamless, with issues such as awkward transitions, interruptions, and disparities, and it may not be comfortable or natural for the human visual system.",
-        "$TrueType",
-        "150%"
-    ]
-    }
+    data = request.get_json()
 
-    if eval_data:
-        questions = eval_data['question']
-        ground_truth_answers = eval_data['ground_truth']
-        rag_answers = eval_data['answer']
-        test_cases = []
+    questions = data["question"]
+    ground_truth_answers = data["ground_truth"]
+    rag_answers = data["answer"]
+    test_cases = []
 
-        for question, ground_truth_answer, rag_answer in zip(questions, ground_truth_answers, rag_answers):
-            test_case = LLMTestCase(input=question, expected_output=ground_truth_answer, actual_output=rag_answer)
-            test_cases.append(test_case)
+    for question, ground_truth_answer, rag_answer in zip(questions, ground_truth_answers, rag_answers):
+        test_case = LLMTestCase(input=question, expected_output=ground_truth_answer, actual_output=rag_answer)
+        test_cases.append(test_case)
 
-        dataset = EvaluationDataset(test_cases=test_cases)
+    dataset = EvaluationDataset(test_cases=test_cases)
 
 
     correctness_metric = GEval(
