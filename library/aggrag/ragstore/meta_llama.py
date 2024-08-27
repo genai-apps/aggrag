@@ -89,7 +89,9 @@ class MetaLlama:
                  iteration=None,
                  upload_type=None,
                  DATA_DIR=None,
-                 meta_llama_rag_setting= None):
+                 meta_llama_rag_setting= None,
+                 llm:str = None,
+                 embed_model:str = None):
         """
         Initializes a base configuration for RAG with given parameters, setting up directories and logging essential information.
 
@@ -111,23 +113,9 @@ class MetaLlama:
 
         self.metadata_json_schema= meta_llama_rag_setting.metadata_json_schema
 
-        self.llm = AzureOpenAI(
-            model= meta_llama_rag_setting.llm_model.value,
-            deployment_name= meta_llama_rag_setting.llm_deployment.value,
-            api_key=settings.AZURE_OPENAI_KEY, 
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-            temperature = meta_llama_rag_setting.temperature
-            )
+        self.llm = llm
 
-        self.embed_model = AzureOpenAIEmbedding(
-            model = meta_llama_rag_setting.embed_model.value,
-            deployment_name= meta_llama_rag_setting.embed_deployment.value,
-            api_key=settings.AZURE_OPENAI_KEY,
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-        )
-
+        self.embed_model = embed_model
         self.documents = None
         self.index_name = meta_llama_rag_setting.index_name or "meta_index"
         

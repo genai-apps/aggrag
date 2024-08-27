@@ -67,6 +67,8 @@ def json_schema_to_pydantic_model(json_schema: Dict[str, Any]) -> BaseModel:
             if field in fields:
                 fields[field] = (fields[field][0], ...)
         
+        if DynamicModel.model_fields=={}:
+            raise Exception("Unable to create a Pydantic Model. Please provide valid metadata_json_schema with required fields, properties and descriptions to create the same.")
         return DynamicModel
 
     except ValidationError as e:
