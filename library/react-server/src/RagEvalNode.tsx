@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { Handle, Position } from "reactflow";
 import { NativeSelect, Flex, Text } from "@mantine/core";
-import { IconRuler2, IconSearch } from "@tabler/icons-react";
+import { IconScan, IconSearch } from "@tabler/icons-react";
 import BaseNode from "./BaseNode";
 import NodeLabel from "./NodeLabelComponent";
 import InspectFooter from "./InspectFooter";
@@ -211,7 +211,7 @@ const RagEvalNode: React.FC<RagEvalNodeProps> = ({ data, id }) => {
       <NodeLabel
         title={data.title || "Rag Evaluator"}
         nodeId={id}
-        icon={<IconRuler2 size="16px" />}
+        icon={<IconScan size="16px" />}
         status={status}
         handleRunClick={handleRunClick}
         runButtonTooltip="Run evaluator over inputs"
@@ -225,7 +225,7 @@ const RagEvalNode: React.FC<RagEvalNodeProps> = ({ data, id }) => {
 
       <Flex gap="xs">
         <Text mt="6px" fz="sm">
-          Return true if
+          Evaluator
         </Text>
         <NativeSelect
           data={EVALUATION_FORMATS}

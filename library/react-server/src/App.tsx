@@ -37,6 +37,7 @@ import {
   IconFileSymlink,
   IconRobot,
   IconRuler2,
+  IconScan,
   IconArrowMerge,
   IconArrowsSplit,
   IconForms,
@@ -2902,7 +2903,7 @@ const App = () => {
                   <MenuTooltip label="Evaluate responses with rag (no coding required).">
                     <Menu.Item
                       onClick={addRagEvalNode}
-                      icon={<IconRuler2 size="16px" />}
+                      icon={<IconScan size="16px" />}
                     >
                       {" "}
                       Rag Evaluator{" "}
