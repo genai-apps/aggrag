@@ -9,6 +9,7 @@ from llama_index.core import VectorStoreIndex, StorageContext, load_index_from_s
 from llama_index.core.chat_engine.types import ChatMode
 from llama_index.core.node_parser import HTMLNodeParser
 
+from library.aggrag.core.ai_service import ReplicateAIService, TogetherAIService, AIServiceFactory
 
 
 from llama_index.core.node_parser import SimpleNodeParser
@@ -67,7 +68,9 @@ class Base:
                  iteration: str,
                  DATA_DIR: Optional[str] = None,
                  upload_type: Optional[str] = None,
-                 base_rag_setting= None):
+                 base_rag_setting= None,
+                 llm: str = None,
+                 embed_model: str = None):
         
         """
         Initializes a base configuration for RAG with given parameters, setting up directories and logging essential information.
@@ -92,23 +95,8 @@ class Base:
         self.system_prompt=base_rag_setting.system_prompt
         self.context_prompt=base_rag_setting.context_prompt
         
-        self.llm = AzureOpenAI(
-            model= base_rag_setting.llm_model.value,
-            deployment_name= base_rag_setting.llm_deployment.value,
-            api_key=settings.AZURE_OPENAI_KEY, 
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-            system_prompt = base_rag_setting.system_prompt,
-            context_prompt = base_rag_setting.context_prompt,
-            temperature = base_rag_setting.temperature
-            )
-        self.embed_model = AzureOpenAIEmbedding(
-            model = base_rag_setting.embed_model.value,
-            deployment_name= base_rag_setting.embed_deployment.value,
-            api_key=settings.AZURE_OPENAI_KEY,
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-        )
+        self.llm = llm
+        self.embed_model = embed_model
 
         self.documents = None
         self.index_name = base_rag_setting.index_name or "base_index"
@@ -240,7 +228,10 @@ class Base:
         Kwargs:
             Additional parameters that might be required for chat engine configuration.
         """
-        await self.retrieve_index_async()
+        index = await self.retrieve_index_async()
+        if not index:
+            raise Exception("Index is not available or unable to fetch")
+
         self.chat_engine = self.index.as_chat_engine(
         chat_mode=ChatMode.CONDENSE_PLUS_CONTEXT,
         system_prompt=self.system_prompt,
