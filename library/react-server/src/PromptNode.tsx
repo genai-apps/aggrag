@@ -1339,10 +1339,24 @@ Soft failing by replacing undefined with empty strings.`,
     // Pull the input data
     let pulled_vars;
     const resp = [];
+    let isFileUploaded = false;
     try {
       pulled_vars = getImmediateInputNode(["rag_knowledge_base"], id).filter(
         (t) => t.type === "uploadfilefields",
       );
+      // latest change: checking if a file has been uploaded for creating index
+      const uploadedFilePath = pulled_vars
+        .map((each: any) => each.data?.fields?.f1)
+        .filter((f1: any) => f1 !== undefined && f1 !== null);
+
+      if (uploadedFilePath) {
+        if (uploadedFilePath.length > 0) {
+          isFileUploaded = true;
+        }
+      }
+      if (!isFileUploaded) {
+        return;
+      }
 
       ragListContainer?.current?.setZeroPercProgress();
       pulled_vars.forEach((node_obj) => {
