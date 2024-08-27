@@ -70,8 +70,6 @@ class Evaluator:
                           llm=self.llm_model, 
                           embeddings=self.llm_embeddings)
         result_df = result.to_pandas()
-        
-        #result_df.to_csv("ll.csv", mode='w', index=False)
         return result_df
 
 

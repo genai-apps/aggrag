@@ -1772,10 +1772,19 @@ def ragas_evaluation():
 
     evaluator = Evaluator(response_dataset=dataset, llm_model=llm, llm_embeddings=embed_llm, metrics=metrics)
     score_df = evaluator.evaluate_models()
-    print(score_df.to_json())
-    # score_df.to_csv(eval_result_file_path, index=False)
+    score_dict = score_df.to_dict()
+    # Convert to list of dictionaries
+    result = []
+    for i in score_dict['question']:
+        result.append({
+            'question': score_dict['question'][i],
+            'ground_truth': score_dict['ground_truth'][i],
+            'answer': score_dict['answer'][i],
+            'answer_similarity': score_dict['answer_similarity'][i],
+            'answer_correctness': score_dict['answer_correctness'][i]
+        })
 
-    return score_df.to_json()
+    return result
 
 @app.route('/app/deepevalevaluation', methods=['POST'])
 def deepeval_evaluation():
@@ -1838,10 +1847,9 @@ def deepeval_evaluation():
                     "ground_truth": test_result.expected_output
         }
         for met in test_result.metrics_metadata:
-            response_dict[met.metric] = met.score
+            response_dict["answer_correctness"] = met.score
 
         json_data.append(response_dict)
-    print(json_data)
     return json_data
 
 @app.route("/app/healthCheck", methods=["GET"])
