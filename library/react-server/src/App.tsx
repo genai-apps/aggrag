@@ -615,8 +615,8 @@ const App = () => {
         return res.blob();
       })
       .then((blob) => {
-        var url = window.URL.createObjectURL(blob);
-        var a = document.createElement("a");
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
         a.href = url;
         a.download = `${urlParams.get("i_folder")}.zip`;
         document.body.appendChild(a);
