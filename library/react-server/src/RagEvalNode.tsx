@@ -22,6 +22,7 @@ import { Status } from "./StatusIndicatorComponent";
 import { JSONCompatible, LLMResponse, Dict } from "./backend/typing";
 import TemplateHooks from "./TemplateHooksComponent";
 import { v4 as uuid } from "uuid";
+import { groupBy } from "lodash";
 
 type EvaluationFormat = "Ragas" | "Deep eval";
 const EVALUATION_FORMATS: EvaluationFormat[] = ["Ragas", "Deep eval"];
@@ -77,7 +78,6 @@ const RagEvalNode: React.FC<RagEvalNodeProps> = ({ data, id }) => {
   const handlePullInputs = useCallback(() => {
     // Pull input data
     const pulled_inputs = pullInputData(templateVars, id);
-    console.log("Pulled_inputs: ", pulled_inputs);
 
     if (
       !pulled_inputs ||
@@ -102,24 +102,35 @@ const RagEvalNode: React.FC<RagEvalNodeProps> = ({ data, id }) => {
     return ansStr;
   };
 
-  const transformToLLMResponseFormat = (resps: any): LLMResponse[] =>
-    resps.map((r: any) => ({
-      vars: {
-        questions: r.question,
-        ground_truth: r.ground_truth,
-      },
-      metavars: {},
-      uid: uuid(),
-      prompt: r.question,
-      responses: [getAnswerWithEval(r)],
-      tokens: {},
-      llm: typeof r?.llm === "string" ? r?.llm : (r?.llm?.name ?? "undefined"),
-    }));
+  const transformToLLMResponseFormat = (
+    resps: any,
+    dataObj: any,
+  ): LLMResponse[] =>
+    resps.map((r: any) => {
+      const addDataFromObj = dataObj.find((obj: any) => obj.text === r.answer);
+      return {
+        vars: {
+          questions: r.question,
+          ground_truth: r.ground_truth,
+        },
+        metavars: {},
+        uid: addDataFromObj?.uid ? addDataFromObj.uid : uuid(),
+        prompt: r.question,
+        responses: [getAnswerWithEval(r)],
+        tokens: addDataFromObj?.tokens ? addDataFromObj.tokens : {},
+        llm: addDataFromObj?.llm ? addDataFromObj.llm : "undefined",
+      };
+    });
 
   const handleRunClick = useCallback(async () => {
     // Pull inputs to the node
     const pulled_inputs = handlePullInputs();
+    let responses: any = [];
 
+    let llm_answers: any = groupBy(
+      pulled_inputs.answers as any[],
+      ({ llm }: { llm: { name: string } }) => llm.name,
+    );
     // Set status and created rejection callback
     setStatus(Status.LOADING);
     setLastResponses([]);
@@ -130,49 +141,53 @@ const RagEvalNode: React.FC<RagEvalNodeProps> = ({ data, id }) => {
       if (showAlert) showAlert(err_msg);
     };
 
-    let params: {
-      question: string[];
-      ground_truth: string[];
-      answer: string[];
-    } = {
-      question: [],
-      ground_truth: [],
-      answer: [],
-    };
-    pulled_inputs.questions.forEach((question: any) => {
-      params.question.push(question.text);
-      const ground_truth = pulled_inputs.ground_truth.find(
-        (obj: any) => obj.metavars.Questions === question.text,
-      );
-      if (ground_truth) params.ground_truth.push(ground_truth.text);
-      const ans = pulled_inputs.answers.find(
-        (obj: any) => obj.prompt === question.text,
-      );
-      if (ans) params.answer.push(ans.text);
-    });
-    try {
-      let resps: any;
-      if (evaluationFormat === "Deep eval") {
-        resps = await deepeval_evaluation(params);
-      } else {
-        resps = await ragas_evaluation(params);
+    Object.keys(llm_answers).forEach(async (element) => {
+      let params: {
+        question: string[];
+        ground_truth: string[];
+        answer: string[];
+      } = {
+        question: [],
+        ground_truth: [],
+        answer: [],
+      };
+      pulled_inputs.questions.forEach((question: any) => {
+        params.question.push(question.text);
+        const ground_truth = pulled_inputs.ground_truth.find(
+          (obj: any) => obj.metavars.Questions === question.text,
+        );
+        if (ground_truth) params.ground_truth.push(ground_truth.text);
+        const ans = llm_answers[element].find(
+          (obj: any) => obj.prompt === question.text,
+        );
+        if (ans) params.answer.push(ans.text);
+      });
+      try {
+        let resps: any;
+        if (evaluationFormat === "Deep eval") {
+          resps = await deepeval_evaluation(params);
+        } else {
+          resps = await ragas_evaluation(params);
+        }
+        // Check if there's an error; if so, bubble it up to user and exit:
+        if (resps.error || resps === undefined) throw new Error(resps.error);
+        // Ping any vis + inspect nodes attached to this node to refresh their contents:
+        responses = [
+          ...responses,
+          ...transformToLLMResponseFormat(resps, llm_answers[element]),
+        ];
+      } catch (err: any) {
+        rejected(typeof err === "string" ? err : err.message);
       }
+    });
 
-      // Check if there's an error; if so, bubble it up to user and exit:
-      if (resps.error || resps === undefined) throw new Error(resps.error);
+    pingOutputNodes(id);
+    setLastResponses(responses);
+    setLastRunSuccess(true);
 
-      // Ping any vis + inspect nodes attached to this node to refresh their contents:
-      pingOutputNodes(id);
+    if (status !== Status.READY && !showDrawer) setUninspectedResponses(true);
 
-      setLastResponses(transformToLLMResponseFormat(resps));
-      setLastRunSuccess(true);
-
-      if (status !== Status.READY && !showDrawer) setUninspectedResponses(true);
-
-      setStatus(Status.READY);
-    } catch (err: any) {
-      rejected(typeof err === "string" ? err : err.message);
-    }
+    setStatus(Status.READY);
   }, [
     handlePullInputs,
     pingOutputNodes,
