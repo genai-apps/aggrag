@@ -19,6 +19,7 @@ from library.aggrag.core.schema import (
     MetaLangRagSetting,
     TableBaseRagSetting,
 )
+from library.aggrag.core.utils import zip_directory
 from library.providers.dalai import call_dalai
 from library.providers import ProviderRegistry
 import requests as py_requests
@@ -1806,6 +1807,19 @@ def deepeval_evaluation():
 @app.route("/app/healthCheck", methods=["GET"])
 def get_health_check():
     return jsonify({"message": "ok"}), 200
+
+
+@app.route('/app/exportFiles', methods=['GET'])
+def exportFiles():
+    folder_to_zip = request.args.get('folder_path')
+    if not folder_to_zip:
+        return jsonify({'error': f"folder_path is required"})
+
+    memory_file = zip_directory(folder_to_zip)
+    if not memory_file:
+        return jsonify({'error': f"Failed to zip provided directory"})
+
+    return send_file(memory_file, mimetype='application/zip', as_attachment=True, download_name='files.zip')
 
 
 def run_server(host="", port=8000, cmd_args=None):
