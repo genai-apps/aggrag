@@ -86,7 +86,11 @@ import "lazysizes/plugins/attrchange/ls.attrchange";
 import { shallow } from "zustand/shallow";
 import useStore, { StoreHandles } from "./store";
 import StorageCache from "./backend/cache";
-import { APP_IS_RUNNING_LOCALLY, browserTabIsActive } from "./backend/utils";
+import {
+  FLASK_BASE_URL,
+  APP_IS_RUNNING_LOCALLY,
+  browserTabIsActive,
+} from "./backend/utils";
 import { Dict, JSONCompatible, LLMSpec } from "./backend/typing";
 import {
   exportCache,
@@ -319,6 +323,8 @@ const App = () => {
   const saveRef = useRef<any>(null);
   // For modal popup of example flows
   const examplesModal = useRef<ExampleFlowsModalRef>(null);
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
 
   // For an info pop-up that welcomes new users
   // const [welcomeModalOpened, { open: openWelcomeModal, close: closeWelcomeModal }] = useDisclosure(false);
@@ -591,28 +597,34 @@ const App = () => {
   };
 
   // Export / Import (from JSON)
-  const exportFlow = useCallback(() => {
-    if (!rfInstance) return;
-
-    // We first get the data of the flow
-    const flow = rfInstance.toObject();
-
-    // Then we grab all the relevant cache files from the backend
-    const all_node_ids = nodes.map((n) => n.id);
-    exportCache(all_node_ids)
-      .then(function (cacheData) {
-        // Now we append the cache file data to the flow
-        const flow_and_cache = {
-          flow,
-          cache: cacheData,
-        };
-
-        // Save!
-        // @ts-expect-error The exported RF instance is JSON compatible but TypeScript won't read it as such.
-        downloadJSON(flow_and_cache, `flow-${Date.now()}.cforge`);
+  const exportFlow = useCallback(async () => {
+    const data: any = {};
+    data.folder_path = `configurations/${urlParams.get("p_folder")}/${urlParams.get("i_folder")}`;
+    fetch(
+      `${FLASK_BASE_URL}app/exportFiles?` +
+        new URLSearchParams(data).toString(),
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      },
+    )
+      .then((res) => {
+        return res.blob();
+      })
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${urlParams.get("i_folder")}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
       })
       .catch(handleError);
-  }, [rfInstance, nodes, handleError]);
+  }, [handleError]);
 
   const handleSaveAndCommit = () => {
     handleSaveFlow(true);
