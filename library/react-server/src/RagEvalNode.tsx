@@ -92,7 +92,7 @@ const RagEvalNode: React.FC<RagEvalNodeProps> = ({ data, id }) => {
   }, [pullInputData, id]);
 
   const getAnswerWithEval = (ansObj: any): string => {
-    let ansStr =
+    const ansStr =
       ansObj.answer +
       `
     ANSWER CORRECTNESS: ${ansObj.answer_correctness} `;
@@ -127,7 +127,7 @@ const RagEvalNode: React.FC<RagEvalNodeProps> = ({ data, id }) => {
     const pulled_inputs = handlePullInputs();
     let responses: any = [];
 
-    let llm_answers: any = groupBy(
+    const llm_answers: any = groupBy(
       pulled_inputs.answers as any[],
       ({ llm }: { llm: { name: string } }) => llm.name,
     );
@@ -141,8 +141,8 @@ const RagEvalNode: React.FC<RagEvalNodeProps> = ({ data, id }) => {
       if (showAlert) showAlert(err_msg);
     };
 
-    Object.keys(llm_answers).forEach(async (element) => {
-      let params: {
+    for (const element of Object.keys(llm_answers)) {
+      const params: {
         question: string[];
         ground_truth: string[];
         answer: string[];
@@ -179,7 +179,7 @@ const RagEvalNode: React.FC<RagEvalNodeProps> = ({ data, id }) => {
       } catch (err: any) {
         rejected(typeof err === "string" ? err : err.message);
       }
-    });
+    }
 
     pingOutputNodes(id);
     setLastResponses(responses);
