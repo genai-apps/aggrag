@@ -116,6 +116,7 @@ import {
   TickMark,
 } from "./SvgIcons";
 import "./CssStyles.css";
+import { setHintSteps } from "./HintHelpers";
 const IS_ACCEPTED_BROWSER =
   (isChrome ||
     isChromium ||
@@ -249,13 +250,20 @@ const MenuTooltip = ({
 const snapGrid: [number, number] = [16, 16];
 
 type HintRunsType = {
-  prompt: number;
-  textField: number;
+  promptNode: number;
+  textFieldsNode: number;
   uploadfilefields: number;
   usecase: number;
   iteration: number;
   prompthitplay: number;
   model_added: number;
+  csvNode: number;
+  table: number;
+  chatTurn: number;
+  simpleEval: number;
+  evalNode: number;
+  llmeval: number;
+  visNode: number;
 };
 
 const App = () => {
@@ -338,14 +346,23 @@ const App = () => {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [runTour, setRunTour] = useState(true);
   const [hintRuns, setHintRuns] = useState<HintRunsType>({
-    prompt: 0,
-    textField: 0,
+    promptNode: 0,
+    textFieldsNode: 0,
     uploadfilefields: 0,
     usecase: 0,
     iteration: 0,
     prompthitplay: 0,
     model_added: 0,
+    csvNode: 0,
+    table: 0,
+    chatTurn: 0,
+    simpleEval: 0,
+    evalNode: 0,
+    llmeval: 0,
+    visNode: 0,
   });
+
+  console.log("hintRuns", hintRuns);
 
   const API_URL = process.env.REACT_APP_API_URL;
   const [hoveredItem, setHoveredItem] = useState(null);
@@ -424,19 +441,18 @@ const App = () => {
         y: y - 100 + (offsetY || 0),
       },
     });
-    if (type) {
-      setTriggerHint(type);
+    if (id) {
+      setTriggerHint(id);
+      incrementHintRun(id);
     }
 
-    console.log("type", type);
-
-    if (type === "prompt") {
-      incrementHintRun("prompt");
-    } else if (type === "textfields") {
-      incrementHintRun("textField");
-    } else if (type === "uploadfilefields") {
-      incrementHintRun("uploadfilefields");
-    }
+    // if (type === "prompt") {
+    //  ("promptNode");
+    // } else if (type === "textfields") {
+    //   incrementHintRun("textFieldsNode");
+    // } else if (type === "uploadfilefields") {
+    //   incrementHintRun("uploadfilefields");
+    // }
 
     setIsChangesNotSaved(true);
     // following changes are for showing warning if we delete iter or usecase and again if we try to add nodes and save flow
@@ -802,10 +818,6 @@ const App = () => {
         .catch((error) => {
           setLoading(false);
           console.error("Error saving flow:", error);
-          // setNotificationText({
-          //   title: "Failed",
-          //   text: "File not saved, please select one of the usecase(path)",
-          // });
         });
     });
   };
@@ -1999,6 +2011,76 @@ const App = () => {
     }
   };
 
+  const handleJoyrideCallback = useCallback((data: CallBackProps) => {
+    const { status, index } = data;
+
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      setRunTour(false); // Stop tour if finished or skipped
+    } else if (status === STATUS.RUNNING) {
+      setCurrentStep(index); // Update current step if the tour is running
+    }
+  }, []);
+
+  const handleClose = () => {
+    setRunTour(false);
+    if (triggerHint === "prompt") {
+      setTimeout(() => {
+        setTriggerHint("textfields3");
+      }, 1000);
+    } else if (triggerHint === "textFieldsNode") {
+      setTimeout(() => {
+        setTriggerHint("textfields2");
+      }, 500);
+    }
+  };
+
+  const incrementHintRun = (id: string) => {
+    setHintRuns((prevState: HintRunsType) => {
+      const key = id as keyof HintRunsType; // Type assertion to use id as a key
+      if (key in prevState) {
+        return {
+          ...prevState,
+          [key]: prevState[key] + 1,
+        };
+      }
+      return prevState;
+    });
+  };
+
+  const setUpdateSteps = (
+    targetClass: string,
+    titleText: string,
+    content: any,
+    placement: string,
+    disableBoolean: boolean,
+    requireTimeout: boolean,
+  ) => {
+    const updatedSteps = [
+      ...steps,
+      {
+        target: targetClass,
+        title: titleText,
+        content: content,
+        placement: placement as Placement,
+        disableBeacon: disableBoolean,
+      },
+    ];
+    setSteps(updatedSteps);
+    setCurrentStep(updatedSteps.length - 1);
+    setRunTour(true);
+    if (requireTimeout) {
+      setTimeout(() => {
+        setCurrentStep(updatedSteps.length - 1);
+        setRunTour(true);
+      }, 100);
+    }
+    // setTriggerHint("");
+  };
+
+  useEffect(() => {
+    setHintSteps(triggerHint, hintRuns, setUpdateSteps);
+  }, [triggerHint]);
+
   // this code is for routing to respective methods when user confirms in the save changes modal
   useEffect(() => {
     if (confirmed) {
@@ -2153,205 +2235,6 @@ const App = () => {
   useEffect(() => {
     fetchFoldersAndContents();
   }, [isUseCaseCreated]);
-
-  const handleJoyrideCallback = useCallback((data: CallBackProps) => {
-    const { status, index } = data;
-
-    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-      setRunTour(false); // Stop tour if finished or skipped
-    } else if (status === STATUS.RUNNING) {
-      setCurrentStep(index); // Update current step if the tour is running
-    }
-  }, []);
-
-  const handleClose = () => {
-    setRunTour(false);
-    if (triggerHint === "prompt") {
-      setTriggerHint("textfields3");
-    } else if (triggerHint === "textfields") {
-      setTriggerHint("textfields2");
-    }
-  };
-
-  const incrementHintRun = (type: keyof HintRunsType) => {
-    setHintRuns((prevState: HintRunsType) => ({
-      ...prevState,
-      [type]: prevState[type] + 1,
-    }));
-  };
-
-  useEffect(() => {
-    if (
-      triggerHint === "created-usecase" ||
-      triggerHint === "created-iteration"
-    ) {
-      const updatedSteps = [
-        ...steps,
-        {
-          target: ".add-node",
-          title: "Hint",
-          content:
-            "Add a Input Data/Knowledge Base node from the list to get started with your work.",
-          placement: "left" as Placement,
-          disableBeacon: true,
-        },
-      ];
-      setSteps(updatedSteps);
-      setCurrentStep(updatedSteps.length - 1);
-      setRunTour(true);
-      setTriggerHint("");
-    } else if (triggerHint === "textfields" && hintRuns.textField <= 1) {
-      // Specify input text to prompt or chat nodes. You can also declare variables in brackets to chain TextFields together
-      const updatedSteps = [
-        ...steps,
-        {
-          target: ".text-fields-node-for-hint",
-          title: "Hint",
-          content:
-            "Specify your input text here. You can also declare variables in brackets to chain TextFields together.",
-          placement: "left" as Placement,
-          disableBeacon: true,
-        },
-      ];
-
-      setSteps(updatedSteps);
-      setRunTour(false);
-      setTimeout(() => {
-        setCurrentStep(updatedSteps.length - 1);
-        setRunTour(true);
-      }, 100);
-    }
-    // here we are using "textfields" because we have type directly coming from addNode method
-    else if (triggerHint === "textfields2" && hintRuns.textField <= 1) {
-      const updatedSteps = [
-        ...steps,
-        {
-          target: ".add-node",
-          title: "Hint",
-          content: "Now add a prompt node.",
-          placement: "bottom" as Placement,
-          disableBeacon: true,
-        },
-      ];
-
-      setSteps(updatedSteps);
-      setRunTour(false);
-      setTimeout(() => {
-        setCurrentStep(updatedSteps.length - 1);
-        setRunTour(true);
-      }, 100);
-    } else if (triggerHint === "textfields3") {
-      const updatedSteps = [
-        ...steps,
-        {
-          target: ".text-fields-node-for-hint",
-          title: "Hint",
-          content:
-            "You can connect the TextFields node to the prompt node, to get going.",
-          placement: "bottom" as Placement,
-          disableBeacon: true,
-        },
-      ];
-
-      setSteps(updatedSteps);
-      setRunTour(false);
-      setTimeout(() => {
-        setCurrentStep(updatedSteps.length - 1);
-        setRunTour(true);
-        setTriggerHint("");
-      }, 100);
-    } else if (triggerHint === "prompt" && hintRuns.prompt <= 1) {
-      const updatedSteps = [
-        ...steps,
-        {
-          target: ".prompt-field-fixed-for-hint",
-          title: "Hint",
-          content: (
-            <div>
-              <div>You can add variables in the node like below:</div>
-              <br />
-              <span style={{ fontStyle: "italic", color: "#098BCB" }}>
-                {"{variable_name}"}
-              </span>
-            </div>
-          ),
-          placement: "right" as Placement,
-          disableBeacon: true,
-        },
-      ];
-
-      setSteps(updatedSteps);
-      setRunTour(false);
-      setTimeout(() => {
-        setCurrentStep(updatedSteps.length - 1);
-        setRunTour(true);
-      }, 100);
-    } else if (
-      triggerHint === "file-upload" &&
-      hintRuns.uploadfilefields <= 1
-    ) {
-      const updatedSteps = [
-        ...steps,
-        {
-          target: ".file-fields-node",
-          title: "Hint",
-          content:
-            "'Add a RAG' to connect the FileFields Node to the Prompt Node, first. Then, connect the nodes and select 'Create Index'.",
-          placement: "bottom" as Placement,
-          disableBeacon: true,
-        },
-      ];
-
-      setSteps(updatedSteps);
-      setRunTour(false);
-      setTimeout(() => {
-        setCurrentStep(updatedSteps.length - 1);
-        setRunTour(true);
-        setTriggerHint("");
-      }, 100);
-    } else if (triggerHint === "model-added" && hintRuns.model_added <= 1) {
-      const updatedSteps = [
-        ...steps,
-        {
-          target: ".settings-class",
-          title: "Hint",
-          content:
-            "Dont’t forget to add the associated API keys for the LLM Models you have added.",
-          placement: "bottom" as Placement,
-          disableBeacon: true,
-        },
-      ];
-
-      setSteps(updatedSteps);
-      setRunTour(false);
-      incrementHintRun("model_added");
-      setTimeout(() => {
-        setCurrentStep(updatedSteps.length - 1);
-        setRunTour(true);
-        setTriggerHint("");
-      }, 100);
-    } else if (triggerHint === "prompt-play" && hintRuns.prompthitplay <= 1) {
-      const updatedSteps = [
-        ...steps,
-        {
-          target: ".add-node",
-          title: "Hint",
-          content:
-            "Add an Evaluator or Visualizer Node to evaluate/inspect/visualize the responses further.",
-          placement: "bottom" as Placement,
-          disableBeacon: true,
-        },
-      ];
-
-      setSteps(updatedSteps);
-      setRunTour(false);
-      incrementHintRun("prompthitplay");
-      setTimeout(() => {
-        setCurrentStep(updatedSteps.length - 1);
-        setRunTour(true);
-      }, 100);
-    }
-  }, [triggerHint]);
 
   if (!IS_ACCEPTED_BROWSER) {
     return (
