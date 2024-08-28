@@ -39,6 +39,22 @@ Instead, it will copy all the configuration files and the transitive dependencie
 
 You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
+## Exporting Iterations
+
+When you click the "EXPORT" button in the application, it will download a zip folder containing the iteration for the specific use case.
+
+### Importing the Downloaded Zip
+
+If you are running the project locally, follow these steps to import the downloaded zip:
+
+1. Unzip the downloaded folder.
+2. Place the unzipped folder inside the `configurations` directory, which is located at the relative path: `./configurations/`.
+3. You can either:
+   - Paste it inside an already created use case folder, or
+   - Create a new use case from the UI and then paste the unzipped folder inside that new use case.
+
+Make sure the structure is maintained for the application to recognize the imported iteration.
+
 ## Learn More
 
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
