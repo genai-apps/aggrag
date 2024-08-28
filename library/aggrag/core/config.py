@@ -154,7 +154,7 @@ class Settings(BaseSettings):
     LLAMA_CLOUD_API_KEY: Optional[str] = None
     # Log
     LOGGING_LEVEL: str = 'INFO'
-
+    ANTHROPIC_API_KEY: Optional[str] = None
     # def chat_file_temp_file_directory(self, user_id: int, chat_id: int) -> str:
     #     return os.path.join(f'../tmp/{user_id}/{chat_id}/raw_docs/')
 
