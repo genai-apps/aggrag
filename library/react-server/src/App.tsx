@@ -618,7 +618,7 @@ const App = () => {
         var url = window.URL.createObjectURL(blob);
         var a = document.createElement("a");
         a.href = url;
-        a.download = `${urlParams.get("p_folder")}.zip`;
+        a.download = `${urlParams.get("i_folder")}.zip`;
         document.body.appendChild(a);
         a.click();
         a.remove();
