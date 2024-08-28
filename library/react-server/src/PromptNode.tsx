@@ -1350,7 +1350,6 @@ Soft failing by replacing undefined with empty strings.`,
         const fields = node_obj?.data?.fields;
         if (fields && Object.keys(fields).some((key) => fields[key])) {
           isFileUploaded = true;
-          return;
         }
       });
       if (!isFileUploaded) {
