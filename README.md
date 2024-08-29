@@ -19,13 +19,13 @@ Aggrag allows you to configure LLM experiments, and take them from prototype to 
 # Table of Contents
 
 - [Local Setup](#local-setup)
+- [Managing Dependencies](#managing-dependencies)
 - [Documentation](#documentation)
 - [Installation](#installation)
 - [RAGstore](#ragstore)
 - [Example Use Cases](#example-use-cases)
 - [Features](#features) 
 - [Citations](#citations)
-- [Managing Dependencies](#managing-dependencies)
 
 
 
@@ -37,6 +37,19 @@ Aggrag allows you to configure LLM experiments, and take them from prototype to 
   3. To start the server: get into the root aggrag directory and run: `python -m library.app serve`. Note, however:
       - You will need to create `.env` file in the root directory. Use the `.env-sample` file as a reference.
       - run `pip install -r requirements.txt`. It is recommended to create a new virtualenv in the root directory to avoid installing packages globally. Command to create a new virtual env: `python3 -m venv venv`
+
+
+# Managing Dependencies
+ 
+When adding a new package, please make sure to:
+
+ 1. Add the package to the `requirements.in` file.
+ 2. Run `pip-compile requirements.in` to automatically update the `requirements.txt` file with the new package 
+and its sub-dependencies.
+ 3. Use `pip install -r requirements.txt` to install the updated dependencies.
+
+NOTE: After adding a new package and running `pip-compile`, always run `pip install -r requirements.txt` to ensure 
+that all dependencies are installed correctly and that there are no issues with the installation process.
 
 
 # Documentation
@@ -75,12 +88,3 @@ Aggrag is released under the MIT License.
 # Citations
 
 Aggrag is our original concept, however, for implementation we have relied on the existing development of: [arXiv pre-print](https://arxiv.org/abs/2309.09128)
-
-# Managing Dependencies
-
-When adding a new package, please add it to the `requirements.in` file and run `pip-compile requirements.in` to automatically update 
-the `requirements.txt` with the package and its sub-dependencies.
-
-
-
-
