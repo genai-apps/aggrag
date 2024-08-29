@@ -31,7 +31,7 @@ import { ContextMenuItemOptions } from "mantine-contextmenu/dist/types";
 
 // The LLM(s) to include by default on a PromptNode whenever one is created.
 // Defaults to ChatGPT (GPT3.5) when running locally, and HF-hosted falcon-7b for online version since it's free.
-const DEFAULT_INIT_LLMS = [initLLMProviders[0]];
+const DEFAULT_INIT_LLMS: Dict[] = [];
 
 // Helper funcs
 // Ensure that a name is 'unique'; if not, return an amended version with a count tacked on (e.g. "GPT-4 (2)")

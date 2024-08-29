@@ -34,6 +34,7 @@ import { ContextMenuItemOptions } from "mantine-contextmenu/dist/types";
 import { Tooltip } from "@mantine/core";
 
 // The RAG(s) to include by default on a PromptNode whenever one is created.
+const DEFAULT_INIT_RAGS: Dict[] = [initRAGProviderMenu[0]]
 // Helper funcs
 // Ensure that a name is 'unique'; if not, return an amended version with a count tacked on (e.g. "GPT-4 (2)")
 const ensureUniqueName = (_name: string, _prev_names: string[]) => {
@@ -323,7 +324,14 @@ export const RAGListContainer = forwardRef<
   };
 
   // Selecting RAG models to prompt
-  const [ragItems, setRAGItems] = useState(initRAGItems);
+  const [ragItems, setRAGItems] = useState(
+    initRAGItems ||
+      DEFAULT_INIT_RAGS.map((i) => ({
+        key: uuid(),
+        settings: getDefaultModelSettings(i.base_model),
+        ...i,
+      })),
+  );
   const [ragItemsCurrState, setRAGItemsCurrState] = useState<LLMSpec[]>([]);
   const resetRAGItemsProgress = useCallback(() => {
     setRAGItems(
