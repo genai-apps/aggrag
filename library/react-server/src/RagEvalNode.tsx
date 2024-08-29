@@ -78,7 +78,6 @@ const RagEvalNode: React.FC<RagEvalNodeProps> = ({ data, id }) => {
   const handlePullInputs = useCallback(() => {
     // Pull input data
     const pulled_inputs = pullInputData(templateVars, id);
-
     if (
       !pulled_inputs ||
       !pulled_inputs.questions ||
@@ -153,8 +152,8 @@ const RagEvalNode: React.FC<RagEvalNodeProps> = ({ data, id }) => {
       };
       pulled_inputs.questions.forEach((question: any) => {
         params.question.push(question.text);
-        const ground_truth = pulled_inputs.ground_truth.find(
-          (obj: any) => obj.metavars.Questions === question.text,
+        const ground_truth = pulled_inputs.ground_truth.find((obj: any) =>
+          JSON.stringify(obj.metavars).includes(question.text),
         );
         if (ground_truth) params.ground_truth.push(ground_truth.text);
         const ans = llm_answers[element].find(
