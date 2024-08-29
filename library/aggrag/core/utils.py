@@ -1,6 +1,8 @@
+import io
 import os
 import shutil
 import logging
+import zipfile
 
 import aiofiles
 
@@ -15,6 +17,26 @@ def create_folder(folder_path):
 def delete_folder(folder_path):
     if os.path.exists(folder_path):
         shutil.rmtree(folder_path)
+
+
+def zip_directory(folder_path):
+    if not os.path.exists(folder_path):
+        return None
+    # Create an in-memory bytes buffer
+    memory_file = io.BytesIO()
+
+    # Create a zip file in the memory buffer
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, start=folder_path)
+                zipf.write(file_path, arcname)
+
+    # Seek to the start of the BytesIO object to allow Flask to send it
+    memory_file.seek(0)
+
+    return memory_file
 
 
 def get_time_taken(start, interim, final):
