@@ -299,7 +299,7 @@ const SimpleEvalNode: React.FC<SimpleEvalNodeProps> = ({ data, id }) => {
   }, [data]);
 
   return (
-    <BaseNode classNames="evaluator-node" nodeId={id}>
+    <BaseNode classNames="evaluator-node simple-eval-for-hint" nodeId={id}>
       <NodeLabel
         title={data.title || "Simple Evaluator"}
         nodeId={id}

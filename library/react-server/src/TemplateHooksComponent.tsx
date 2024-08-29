@@ -61,8 +61,8 @@ export default function TemplateHooks({
 }: TemplateHooksProps) {
   const edges = useStore((state) => state.edges);
   const onEdgesChange = useStore((state) => state.onEdgesChange);
+  const setTriggerHint = useStore((state) => state.setTriggerHint);
   const [edgesToRemove, setEdgesToRemove] = useState<Edge[]>([]);
-
   // For notifying the backend when we re-render Handles:
   const updateNodeInternals = useUpdateNodeInternals();
 
@@ -89,6 +89,20 @@ export default function TemplateHooks({
           ? "hook-tag text-blink"
           : "hook-tag";
         const style = { top: idx * 28 + startY + "px", background: "#555" };
+        // for hints
+
+        const storedContent: any = localStorage.getItem("hintRuns");
+        let hintRunsForTextField3 = 0;
+        if (storedContent) {
+          const content = JSON.parse(storedContent);
+          if (content && content.textfields3) {
+            hintRunsForTextField3 = content.textfields3;
+          }
+        }
+        if (hintRunsForTextField3 < 1) {
+          setTriggerHint("textfields3");
+        }
+
         return (
           <div
             key={name}

@@ -116,7 +116,7 @@ import {
   TickMark,
 } from "./SvgIcons";
 import "./CssStyles.css";
-import { setHintSteps } from "./HintHelpers";
+import { HintRunsType, incrementHintRun, setHintSteps } from "./HintHelpers";
 const IS_ACCEPTED_BROWSER =
   (isChrome ||
     isChromium ||
@@ -249,23 +249,6 @@ const MenuTooltip = ({
 // const connectionLineStyle = { stroke: '#ddd' };
 const snapGrid: [number, number] = [16, 16];
 
-type HintRunsType = {
-  promptNode: number;
-  textFieldsNode: number;
-  uploadfilefields: number;
-  usecase: number;
-  iteration: number;
-  prompthitplay: number;
-  model_added: number;
-  csvNode: number;
-  table: number;
-  chatTurn: number;
-  simpleEval: number;
-  evalNode: number;
-  llmeval: number;
-  visNode: number;
-};
-
 const App = () => {
   // Get nodes, edges, etc. state from the Zustand store:
   const {
@@ -348,7 +331,7 @@ const App = () => {
   const [hintRuns, setHintRuns] = useState<HintRunsType>({
     promptNode: 0,
     textFieldsNode: 0,
-    uploadfilefields: 0,
+    uploadFileFieldsNode: 0,
     usecase: 0,
     iteration: 0,
     prompthitplay: 0,
@@ -360,14 +343,14 @@ const App = () => {
     evalNode: 0,
     llmeval: 0,
     visNode: 0,
+    file_upload: 0,
+    textfields2: 0,
+    textfields3: 0,
   });
-
-  console.log("hintRuns", hintRuns);
 
   const API_URL = process.env.REACT_APP_API_URL;
   const [hoveredItem, setHoveredItem] = useState(null);
   const [editUsecaseforCopy, setEditUsecaseforCopy] = useState("");
-
   // For saving / loading
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   const [autosavingInterval, setAutosavingInterval] = useState<
@@ -441,20 +424,16 @@ const App = () => {
         y: y - 100 + (offsetY || 0),
       },
     });
+
+    // if user adds node without closing previous hint
+    setRunTour(false);
+    // setting id to triggere respective HINT
     if (id) {
       setTriggerHint(id);
-      incrementHintRun(id);
+      incrementHintRun(id, setHintRuns);
     }
-
-    // if (type === "prompt") {
-    //  ("promptNode");
-    // } else if (type === "textfields") {
-    //   incrementHintRun("textFieldsNode");
-    // } else if (type === "uploadfilefields") {
-    //   incrementHintRun("uploadfilefields");
-    // }
-
     setIsChangesNotSaved(true);
+
     // following changes are for showing warning if we delete iter or usecase and again if we try to add nodes and save flow
     const data1: any = localStorage.getItem("current_usecase");
     const localData = JSON.parse(data1);
@@ -1403,7 +1382,7 @@ const App = () => {
         resetFlowToBlankCanvas();
         setIsChangesNotSaved(true);
         setTriggerHint("created-usecase");
-        incrementHintRun("usecase");
+        incrementHintRun("usecase", setHintRuns);
       } else {
         setLoading(false);
         console.log("error in creating usecase");
@@ -1676,7 +1655,7 @@ const App = () => {
         );
         // handleSaveFlow(false);
         setTriggerHint("created-iteration");
-        incrementHintRun("iteration");
+        incrementHintRun("iteration", setHintRuns);
       }
     } catch (e) {
       console.log("error in creating iteration");
@@ -2023,28 +2002,15 @@ const App = () => {
 
   const handleClose = () => {
     setRunTour(false);
-    if (triggerHint === "prompt") {
-      setTimeout(() => {
-        setTriggerHint("textfields3");
-      }, 1000);
+    if (triggerHint === "promptNode") {
+      // setTimeout(() => {
+      //   setTriggerHint("textfields3");
+      // }, 1000);
     } else if (triggerHint === "textFieldsNode") {
       setTimeout(() => {
         setTriggerHint("textfields2");
       }, 500);
     }
-  };
-
-  const incrementHintRun = (id: string) => {
-    setHintRuns((prevState: HintRunsType) => {
-      const key = id as keyof HintRunsType; // Type assertion to use id as a key
-      if (key in prevState) {
-        return {
-          ...prevState,
-          [key]: prevState[key] + 1,
-        };
-      }
-      return prevState;
-    });
   };
 
   const setUpdateSteps = (
@@ -2078,7 +2044,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    setHintSteps(triggerHint, hintRuns, setUpdateSteps);
+    setHintSteps(triggerHint, hintRuns, setUpdateSteps, setHintRuns);
   }, [triggerHint]);
 
   // this code is for routing to respective methods when user confirms in the save changes modal
@@ -2102,7 +2068,6 @@ const App = () => {
         const parsedData = data && JSON.parse(data);
         if (parsedData && parsedData.iterationCreated) {
           handleDeleteIteration(parsedData.usecase, parsedData.iteration);
-          console.log("triggered");
         } else {
           handleIterationFolderClick(
             modalOpen.usecase,
@@ -2113,7 +2078,6 @@ const App = () => {
       } else if (copyModalOpen.for === "copy-usecase") {
         handleCopyUsecase(copyModalOpen.usecase);
       }
-
       setConfirmed(false);
     }
   }, [confirmed]);
@@ -2235,6 +2199,13 @@ const App = () => {
   useEffect(() => {
     fetchFoldersAndContents();
   }, [isUseCaseCreated]);
+
+  useEffect(() => {
+    const storedHintRuns = localStorage.getItem("hintRuns");
+    if (storedHintRuns) {
+      setHintRuns(JSON.parse(storedHintRuns));
+    }
+  }, []);
 
   if (!IS_ACCEPTED_BROWSER) {
     return (
@@ -2536,6 +2507,8 @@ const App = () => {
             setOpenAddNode(false);
             setOpenMenu(false);
             setSaveAndCommitBtnOpen(false);
+            // setRunTour(false);
+            handleClose();
           }}
         >
           <div
@@ -2662,6 +2635,7 @@ const App = () => {
                       setSaveAndCommitBtnOpen(false);
                       setOpenMenu(!openMenu);
                       setOpenAddNode(false);
+                      handleClose();
                     }}
                     variant="gradient"
                     className="use-case"
@@ -2982,6 +2956,7 @@ const App = () => {
                       setOpenAddNode(!openAddNode);
                       setOpenMenu(false);
                       setSaveAndCommitBtnOpen(false);
+                      handleClose();
                     }} // to close use cases menu
                   >
                     Add Node +

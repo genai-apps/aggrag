@@ -1,3 +1,41 @@
+import React from "react";
+export type HintRunsType = {
+  promptNode: number;
+  textFieldsNode: number;
+  uploadFileFieldsNode: number;
+  usecase: number;
+  iteration: number;
+  prompthitplay: number;
+  model_added: number;
+  csvNode: number;
+  table: number;
+  chatTurn: number;
+  simpleEval: number;
+  evalNode: number;
+  llmeval: number;
+  visNode: number;
+  file_upload: number;
+  textfields2: number;
+  textfields3: number;
+};
+// this method is to track, how many times a hint is displayed.
+export const incrementHintRun = (
+  id: string,
+  setHintRuns: React.Dispatch<React.SetStateAction<HintRunsType>>,
+) => {
+  setHintRuns((prevState: HintRunsType) => {
+    const key = id as keyof HintRunsType;
+    if (key in prevState) {
+      const newState = {
+        ...prevState,
+        [key]: prevState[key] + 1,
+      };
+      localStorage.setItem("hintRuns", JSON.stringify(newState));
+      return newState;
+    }
+    return prevState;
+  });
+};
 export const setHintSteps = (
   triggerHint: string,
   hintRuns: any, // replace 'any' with the correct type if known
@@ -9,6 +47,7 @@ export const setHintSteps = (
     disableBeacon: boolean,
     showCloseButton: boolean,
   ) => void,
+  setHintRuns: React.Dispatch<React.SetStateAction<HintRunsType>>,
 ) => {
   switch (triggerHint) {
     case "created-usecase":
@@ -24,19 +63,21 @@ export const setHintSteps = (
       break;
 
     case "textFieldsNode":
-      setUpdateSteps(
-        ".text-fields-node-for-hint",
-        "Hint",
-        "Specify your input text here. You can also declare variables in brackets to chain TextFields together.",
-        "left",
-        true,
-        true,
-      );
-
+      if (hintRuns && hintRuns.textFieldsNode <= 1) {
+        setUpdateSteps(
+          ".text-fields-node-for-hint",
+          "Hint",
+          "Specify your input text here. You can also declare variables in brackets to chain TextFields together.",
+          "left",
+          true,
+          true,
+        );
+      }
       break;
 
     case "textfields2":
-      if (hintRuns.textField <= 1) {
+      // when a textFieldsNode is added, and if user closes then we need to show this hint
+      if (hintRuns && hintRuns.textfields2 <= 1) {
         setUpdateSteps(
           ".add-node",
           "Hint",
@@ -45,22 +86,28 @@ export const setHintSteps = (
           true,
           true,
         );
+        incrementHintRun("textfields2", setHintRuns);
       }
       break;
 
     case "textfields3":
-      setUpdateSteps(
-        ".text-fields-node-for-hint",
-        "Hint",
-        "You can connect the TextFields node to the prompt node, to get going.",
-        "bottom",
-        true,
-        true,
-      );
+      // this hint is shown after promptNode
+      if (hintRuns && hintRuns.textfields3 < 1) {
+        setUpdateSteps(
+          ".text-fields-node-for-hint",
+          "Hint",
+          "You can connect the TextFields node to the prompt node, to get going.",
+          "bottom",
+          true,
+          true,
+        );
+      }
+      incrementHintRun("textfields3", setHintRuns);
       break;
 
     case "promptNode":
-      if (hintRuns.prompt <= 1) {
+      // for prompt node
+      if (hintRuns && hintRuns.promptNode <= 1) {
         setUpdateSteps(
           ".prompt-field-fixed-for-hint",
           "Hint",
@@ -79,7 +126,8 @@ export const setHintSteps = (
       break;
 
     case "file-upload":
-      if (hintRuns.uploadfilefields <= 1) {
+      // when the user uploads file in uploadFileFieldsNode, then we need to show this hint
+      if (hintRuns && hintRuns.file_upload <= 0) {
         setUpdateSteps(
           ".file-fields-node",
           "Hint",
@@ -89,10 +137,12 @@ export const setHintSteps = (
           true,
         );
       }
+      incrementHintRun("file_upload", setHintRuns);
       break;
 
     case "model-added":
-      if (hintRuns.model_added <= 1) {
+      // when the user adds a model(Models to query) in Prompt Node, then the following hint will be shown
+      if (hintRuns && hintRuns.model_added <= 0) {
         setUpdateSteps(
           ".settings-class",
           "Hint",
@@ -102,10 +152,12 @@ export const setHintSteps = (
           true,
         );
       }
+      incrementHintRun("model_added", setHintRuns);
       break;
 
     case "prompt-play":
-      if (hintRuns.prompthitplay <= 1) {
+      // when we click play button in prompt node.
+      if (hintRuns && hintRuns.prompthitplay <= 0) {
         setUpdateSteps(
           ".add-node",
           "Hint",
@@ -115,91 +167,123 @@ export const setHintSteps = (
           true,
         );
       }
+      incrementHintRun("prompthitplay", setHintRuns);
       break;
 
     case "csvNode":
-      setUpdateSteps(
-        ".items-node-for-hint",
-        "Hint",
-        "Specify inputs as a comma-separated list of items. Good for specifying lots of short values. A potential alternative to TextFields node.",
-        "left",
-        true,
-        false,
-      );
+      // CSV node is Items node -- (Input Data)
+      if (hintRuns && hintRuns.csvNode <= 1) {
+        setUpdateSteps(
+          ".items-node-for-hint",
+          "Hint",
+          "Specify inputs as a comma-separated list of items. Good for specifying lots of short values. A potential alternative to TextFields node.",
+          "left",
+          true,
+          false,
+        );
+      }
       break;
 
     case "table":
-      setUpdateSteps(
-        ".editable-table",
-        "Hint",
-        "Import or create a spreadsheet of data to use as input to prompt or chat nodes. You can upload xlsx, csv and json.",
-        "left",
-        true,
-        false,
-      );
+      // for Tabular Data Node - (Input Data Node)
+      if (hintRuns && hintRuns.table <= 1) {
+        setUpdateSteps(
+          ".editable-table",
+          "Hint",
+          "Import or create a spreadsheet of data to use as input to prompt or chat nodes. You can upload xlsx, csv and json.",
+          "left",
+          true,
+          false,
+        );
+      }
       break;
 
     case "chatTurn":
-      setUpdateSteps(
-        ".chat-history",
-        "Hint",
-        <div>
-          <div>Start or continue a conversation with chat models.</div>
+      // for chat turn node
+      if (hintRuns && hintRuns.chatTurn <= 1) {
+        setUpdateSteps(
+          ".chat-history",
+          "Hint",
           <div>
-            Attach Prompt Node output as past context to continue chatting past
-            the first turn.
-          </div>
-        </div>,
-        "left",
-        true,
-        false,
-      );
+            <div>Start or continue a conversation with chat models.</div>
+            <div>
+              Attach Prompt Node output as past context to continue chatting
+              past the first turn.
+            </div>
+          </div>,
+          "left",
+          true,
+          false,
+        );
+      }
       break;
 
     case "simpleEval":
-      setUpdateSteps(
-        ".evaluator-node",
-        "Hint",
-        "Evaluate responses with a simple check (no coding needed).",
-        "left",
-        true,
-        false,
-      );
+      // for simple evalutor node
+      if (hintRuns && hintRuns.simpleEval <= 1) {
+        setUpdateSteps(
+          ".simple-eval-for-hint",
+          "Hint",
+          "Evaluate responses with a simple check (no coding needed).",
+          "left",
+          true,
+          false,
+        );
+      }
       break;
 
     case "evalNode":
+      // for python node
+      // for javascript we need to do additional code here
       setUpdateSteps(
-        ".evaluator-node",
+        ".python-cls-for-hint",
         "Hint",
         "Evaluate responses by writing Python code.",
-        "left",
+        "bottom",
         true,
         false,
       );
       break;
 
     case "llmeval":
-      setUpdateSteps(
-        ".llm-eval-node-for-hint",
-        "Hint",
-        "Evaluate responses with an LLM like GPT-4.",
-        "left",
-        true,
-        false,
-      );
+      // for LLM Scorer
+      if (hintRuns && hintRuns.llmeval <= 1) {
+        setUpdateSteps(
+          ".llm-eval-node-for-hint",
+          "Hint",
+          "Evaluate responses with an LLM like GPT-4.",
+          "left",
+          true,
+          false,
+        );
+      }
       break;
 
     case "visNode":
-      setUpdateSteps(
-        ".vis-node",
-        "Hint",
-        "Plot evaluation results (attach an evaluator or scorer node as input).",
-        "left",
-        true,
-        false,
-      );
+      // for visualizer node
+      if (hintRuns && hintRuns.visNode <= 1) {
+        setUpdateSteps(
+          ".vis-node",
+          "Hint",
+          "Plot evaluation results (attach an evaluator or scorer node as input).",
+          "left",
+          true,
+          false,
+        );
+      }
       break;
-
+    case "uploadFileFieldsNode":
+      if (hintRuns && hintRuns.uploadFileFieldsNode <= 1) {
+        setUpdateSteps(
+          ".file-fields-node",
+          "Hint",
+          "Upload a file to work with the data/context of the file. You can also declare variables in brackets { } to chain File-Fields together.",
+          "left",
+          true,
+          false,
+        );
+      }
+      break;
     default:
       break;
   }
