@@ -24,7 +24,7 @@ import ModelSettingsModal, {
   ModelSettingsModalRef,
 } from "./ModelSettingsModal";
 import { getDefaultModelSettings } from "./ModelSettingSchemas";
-import useStore, { initLLMProviders, initLLMProviderMenu } from "./store";
+import useStore, { initLLMProviderMenu } from "./store";
 import { Dict, JSONCompatible, LLMGroup, LLMSpec } from "./backend/typing";
 import { useContextMenu } from "mantine-contextmenu";
 import { ContextMenuItemOptions } from "mantine-contextmenu/dist/types";
