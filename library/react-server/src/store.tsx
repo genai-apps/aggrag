@@ -87,6 +87,7 @@ const refreshableOutputNodeTypes = new Set([
   "textfields",
   "chat",
   "simpleval",
+  "rageval",
   "join",
   "split",
 ]);
@@ -922,7 +923,8 @@ const useStore = create<StoreHandles>((set, get) => ({
     if (
       target.type === "vis" ||
       target.type === "inspect" ||
-      target.type === "simpleval"
+      target.type === "simpleval" ||
+      target.type === "rageval"
     ) {
       get().setDataPropsForNode(target.id, { input: connection.source });
     }

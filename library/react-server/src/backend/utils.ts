@@ -2373,3 +2373,54 @@ export async function rag_store_chat(
   }
   return [query, response];
 }
+
+export async function deepeval_evaluation(
+  params: Dict,
+  should_cancel?: () => boolean,
+): Promise<Array<Dict>> {
+  let response: any = [];
+  // Abort if canceled
+  if (should_cancel && should_cancel()) throw new UserForcedPrematureExit();
+
+  try {
+    const temp_response = await call_flask_backend(
+      "deepevalevaluation",
+      params,
+    );
+    if (temp_response?.length > 0) response = temp_response;
+    else throw new Error(temp_response?.error);
+  } catch (error: any) {
+    if (error?.response) {
+      throw new Error(error.response.data?.error?.message);
+      // throw new Error(error.response.status);
+    } else {
+      console.log(error?.message || error);
+      throw new Error(error?.message || error);
+    }
+  }
+  return response;
+}
+
+export async function ragas_evaluation(
+  params: Dict,
+  should_cancel?: () => boolean,
+): Promise<Dict> {
+  let response: any = [];
+  // Abort if canceled
+  if (should_cancel && should_cancel()) throw new UserForcedPrematureExit();
+
+  try {
+    const temp_response = await call_flask_backend("ragasevaluation", params);
+    if (temp_response?.length > 0) response = temp_response;
+    else throw new Error(temp_response?.error);
+  } catch (error: any) {
+    if (error?.response) {
+      throw new Error(error.response.data?.error?.message);
+      // throw new Error(error.response.status);
+    } else {
+      console.log(error?.message || error);
+      throw new Error(error?.message || error);
+    }
+  }
+  return response;
+}
