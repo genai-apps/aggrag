@@ -61,6 +61,7 @@ export const setHintSteps = (
           true,
           false,
         );
+        incrementHintRun("usecase", setHintRuns);
       }
       break;
     case "created-iteration":
