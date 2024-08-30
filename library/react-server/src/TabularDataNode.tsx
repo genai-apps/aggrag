@@ -566,7 +566,7 @@ const TabularDataNode: React.FC<TabularDataNodeProps> = ({ data, id }) => {
 
       <div
         ref={setRef}
-        className="tabular-data-container nowheel nodrag"
+        className={`tabular-data-container nowheel nodrag ${id}`}
         onPointerDown={() => setContextMenuOpened(false)}
         onContextMenu={handleOpenTableContextMenu}
       >

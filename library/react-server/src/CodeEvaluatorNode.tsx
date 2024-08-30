@@ -792,7 +792,7 @@ The Python interpeter in the browser is Pyodide. You may not be able to run some
 
   return (
     <BaseNode
-      classNames={`evaluator-node ${node_header === "Python Evaluator" ? "python-cls-for-hint" : ""}`}
+      classNames={`evaluator-node ${id} ${node_header === "Python Evaluator" ? "python-cls-for-hint" : ""}`}
       nodeId={id}
     >
       <NodeLabel

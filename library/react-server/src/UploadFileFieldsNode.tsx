@@ -429,7 +429,7 @@ const FileFieldsNode: React.FC<FileFieldsNodeProps> = ({ data, id }) => {
 
   return (
     <BaseNode
-      classNames="file-fields-node"
+      classNames={`file-fields-node ${id}`}
       nodeId={id}
       contextMenuExts={customContextMenuItems}
     >

@@ -255,6 +255,7 @@ const PromptNode: React.FC<PromptNodeProps> = ({
   const [numGenerationsLastRun, setNumGenerationsLastRun] = useState<number>(
     data.n ?? 1,
   );
+  const [calledHandleInputChange, setCalledHandleInputChange] = useState("");
 
   // The LLM items container
   const llmListContainer = useRef<LLMListContainerRef>(null);
@@ -466,7 +467,7 @@ const PromptNode: React.FC<PromptNodeProps> = ({
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
-
+    setCalledHandleInputChange("inputchange");
     // Store prompt text
     setPromptText(value);
     data.prompt = value;
@@ -519,12 +520,21 @@ const PromptNode: React.FC<PromptNodeProps> = ({
     }
   }, [refresh, refreshLLMList]);
 
+  // this useEffect is for triggering textfields3, we can directly keep in templateHooksComponent
+  // but if there promptNode present in canvas already, then it automatically triggers textfields3
+  useEffect(() => {
+    if (calledHandleInputChange === "inputchange") {
+      if (templateVars.length > 0) {
+        setTriggerHint("textfields3");
+      }
+    }
+  }, [calledHandleInputChange, templateVars]);
+
   // Chat nodes only. Pulls input data attached to the 'past conversations' handle.
   // Returns a tuple (past_chat_llms, __past_chats), where both are undefined if nothing is connected.
   const pullInputChats = () => {
     const pulled_data = pullInputData(["__past_chats"], id);
     if (!("__past_chats" in pulled_data)) return [undefined, undefined];
-
     // For storing the unique LLMs in past_chats:
     const llm_names = new Set();
     const past_chat_llms: (LLMSpec | string)[] = [];
@@ -1526,7 +1536,7 @@ Soft failing by replacing undefined with empty strings.`,
               "(Past conversation)",
               <Textarea
                 key={0}
-                className="prompt-field-fixed nodrag nowheel "
+                className={`prompt-field-fixed nodrag nowheel ${id}`}
                 minRows={4}
                 defaultValue={data.prompt}
                 onChange={handleInputChange}
@@ -1548,7 +1558,7 @@ Soft failing by replacing undefined with empty strings.`,
         <Textarea
           ref={setRef}
           autosize
-          className="prompt-field-fixed nodrag nowheel prompt-field-fixed-for-hint"
+          className={`prompt-field-fixed nodrag nowheel prompt-field-fixed-for-hint ${id}`}
           minRows={4}
           maxRows={12}
           defaultValue={data.prompt}

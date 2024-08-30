@@ -351,7 +351,7 @@ const App = () => {
     textfields2: 0,
     textfields3: 0,
   });
-
+  const [idForHint, setIdForHint] = useState<string>("");
   const API_URL = process.env.REACT_APP_API_URL;
   const [hoveredItem, setHoveredItem] = useState(null);
   const [editUsecaseforCopy, setEditUsecaseforCopy] = useState("");
@@ -421,8 +421,9 @@ const App = () => {
     offsetY?: number,
   ) => {
     const { x, y } = getViewportCenter();
+    const idForNode = `${id}-` + Date.now();
     addNodeToStore({
-      id: `${id}-` + Date.now(),
+      id: idForNode,
       type: type ?? id,
       data: data ?? {},
       position: {
@@ -437,6 +438,7 @@ const App = () => {
     if (id) {
       setTriggerHint(id);
       incrementHintRun(id, setHintRuns);
+      setIdForHint(idForNode);
     }
     setIsChangesNotSaved(true);
 
@@ -2056,7 +2058,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    setHintSteps(triggerHint, hintRuns, setUpdateSteps, setHintRuns);
+    setHintSteps(triggerHint, hintRuns, setUpdateSteps, setHintRuns, idForHint);
   }, [triggerHint]);
 
   // this code is for routing to respective methods when user confirms in the save changes modal
