@@ -1202,7 +1202,7 @@ Soft failing by replacing undefined with empty strings.`,
                     o.llm = temp;
                   } else {
                     temp = _ragItemsCurrState.find(
-                      (item) => item.model === resp_obj.llm,
+                      (item) => item.name === resp_obj.llm,
                     );
                     o.llm = temp;
                     // Add a meta var to keep track of which RAG produced this response
