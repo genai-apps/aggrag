@@ -37,6 +37,7 @@ import {
   IconFileSymlink,
   IconRobot,
   IconRuler2,
+  IconScan,
   IconArrowMerge,
   IconArrowsSplit,
   IconForms,
@@ -66,6 +67,7 @@ import ExampleFlowsModal, { ExampleFlowsModalRef } from "./ExampleFlowsModal";
 import AreYouSureModal, { AreYouSureModalRef } from "./AreYouSureModal";
 import LLMEvaluatorNode from "./LLMEvalNode";
 import SimpleEvalNode from "./SimpleEvalNode";
+import RagEvalNode from "./RagEvalNode";
 import {
   getDefaultModelFormData,
   getDefaultModelSettings,
@@ -178,6 +180,7 @@ const nodeTypes = {
   prompt: PromptNode,
   chat: PromptNode,
   simpleval: SimpleEvalNode,
+  rageval: RagEvalNode,
   evaluator: CodeEvaluatorNode,
   llmeval: LLMEvaluatorNode,
   multieval: MultiEvalNode,
@@ -410,6 +413,7 @@ const App = () => {
   const addPromptNode = () => addNode("promptNode", "prompt", { prompt: "" });
   const addChatTurnNode = () => addNode("chatTurn", "chat", { prompt: "" });
   const addSimpleEvalNode = () => addNode("simpleEval", "simpleval");
+  const addRagEvalNode = () => addNode("ragEval", "rageval");
   const addEvalNode = (progLang: string) => {
     let code = "";
     if (progLang === "python")
@@ -2906,6 +2910,15 @@ const App = () => {
                     >
                       {" "}
                       Multi-Evaluator{" "}
+                    </Menu.Item>
+                  </MenuTooltip>
+                  <MenuTooltip label="Evaluate responses with rag (no coding required).">
+                    <Menu.Item
+                      onClick={addRagEvalNode}
+                      icon={<IconScan size="16px" />}
+                    >
+                      {" "}
+                      Rag Evaluator{" "}
                     </Menu.Item>
                   </MenuTooltip>
                   <Menu.Divider />

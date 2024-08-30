@@ -28,7 +28,18 @@ from werkzeug.utils import secure_filename
 from werkzeug.datastructures import ImmutableMultiDict
 from library.aggrag.core.log_config import app_loger
 from openai import OpenAIError
-
+from library.aggrag.evals.evaluator import Evaluator
+from ragas.metrics import (
+    answer_similarity,
+    answer_correctness
+)
+from datasets import Dataset
+from deepeval.metrics import GEval
+from deepeval.test_case import LLMTestCaseParams
+from deepeval import evaluate
+from deepeval.test_case import LLMTestCase
+from deepeval.dataset import EvaluationDataset
+from library.aggrag.evals.eval_utils import load_llm_for_deepeval, load_llms_for_ragas
 
 """ =================
     SETUP AND GLOBALS
@@ -1723,6 +1734,75 @@ def delete_usecase():
     else:
         return jsonify({"message": "Folder does not exist."}), 404
 
+@app.route('/app/ragasevaluation', methods=['POST'])
+def ragas_evaluation():
+    data = request.get_json()
+    metrics = [
+        answer_similarity,
+        answer_correctness
+    ]
+
+    llm, embed_llm = load_llms_for_ragas()
+    dataset = Dataset.from_dict(data)
+
+    evaluator = Evaluator(response_dataset=dataset, llm_model=llm, llm_embeddings=embed_llm, metrics=metrics)
+    score_df = evaluator.evaluate_models()
+    score_dict = score_df.to_dict()
+    # Convert to list of dictionaries
+    result = []
+    for i in score_dict['question']:
+        result.append({
+            'question': score_dict['question'][i],
+            'ground_truth': score_dict['ground_truth'][i],
+            'answer': score_dict['answer'][i],
+            'answer_similarity': score_dict['answer_similarity'][i],
+            'answer_correctness': score_dict['answer_correctness'][i]
+        })
+
+    return result
+
+@app.route('/app/deepevalevaluation', methods=['POST'])
+def deepeval_evaluation():
+    data = request.get_json()
+
+    questions = data["question"]
+    ground_truth_answers = data["ground_truth"]
+    rag_answers = data["answer"]
+    test_cases = []
+
+    for question, ground_truth_answer, rag_answer in zip(questions, ground_truth_answers, rag_answers):
+        test_case = LLMTestCase(input=question, expected_output=ground_truth_answer, actual_output=rag_answer)
+        test_cases.append(test_case)
+
+    dataset = EvaluationDataset(test_cases=test_cases)
+
+
+    correctness_metric = GEval(
+    name="Correctness",
+    criteria="Determine whether the actual output is factually correct based on the expected output.",
+    # NOTE: you can only provide either criteria or evaluation_steps, and not both
+    evaluation_steps=[
+        "Check whether the facts in 'actual output' contradicts any facts in 'expected output'",
+        "You should also heavily penalize omission of detail",
+        "Vague language, or contradicting OPINIONS, are OK"
+    ],
+    evaluation_params=[LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT, LLMTestCaseParams.EXPECTED_OUTPUT], model=load_llm_for_deepeval())
+
+    metrics = [correctness_metric]
+
+    test_results = evaluate(dataset, metrics=metrics, print_results=False, write_cache=True, use_cache=True)
+    json_data = []
+    for test_result in test_results:
+        response_dict = {
+                    "question": test_result.input,
+                    "answer": test_result.actual_output,
+                    "ground_truth": test_result.expected_output
+        }
+        for met in test_result.metrics_metadata:
+            response_dict["answer_correctness"] = met.score
+
+        json_data.append(response_dict)
+    return json_data
 
 @app.route("/app/healthCheck", methods=["GET"])
 def get_health_check():
