@@ -478,6 +478,9 @@ export interface StoreHandles {
     _targetHandles: string[],
     node_id: string,
   ) => Dict<string[] | TemplateVarInfo[]>;
+
+  triggerHint: string;
+  setTriggerHint: (hint: string) => void;
 }
 
 // A global store of variables, used for maintaining state
@@ -943,6 +946,8 @@ const useStore = create<StoreHandles>((set, get) => ({
       edges: addEdge(connection, get().edges), // get().edges.concat(connection)
     });
   },
+  triggerHint: "",
+  setTriggerHint: (hint: string) => set({ triggerHint: hint }),
 }));
 
 export default useStore;

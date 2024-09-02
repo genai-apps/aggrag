@@ -981,7 +981,7 @@ const VisNode: React.FC<VisNodeProps> = ({ data, id }) => {
   );
 
   return (
-    <BaseNode classNames="vis-node" nodeId={id}>
+    <BaseNode classNames={`vis-node ${id}`} nodeId={id}>
       <NodeLabel
         title={data.title || "Vis Node"}
         nodeId={id}

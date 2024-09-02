@@ -236,7 +236,7 @@ export const LLMEvaluatorComponent = forwardRef<
             ? "The text of the response will be pasted directly below your rubric."
             : undefined
         }
-        className="prompt-field-fixed nodrag nowheel"
+        className={`prompt-field-fixed nodrag nowheel llm-eval-node-for-hint ${id}`}
         minRows={4}
         maxRows={12}
         w="100%"

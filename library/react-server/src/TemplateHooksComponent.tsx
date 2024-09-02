@@ -62,7 +62,6 @@ export default function TemplateHooks({
   const edges = useStore((state) => state.edges);
   const onEdgesChange = useStore((state) => state.onEdgesChange);
   const [edgesToRemove, setEdgesToRemove] = useState<Edge[]>([]);
-
   // For notifying the backend when we re-render Handles:
   const updateNodeInternals = useUpdateNodeInternals();
 
