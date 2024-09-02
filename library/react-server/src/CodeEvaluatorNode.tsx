@@ -791,7 +791,10 @@ The Python interpeter in the browser is Pyodide. You may not be able to run some
   ]);
 
   return (
-    <BaseNode classNames="evaluator-node" nodeId={id}>
+    <BaseNode
+      classNames={`evaluator-node ${id} ${node_header === "Python Evaluator" ? "python-cls-for-hint" : ""}`}
+      nodeId={id}
+    >
       <NodeLabel
         title={node_header}
         nodeId={id}
