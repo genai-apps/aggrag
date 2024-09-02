@@ -89,6 +89,7 @@
     "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",
     "react-edit-text": "^5.1.0",
+    "react-joyride": "^2.8.2",
     "react-plotly.js": "^2.6.0",
     "react-scripts": "5.0.1",
     "reactflow": "^11.0",

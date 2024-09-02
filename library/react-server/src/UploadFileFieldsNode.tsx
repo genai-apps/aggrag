@@ -68,7 +68,7 @@ const FileFieldsNode: React.FC<FileFieldsNodeProps> = ({ data, id }) => {
   const setDataPropsForNode = useStore((state) => state.setDataPropsForNode);
   const pingOutputNodes = useStore((state) => state.pingOutputNodes);
   const { showNotification } = useNotification();
-
+  const setTriggerHint = useStore((state) => state.setTriggerHint);
   const [filefieldsValues, setFilefieldsValues] = useState<Dict<string>>(
     data.fields ?? {},
   );
@@ -251,6 +251,7 @@ const FileFieldsNode: React.FC<FileFieldsNodeProps> = ({ data, id }) => {
           const response = await upload_raw_docs_file(formData);
           const file_path = `${urlParams.get("p_folder")}/${urlParams.get("i_folder")}/raw_docs/${fid}_${timestamp}/${event.target.files[0].name}`;
           handleFileFieldChange(field_id, file_path, false);
+          setTriggerHint("file-upload");
         } catch (error) {
           event.target.value = null;
           showNotification("Failed", "Error uploading file", "red");
@@ -428,7 +429,7 @@ const FileFieldsNode: React.FC<FileFieldsNodeProps> = ({ data, id }) => {
 
   return (
     <BaseNode
-      classNames="file-fields-node"
+      classNames={`file-fields-node ${id}`}
       nodeId={id}
       contextMenuExts={customContextMenuItems}
     >
