@@ -54,9 +54,9 @@ export const setHintSteps = (
     case "created-usecase":
       if (hintRuns && hintRuns.usecase <= 2) {
         setUpdateSteps(
-          ".add-node",
+          ".use-case",
           "Hint",
-          "Add a Input Data/Knowledge Base node from the list to get started with your work.",
+          "Create a new use case and iteration to get started.",
           "left",
           true,
           false,

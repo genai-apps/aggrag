@@ -324,15 +324,7 @@ const App = () => {
   });
   const [warning, setWarning] = useState({ warning: "", open: false });
 
-  const [steps, setSteps] = useState<Step[]>([
-    {
-      target: ".use-case",
-      title: "Hint",
-      content: "Create a new use case and iteration to get started.",
-      placement: "bottom" as Placement,
-      disableBeacon: true,
-    },
-  ]);
+  const [steps, setSteps] = useState<Step[]>([]);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [runTour, setRunTour] = useState(true);
   const [hintRuns, setHintRuns] = useState<HintRunsType>({
@@ -1530,6 +1522,16 @@ const App = () => {
         open: false,
       });
 
+      // Set currentfileLocked to true to disable the "add node" functionality whenever a file is deleted
+      // If a new iteration is created but not saved, and we switch to another iteration,
+      // the previous iteration is deleted, so we don't need to set isCurrentFileLocked to true.
+      // In other cases, we can set it to true.
+      if (!parsedIterCreated) {
+        // after deleting iteration, we can set this to locked, to disable add node.
+        setIsCurrentFileLocked(true);
+      } else {
+        setIsCurrentFileLocked(false);
+      }
       localStorage.setItem(
         "iteration-created",
         JSON.stringify({
@@ -1547,8 +1549,7 @@ const App = () => {
       setOpenMenu(false);
       resetFlowToBlankCanvas();
       setWarning({ warning: "", open: true });
-      // Set currentfileLocked to true to disable the "add node" functionality whenever a file is deleted
-      setIsCurrentFileLocked(true);
+
       updateIsChangesNotSaved(false);
     }
   };
@@ -2239,7 +2240,11 @@ const App = () => {
   useEffect(() => {
     const storedHintRuns = localStorage.getItem("hintRuns");
     if (storedHintRuns) {
-      setHintRuns(JSON.parse(storedHintRuns));
+      const parsed = JSON.parse(storedHintRuns);
+      setHintRuns(parsed);
+      if (parsed.usecase <= 2) {
+        setTriggerHint("created-usecase");
+      }
     }
   }, []);
 

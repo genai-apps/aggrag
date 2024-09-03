@@ -278,6 +278,7 @@ export interface RAGListContainerRef {
   ensureRAGItemsErrorProgress: (rag_keys_w_errors: string[]) => void;
   getRAGListItemForKey: (key: string) => LLMSpec | undefined;
   refreshRAGProviderList: () => void;
+  setCreateIndexBtnDisabled: () => void;
 }
 
 export interface RAGListContainerProps {
@@ -320,6 +321,11 @@ export const RAGListContainer = forwardRef<
   const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
   const refreshRAGProviderList = () => {
     forceUpdate();
+  };
+
+  const [disable, setdisable] = useState(true);
+  const setCreateIndexBtnDisabled = () => {
+    setdisable(false);
   };
 
   // Selecting RAG models to prompt
@@ -438,6 +444,7 @@ export const RAGListContainer = forwardRef<
     ensureRAGItemsErrorProgress,
     getRAGListItemForKey,
     refreshRAGProviderList,
+    setCreateIndexBtnDisabled,
   }));
 
   const _bgStyle = useMemo(
@@ -499,13 +506,16 @@ export const RAGListContainer = forwardRef<
     <div className="llm-list-container nowheel" style={_bgStyle}>
       <div className="llm-list-backdrop" style={_bgStyle}>
         {description || "RAGs to query:"}
-        <div className="add-llm-model-btn nodrag">
+        <div
+          className={`add-llm-model-btn ${!disable ? "create-index-btn" : ""} nodrag`}
+        >
           <button
             ref={indexBtnRef}
-            style={_bgStyle}
+            style={{ ..._bgStyle, cursor: disable ? "not-allowed" : "pointer" }}
             onClick={() => {
               onIndexBtnClick();
             }}
+            disabled={disable}
           >
             {modelSelectButtonText ?? "Create Index"}
           </button>

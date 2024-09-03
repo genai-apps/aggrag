@@ -1076,16 +1076,20 @@ const VisNode: React.FC<VisNodeProps> = ({ data, id }) => {
         style={{ minWidth: "150px", minHeight: "100px" }}
       >
         {plotlySpec && plotlySpec.length > 0 ? <></> : placeholderText}
-        <Plot
-          ref={plotlyRef}
-          data={plotlySpec}
-          layout={plotlyLayout}
-          useResizeHandler={true}
-          className="plotly-vis"
-          style={{
-            display: plotlySpec && plotlySpec.length > 0 ? "block" : "none",
-          }}
-        />
+        {plotlySpec && plotlySpec.length > 0 ? (
+          <Plot
+            ref={plotlyRef}
+            data={plotlySpec}
+            layout={plotlyLayout}
+            useResizeHandler={true}
+            className="plotly-vis"
+            style={{
+              display: plotlySpec && plotlySpec.length > 0 ? "block" : "none",
+            }}
+          />
+        ) : (
+          placeholderText
+        )}
         {plotLegend ?? <></>}
       </div>
       <Handle

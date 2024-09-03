@@ -922,14 +922,16 @@ th .content-editable-div {
   color: #777;
   margin-right: 2px;
 }
-.add-llm-model-btn:hover button {
+/* .add-llm-model-btn:hover button {
   background-color: white;
-}
+} */
 .add-llm-model-btn:active button {
   background-color: black;
   color: white;
 }
-
+.create-index-btn:hover button {
+  background-color: white;
+}
 /* Play button triangle |> */
 .play-button {
   border: 0;
