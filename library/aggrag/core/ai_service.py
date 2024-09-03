@@ -15,6 +15,8 @@ from llama_index.llms.together import TogetherLLM
 from llama_index.llms.openai import OpenAI
 from library.aggrag.core.config import ai_services_config
 from library.aggrag.core.config import settings, AzureOpenAIModelNames, AzureOpenAIModelEngines, OpenAIModelNames
+from llama_index.llms.anthropic import Anthropic
+
 
 rag_temperature = 0.1
 
@@ -74,6 +76,13 @@ class OpenAIService:
 
 
 
+class AnthropicAIService:
+    def __init__(self, model=None, embed_model=None):
+        self.llm = Anthropic(
+            model=model or "claude-3-opus-20240229",
+            api_key=settings.ANTHROPIC_API_KEY
+        )
+
 class AIServiceFactory:
     @staticmethod
     def get_ai_service(ai_service, llm_model=None, embed_model=None):
@@ -95,5 +104,7 @@ class AIServiceFactory:
             return TogetherAIService(model=llm_model, embed_model=embed_model)
         elif ai_service == "OpenAI":
             return OpenAIService(model=llm_model, embed_model=embed_model)
+        elif ai_service == "Anthropic":
+            return AnthropicAIService(model=llm_model, embed_model=embed_model)
         else:
             raise ValueError(f"Unsupported AI service: {ai_service}")
