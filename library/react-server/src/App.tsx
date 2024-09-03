@@ -324,15 +324,7 @@ const App = () => {
   });
   const [warning, setWarning] = useState({ warning: "", open: false });
 
-  const [steps, setSteps] = useState<Step[]>([
-    {
-      target: ".use-case",
-      title: "Hint",
-      content: "Create a new use case and iteration to get started.",
-      placement: "bottom" as Placement,
-      disableBeacon: true,
-    },
-  ]);
+  const [steps, setSteps] = useState<Step[]>([]);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [runTour, setRunTour] = useState(true);
   const [hintRuns, setHintRuns] = useState<HintRunsType>({
@@ -443,7 +435,7 @@ const App = () => {
       incrementHintRun(id, setHintRuns);
       setIdForHint(idForNode);
     }
-    setIsChangesNotSaved(true);
+    updateIsChangesNotSaved(true);
 
     // following changes are for showing warning if we delete iter or usecase and again if we try to add nodes and save flow
     const data1: any = localStorage.getItem("current_usecase");
@@ -713,7 +705,7 @@ const App = () => {
         iterationCreated: false,
       }),
     );
-    setIsChangesNotSaved(false);
+    updateIsChangesNotSaved(false);
     if (!rfInstance) return;
 
     // We first get the data of the flow
@@ -1398,9 +1390,9 @@ const App = () => {
         showNotification("Created!", "Use case has been successfully created");
         // resetFlow();
         resetFlowToBlankCanvas();
-        setIsChangesNotSaved(true);
         setTriggerHint("created-usecase");
         incrementHintRun("usecase", setHintRuns);
+        updateIsChangesNotSaved(true);
       } else {
         setLoading(false);
         console.log("error in creating usecase");
@@ -1530,6 +1522,16 @@ const App = () => {
         open: false,
       });
 
+      // Set currentfileLocked to true to disable the "add node" functionality whenever a file is deleted
+      // If a new iteration is created but not saved, and we switch to another iteration,
+      // the previous iteration is deleted, so we don't need to set isCurrentFileLocked to true.
+      // In other cases, we can set it to true.
+      if (!parsedIterCreated) {
+        // after deleting iteration, we can set this to locked, to disable add node.
+        setIsCurrentFileLocked(true);
+      } else {
+        setIsCurrentFileLocked(false);
+      }
       localStorage.setItem(
         "iteration-created",
         JSON.stringify({
@@ -1547,8 +1549,8 @@ const App = () => {
       setOpenMenu(false);
       resetFlowToBlankCanvas();
       setWarning({ warning: "", open: true });
-      setIsCurrentFileLocked(false);
-      setIsChangesNotSaved(false);
+
+      updateIsChangesNotSaved(false);
     }
   };
 
@@ -1637,7 +1639,7 @@ const App = () => {
         setOpenCreateUseCase(false);
         setLoading(false);
         setIsCurrentFileLocked(false);
-        setIsChangesNotSaved(true);
+        updateIsChangesNotSaved(true);
         localStorage.setItem(
           "current_usecase",
           JSON.stringify({
@@ -1755,7 +1757,8 @@ const App = () => {
       setOpenCreateUseCase(false);
       setLoading(false);
       setIsCurrentFileLocked(false);
-      // setIsChangesNotSaved(true);
+      // updateIsChangesNotSaved(true);
+
       localStorage.setItem(
         "current_usecase",
         JSON.stringify({
@@ -1831,7 +1834,7 @@ const App = () => {
       setOpenMenu(false);
       setWarning({ warning: "", open: true });
       setIsCurrentFileLocked(true);
-      setIsChangesNotSaved(false);
+      updateIsChangesNotSaved(false);
     }
   };
 
@@ -2061,6 +2064,31 @@ const App = () => {
     // setTriggerHint("");
   };
 
+  const updateIsChangesNotSaved = useCallback(
+    (value: boolean) => {
+      setIsChangesNotSaved(value);
+      localStorage.setItem("isChangesNotSaved", JSON.stringify(value));
+    },
+    [isChangesNotSaved],
+  );
+
+  const hideWebpackOverlayError = (e: any, message: string) => {
+    if (e && e.message.startsWith(message)) {
+      const resizeObserverErrDiv = document.getElementById(
+        "webpack-dev-server-client-overlay-div",
+      );
+      const resizeObserverErr = document.getElementById(
+        "webpack-dev-server-client-overlay",
+      );
+      if (resizeObserverErr) {
+        resizeObserverErr.setAttribute("style", "display: none");
+      }
+      if (resizeObserverErrDiv) {
+        resizeObserverErrDiv.setAttribute("style", "display: none");
+      }
+    }
+  };
+
   useEffect(() => {
     setHintSteps(triggerHint, hintRuns, setUpdateSteps, setHintRuns, idForHint);
   }, [triggerHint]);
@@ -2181,6 +2209,10 @@ const App = () => {
           stack: event.reason.stack,
         };
         console.error("Unhandled promise rejection: ", errorData);
+        hideWebpackOverlayError(
+          errorData,
+          "Resize must be passed a displayed plot div element",
+        );
         showNotification("Failed", errorData.message, "red");
         // Prevent the default handling (e.g., logging to the console)
         event.preventDefault();
@@ -2197,20 +2229,7 @@ const App = () => {
 
   useEffect(() => {
     window.addEventListener("error", (e) => {
-      if (e.message.startsWith("ResizeObserver loop")) {
-        const resizeObserverErrDiv = document.getElementById(
-          "webpack-dev-server-client-overlay-div",
-        );
-        const resizeObserverErr = document.getElementById(
-          "webpack-dev-server-client-overlay",
-        );
-        if (resizeObserverErr) {
-          resizeObserverErr.setAttribute("style", "display: none");
-        }
-        if (resizeObserverErrDiv) {
-          resizeObserverErrDiv.setAttribute("style", "display: none");
-        }
-      }
+      hideWebpackOverlayError(e, "ResizeObserver loop");
     });
   }, []);
 
@@ -2221,7 +2240,18 @@ const App = () => {
   useEffect(() => {
     const storedHintRuns = localStorage.getItem("hintRuns");
     if (storedHintRuns) {
-      setHintRuns(JSON.parse(storedHintRuns));
+      const parsed = JSON.parse(storedHintRuns);
+      setHintRuns(parsed);
+      if (parsed.usecase <= 2) {
+        setTriggerHint("created-usecase");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const changesNotSaveLocal = localStorage.getItem("isChangesNotSaved");
+    if (changesNotSaveLocal) {
+      setIsChangesNotSaved(JSON.parse(changesNotSaveLocal));
     }
   }, []);
 
@@ -2395,7 +2425,7 @@ const App = () => {
             <Button
               disabled={false}
               onClick={() => {
-                setIsChangesNotSaved(false);
+                updateIsChangesNotSaved(false);
                 setConfirmed(true);
               }}
               loading={loading}
@@ -3169,6 +3199,7 @@ const App = () => {
 
               <Button
                 loading={loading}
+                loaderPosition="right"
                 disabled={handleDisableSave()}
                 // disabled={isCurrenFileLocked}
                 size="sm"

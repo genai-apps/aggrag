@@ -415,6 +415,22 @@ const PromptNode: React.FC<PromptNodeProps> = ({
       id,
     ],
   );
+  const checkDisabledStatusForIndexBtn = useCallback(() => {
+    const pulled_vars = getImmediateInputNode(
+      ["rag_knowledge_base"],
+      id,
+    ).filter((t) => t.type === "uploadfilefields");
+    let isFileUploaded = false;
+    pulled_vars.forEach((node_obj: any) => {
+      const fields = node_obj?.data?.fields;
+      if (fields && Object.keys(fields).some((key) => fields[key])) {
+        isFileUploaded = true;
+      }
+    });
+    if (isFileUploaded) {
+      ragListContainer.current?.setCreateIndexBtnDisabled();
+    }
+  }, []);
   const handleOnConnect = useCallback(() => {
     if (node_type === "chat") return; // always show when chat node
     // Re-pull data and update show cont toggle:
@@ -422,6 +438,7 @@ const PromptNode: React.FC<PromptNodeProps> = ({
       const pulled_data = pullInputData(templateVars, id);
       updateShowContToggle(pulled_data);
       setVarConnected(true);
+      checkDisabledStatusForIndexBtn();
     } catch (err) {
       console.error(err);
     }
