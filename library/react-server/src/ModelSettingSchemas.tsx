@@ -2330,6 +2330,29 @@ const CommonRagSettings = {
         },
       },
     },
+    {
+      if: {
+        properties: {
+          ai_service: {
+            const: "Anthropic",
+          },
+        },
+      },
+      then: {
+        properties: {
+          llm_model: {
+            default: "claude-3-opus-20240229",
+            enum: [
+              "claude-3-opus-20240229",
+              "claude-3-sonnet-20240229",
+              "claude-3-haiku-20240307",
+            ],
+            title: "LLM Model",
+            type: "string",
+          },
+        },
+      },
+    },
   ],
 };
 
@@ -2373,6 +2396,10 @@ const BaseRagSettings: ModelSettingsDict = {
           {
             const: "Together",
             title: "Together",
+          },
+          {
+            const: "Anthropic",
+            title: "Anthropic",
           },
         ],
         title: "AI service",
