@@ -130,9 +130,8 @@ class Base:
             
         self.chat_engine = None
 
-
-        logger.debug(f"embed model: {self.embed_model}")
-        logger.debug(f"llm model: {self.llm},  {self.model_name}")
+        logger.info(f"embed model: {self.embed_model}")
+        logger.info(f"llm model: {self.llm}")
 
     def documents_loader(self, DIR=None):
         """

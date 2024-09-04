@@ -90,6 +90,10 @@ class TableBase:
         
         self.llm = llm
         self.embed_model = embed_model
+
+        logger.info(f"embed model: {self.embed_model}")
+        logger.info(f"llm model: {self.llm}")
+
         self.documents = None
         self.index_name = tableBase_rag_setting.index_name or "tableBase_index"
         
