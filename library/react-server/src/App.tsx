@@ -340,6 +340,7 @@ const App = () => {
     chatTurn: 0,
     simpleEval: 0,
     evalNode: 0,
+    pythonEvalNode: 0,
     llmeval: 0,
     visNode: 0,
     file_upload: 0,
@@ -429,10 +430,16 @@ const App = () => {
 
     // if user adds node without closing previous hint
     setRunTour(false);
-    // setting id to triggere respective HINT
+    // setting id to trigger respective HINT
     if (id) {
-      setTriggerHint(id);
-      incrementHintRun(id, setHintRuns);
+      // as id is same for both python and javascript, so to differentiate here we are using data.language
+      if (data && data.language === "python") {
+        setTriggerHint("pythonEvalNode");
+        incrementHintRun("pythonEvalNode", setHintRuns);
+      } else {
+        setTriggerHint(id);
+        incrementHintRun(id, setHintRuns);
+      }
       setIdForHint(idForNode);
     }
     updateIsChangesNotSaved(true);
@@ -455,7 +462,6 @@ const App = () => {
     }
     setOpenAddNode(false);
   };
-
   const addTextFieldsNode = () => addNode("textFieldsNode", "textfields");
   const addUploadFileFieldsNode = () =>
     addNode("uploadFileFieldsNode", "uploadfilefields");
@@ -2245,6 +2251,9 @@ const App = () => {
       if (parsed.usecase <= 2) {
         setTriggerHint("created-usecase");
       }
+    } else {
+      // to trigger for the first time user
+      setTriggerHint("created-usecase");
     }
   }, []);
 

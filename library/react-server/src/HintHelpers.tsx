@@ -12,6 +12,7 @@ export type HintRunsType = {
   chatTurn: number;
   simpleEval: number;
   evalNode: number;
+  pythonEvalNode: number;
   llmeval: number;
   visNode: number;
   file_upload: number;
@@ -23,18 +24,48 @@ export const incrementHintRun = (
   id: string,
   setHintRuns: React.Dispatch<React.SetStateAction<HintRunsType>>,
 ) => {
+  // to add new hints, we have to add node-id(without timestamp) in this array
+  const nodesArray = [
+    "promptNode",
+    "textFieldsNode",
+    "uploadFileFieldsNode",
+    "usecase",
+    "iteration",
+    "prompthitplay",
+    "model_added",
+    "csvNode",
+    "table",
+    "chatTurn",
+    "simpleEval",
+    "evalNode",
+    "pythonEvalNode",
+    "llmeval",
+    "visNode",
+    "file_upload",
+    "textfields2",
+    "textfields3",
+  ];
   setHintRuns((prevState: HintRunsType) => {
     const key = id as keyof HintRunsType;
-    if (key in prevState) {
+    if (nodesArray.indexOf(key) > -1) {
       const newState = {
         ...prevState,
-        [key]: prevState[key] + 1,
+        [key]: (prevState[key] || 0) + 1,
       };
       localStorage.setItem("hintRuns", JSON.stringify(newState));
       return newState;
     }
     return prevState;
   });
+};
+
+export const checkRunsOfHint = (hintRuns: HintRunsType) => {
+  for (const value of Object.values(hintRuns)) {
+    if (value <= 2) {
+      return true;
+    }
+  }
+  return false;
 };
 export const setHintSteps = (
   triggerHint: string,
@@ -50,6 +81,11 @@ export const setHintSteps = (
   setHintRuns: React.Dispatch<React.SetStateAction<HintRunsType>>,
   nodeId?: string,
 ) => {
+  // Check whether all hints have been triggered more than three times; if they have, the switch statement can be skipped
+  const currentStatus = checkRunsOfHint(hintRuns);
+  if (!currentStatus) {
+    return;
+  }
   switch (triggerHint) {
     case "created-usecase":
       if (hintRuns && hintRuns.usecase <= 2) {
@@ -252,10 +288,10 @@ export const setHintSteps = (
       }
       break;
 
-    case "evalNode":
+    case "pythonEvalNode":
       // for python node
       // for javascript we need to do additional code here
-      if (hintRuns && hintRuns.evalNode <= 2) {
+      if (hintRuns && hintRuns.pythonEvalNode <= 2) {
         setUpdateSteps(
           // ".python-cls-for-hint",
           `.${nodeId}`,
