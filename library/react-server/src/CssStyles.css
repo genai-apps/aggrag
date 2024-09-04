@@ -2,11 +2,10 @@
   display: flex;
   justify-content: space-between;
   position: fixed;
-  top: 18px;
+  top: 0px;
   width: calc(100% - 60px);
-  padding-left: 30px;
-  padding-right: 30px;
-  padding-bottom: 24px;
+  padding: 12px 30px;
+  background: white;
   border-bottom: 1px solid #d7d7d7;
 }
 
