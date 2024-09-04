@@ -291,7 +291,7 @@ export const setHintSteps = (
     case "pythonEvalNode":
       // for python node
       // for javascript we need to do additional code here
-      if (hintRuns && hintRuns.pythonEvalNode <= 1222) {
+      if (hintRuns && hintRuns.python1 <= 2) {
         setUpdateSteps(
           // ".python-cls-for-hint",
           `.${nodeId}`,
