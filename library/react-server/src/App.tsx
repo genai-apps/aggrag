@@ -302,6 +302,7 @@ const App = () => {
   const [saveDropdown, setSaveDropdown] = useState("Save");
   const [isCurrenFileLocked, setIsCurrentFileLocked] = useState(false);
   const [saveAndCommitBtnOpen, setSaveAndCommitBtnOpen] = useState(false);
+  const [exportBtnOpen, setExportBtnOpen] = useState(false);
   const [isChangesNotSaved, setIsChangesNotSaved] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [modalOpen, setModalOpen] = useState<{
@@ -362,6 +363,7 @@ const App = () => {
   // For modal popup to set global settings like API keys
   const settingsModal = useRef<GlobalSettingsModalRef>(null);
   const saveRef = useRef<any>(null);
+  const exportRef = useRef<any>(null);
   // For modal popup of example flows
   const examplesModal = useRef<ExampleFlowsModalRef>(null);
   const queryString = window.location.search;
@@ -650,7 +652,31 @@ const App = () => {
   };
 
   // Export / Import (from JSON)
-  const exportFlow = useCallback(async () => {
+  const exportFlow = useCallback(() => {
+    if (!rfInstance) return;
+
+    // We first get the data of the flow
+    const flow = rfInstance.toObject();
+
+    // Then we grab all the relevant cache files from the backend
+    const all_node_ids = nodes.map((n: any) => n.id);
+    exportCache(all_node_ids)
+      .then(function (cacheData) {
+        // Now we append the cache file data to the flow
+        const flow_and_cache = {
+          flow,
+          cache: cacheData,
+        };
+
+        // Save!
+        // @ts-expect-error The exported RF instance is JSON compatible but TypeScript won't read it as such.
+        downloadJSON(flow_and_cache, `flow-${Date.now()}.cforge`);
+        setExportBtnOpen(false);
+      })
+      .catch(handleError);
+  }, [rfInstance, nodes, handleError]);
+
+  const exportIteration = useCallback(async () => {
     const data: any = {};
     data.folder_path = `configurations/${urlParams.get("p_folder")}/${urlParams.get("i_folder")}`;
     fetch(
@@ -675,6 +701,7 @@ const App = () => {
         document.body.appendChild(a);
         a.click();
         a.remove();
+        setExportBtnOpen(false);
       })
       .catch(handleError);
   }, [handleError]);
@@ -689,6 +716,7 @@ const App = () => {
   ) => {
     setLoading(true);
     setOpenMenu(false);
+    setExportBtnOpen(false);
     setTriggerHint("");
     const iterationCreation = forIterationCreation ?? false;
     if (menuData && menuData.length === 0) {
@@ -2555,6 +2583,7 @@ const App = () => {
             setOpenAddNode(false);
             setOpenMenu(false);
             setSaveAndCommitBtnOpen(false);
+            setExportBtnOpen(false);
             // setRunTour(false);
             handleClose();
           }}
@@ -2681,6 +2710,7 @@ const App = () => {
                     mr="sm"
                     onClick={() => {
                       setSaveAndCommitBtnOpen(false);
+                      setExportBtnOpen(false);
                       setOpenMenu(!openMenu);
                       setOpenAddNode(false);
                       handleClose();
@@ -3002,6 +3032,7 @@ const App = () => {
                     }
                     onClick={() => {
                       setOpenAddNode(!openAddNode);
+                      setExportBtnOpen(false);
                       setOpenMenu(false);
                       setSaveAndCommitBtnOpen(false);
                       handleClose();
@@ -3216,6 +3247,7 @@ const App = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       setSaveAndCommitBtnOpen(!saveAndCommitBtnOpen);
+                      setExportBtnOpen(false);
                       setOpenMenu(false);
                       setOpenAddNode(false);
                     }}
@@ -3348,13 +3380,60 @@ const App = () => {
               )}
               <Button
                 className="export-btn"
-                onClick={exportFlow}
                 size="sm"
                 variant="outline"
-                bg="#eee"
                 compact
+                bg="#eee"
                 mr="xs"
                 style={{ float: "left" }}
+                rightIcon={
+                  <div
+                    ref={exportRef}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setExportBtnOpen(!exportBtnOpen);
+                      setSaveAndCommitBtnOpen(false);
+                      setOpenMenu(false);
+                      setOpenAddNode(false);
+                    }}
+                  >
+                    <div ref={exportRef}>
+                      <Menu
+                        position="top-start"
+                        opened={exportBtnOpen}
+                        transitionProps={{ transition: "pop" }}
+                      >
+                        <div>
+                          <Menu.Target>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Chevron />
+                            </div>
+                          </Menu.Target>
+
+                          <Menu.Dropdown>
+                            <Menu.Item
+                              onClick={exportFlow}
+                              style={{
+                                backgroundColor: "#e0e0e0",
+                              }}
+                              disabled={isCurrenFileLocked}
+                            >
+                              Export Workflow Config
+                            </Menu.Item>
+                            <Menu.Item onClick={exportIteration} disabled>
+                              Export Iteration
+                            </Menu.Item>
+                          </Menu.Dropdown>
+                        </div>
+                      </Menu>
+                    </div>
+                  </div>
+                }
               >
                 Export
               </Button>
