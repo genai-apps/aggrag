@@ -302,6 +302,7 @@ const App = () => {
   const [saveDropdown, setSaveDropdown] = useState("Save");
   const [isCurrenFileLocked, setIsCurrentFileLocked] = useState(false);
   const [saveAndCommitBtnOpen, setSaveAndCommitBtnOpen] = useState(false);
+  const [exportBtnOpen, setExportBtnOpen] = useState(false);
   const [isChangesNotSaved, setIsChangesNotSaved] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [modalOpen, setModalOpen] = useState<{
@@ -324,15 +325,7 @@ const App = () => {
   });
   const [warning, setWarning] = useState({ warning: "", open: false });
 
-  const [steps, setSteps] = useState<Step[]>([
-    {
-      target: ".use-case",
-      title: "Hint",
-      content: "Create a new use case and iteration to get started.",
-      placement: "bottom" as Placement,
-      disableBeacon: true,
-    },
-  ]);
+  const [steps, setSteps] = useState<Step[]>([]);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [runTour, setRunTour] = useState(true);
   const [hintRuns, setHintRuns] = useState<HintRunsType>({
@@ -348,6 +341,7 @@ const App = () => {
     chatTurn: 0,
     simpleEval: 0,
     evalNode: 0,
+    pythonEvalNode: 0,
     llmeval: 0,
     visNode: 0,
     file_upload: 0,
@@ -370,6 +364,7 @@ const App = () => {
   // For modal popup to set global settings like API keys
   const settingsModal = useRef<GlobalSettingsModalRef>(null);
   const saveRef = useRef<any>(null);
+  const exportRef = useRef<any>(null);
   // For modal popup of example flows
   const examplesModal = useRef<ExampleFlowsModalRef>(null);
   const queryString = window.location.search;
@@ -437,13 +432,19 @@ const App = () => {
 
     // if user adds node without closing previous hint
     setRunTour(false);
-    // setting id to triggere respective HINT
+    // setting id to trigger respective HINT
     if (id) {
-      setTriggerHint(id);
-      incrementHintRun(id, setHintRuns);
+      // as id is same for both python and javascript, so to differentiate here we are using data.language
+      if (data && data.language === "python") {
+        setTriggerHint("pythonEvalNode");
+        incrementHintRun("pythonEvalNode", setHintRuns);
+      } else {
+        setTriggerHint(id);
+        incrementHintRun(id, setHintRuns);
+      }
       setIdForHint(idForNode);
     }
-    setIsChangesNotSaved(true);
+    updateIsChangesNotSaved(true);
 
     // following changes are for showing warning if we delete iter or usecase and again if we try to add nodes and save flow
     const data1: any = localStorage.getItem("current_usecase");
@@ -463,7 +464,6 @@ const App = () => {
     }
     setOpenAddNode(false);
   };
-
   const addTextFieldsNode = () => addNode("textFieldsNode", "textfields");
   const addUploadFileFieldsNode = () =>
     addNode("uploadFileFieldsNode", "uploadfilefields");
@@ -658,7 +658,31 @@ const App = () => {
   };
 
   // Export / Import (from JSON)
-  const exportFlow = useCallback(async () => {
+  const exportFlow = useCallback(() => {
+    if (!rfInstance) return;
+
+    // We first get the data of the flow
+    const flow = rfInstance.toObject();
+
+    // Then we grab all the relevant cache files from the backend
+    const all_node_ids = nodes.map((n: any) => n.id);
+    exportCache(all_node_ids)
+      .then(function (cacheData) {
+        // Now we append the cache file data to the flow
+        const flow_and_cache = {
+          flow,
+          cache: cacheData,
+        };
+
+        // Save!
+        // @ts-expect-error The exported RF instance is JSON compatible but TypeScript won't read it as such.
+        downloadJSON(flow_and_cache, `flow-${Date.now()}.cforge`);
+        setExportBtnOpen(false);
+      })
+      .catch(handleError);
+  }, [rfInstance, nodes, handleError]);
+
+  const exportIteration = useCallback(async () => {
     const data: any = {};
     data.folder_path = `configurations/${urlParams.get("p_folder")}/${urlParams.get("i_folder")}`;
     fetch(
@@ -683,6 +707,7 @@ const App = () => {
         document.body.appendChild(a);
         a.click();
         a.remove();
+        setExportBtnOpen(false);
       })
       .catch(handleError);
   }, [handleError]);
@@ -697,6 +722,7 @@ const App = () => {
   ) => {
     setLoading(true);
     setOpenMenu(false);
+    setExportBtnOpen(false);
     setTriggerHint("");
     const iterationCreation = forIterationCreation ?? false;
     if (menuData && menuData.length === 0) {
@@ -713,7 +739,7 @@ const App = () => {
         iterationCreated: false,
       }),
     );
-    setIsChangesNotSaved(false);
+    updateIsChangesNotSaved(false);
     if (!rfInstance) return;
 
     // We first get the data of the flow
@@ -1398,9 +1424,9 @@ const App = () => {
         showNotification("Created!", "Use case has been successfully created");
         // resetFlow();
         resetFlowToBlankCanvas();
-        setIsChangesNotSaved(true);
         setTriggerHint("created-usecase");
         incrementHintRun("usecase", setHintRuns);
+        updateIsChangesNotSaved(true);
       } else {
         setLoading(false);
         console.log("error in creating usecase");
@@ -1530,6 +1556,16 @@ const App = () => {
         open: false,
       });
 
+      // Set currentfileLocked to true to disable the "add node" functionality whenever a file is deleted
+      // If a new iteration is created but not saved, and we switch to another iteration,
+      // the previous iteration is deleted, so we don't need to set isCurrentFileLocked to true.
+      // In other cases, we can set it to true.
+      if (!parsedIterCreated) {
+        // after deleting iteration, we can set this to locked, to disable add node.
+        setIsCurrentFileLocked(true);
+      } else {
+        setIsCurrentFileLocked(false);
+      }
       localStorage.setItem(
         "iteration-created",
         JSON.stringify({
@@ -1547,8 +1583,8 @@ const App = () => {
       setOpenMenu(false);
       resetFlowToBlankCanvas();
       setWarning({ warning: "", open: true });
-      setIsCurrentFileLocked(false);
-      setIsChangesNotSaved(false);
+
+      updateIsChangesNotSaved(false);
     }
   };
 
@@ -1637,7 +1673,7 @@ const App = () => {
         setOpenCreateUseCase(false);
         setLoading(false);
         setIsCurrentFileLocked(false);
-        setIsChangesNotSaved(true);
+        updateIsChangesNotSaved(true);
         localStorage.setItem(
           "current_usecase",
           JSON.stringify({
@@ -1755,7 +1791,8 @@ const App = () => {
       setOpenCreateUseCase(false);
       setLoading(false);
       setIsCurrentFileLocked(false);
-      // setIsChangesNotSaved(true);
+      // updateIsChangesNotSaved(true);
+
       localStorage.setItem(
         "current_usecase",
         JSON.stringify({
@@ -1831,7 +1868,7 @@ const App = () => {
       setOpenMenu(false);
       setWarning({ warning: "", open: true });
       setIsCurrentFileLocked(true);
-      setIsChangesNotSaved(false);
+      updateIsChangesNotSaved(false);
     }
   };
 
@@ -2061,6 +2098,31 @@ const App = () => {
     // setTriggerHint("");
   };
 
+  const updateIsChangesNotSaved = useCallback(
+    (value: boolean) => {
+      setIsChangesNotSaved(value);
+      localStorage.setItem("isChangesNotSaved", JSON.stringify(value));
+    },
+    [isChangesNotSaved],
+  );
+
+  const hideWebpackOverlayError = (e: any, message: string) => {
+    if (e && e.message.startsWith(message)) {
+      const resizeObserverErrDiv = document.getElementById(
+        "webpack-dev-server-client-overlay-div",
+      );
+      const resizeObserverErr = document.getElementById(
+        "webpack-dev-server-client-overlay",
+      );
+      if (resizeObserverErr) {
+        resizeObserverErr.setAttribute("style", "display: none");
+      }
+      if (resizeObserverErrDiv) {
+        resizeObserverErrDiv.setAttribute("style", "display: none");
+      }
+    }
+  };
+
   useEffect(() => {
     setHintSteps(triggerHint, hintRuns, setUpdateSteps, setHintRuns, idForHint);
   }, [triggerHint]);
@@ -2181,6 +2243,10 @@ const App = () => {
           stack: event.reason.stack,
         };
         console.error("Unhandled promise rejection: ", errorData);
+        hideWebpackOverlayError(
+          errorData,
+          "Resize must be passed a displayed plot div element",
+        );
         showNotification("Failed", errorData.message, "red");
         // Prevent the default handling (e.g., logging to the console)
         event.preventDefault();
@@ -2197,20 +2263,7 @@ const App = () => {
 
   useEffect(() => {
     window.addEventListener("error", (e) => {
-      if (e.message.startsWith("ResizeObserver loop")) {
-        const resizeObserverErrDiv = document.getElementById(
-          "webpack-dev-server-client-overlay-div",
-        );
-        const resizeObserverErr = document.getElementById(
-          "webpack-dev-server-client-overlay",
-        );
-        if (resizeObserverErr) {
-          resizeObserverErr.setAttribute("style", "display: none");
-        }
-        if (resizeObserverErrDiv) {
-          resizeObserverErrDiv.setAttribute("style", "display: none");
-        }
-      }
+      hideWebpackOverlayError(e, "ResizeObserver loop");
     });
   }, []);
 
@@ -2221,7 +2274,21 @@ const App = () => {
   useEffect(() => {
     const storedHintRuns = localStorage.getItem("hintRuns");
     if (storedHintRuns) {
-      setHintRuns(JSON.parse(storedHintRuns));
+      const parsed = JSON.parse(storedHintRuns);
+      setHintRuns(parsed);
+      if (parsed.usecase <= 2) {
+        setTriggerHint("created-usecase");
+      }
+    } else {
+      // to trigger for the first time user
+      setTriggerHint("created-usecase");
+    }
+  }, []);
+
+  useEffect(() => {
+    const changesNotSaveLocal = localStorage.getItem("isChangesNotSaved");
+    if (changesNotSaveLocal) {
+      setIsChangesNotSaved(JSON.parse(changesNotSaveLocal));
     }
   }, []);
 
@@ -2395,7 +2462,7 @@ const App = () => {
             <Button
               disabled={false}
               onClick={() => {
-                setIsChangesNotSaved(false);
+                updateIsChangesNotSaved(false);
                 setConfirmed(true);
               }}
               loading={loading}
@@ -2525,6 +2592,7 @@ const App = () => {
             setOpenAddNode(false);
             setOpenMenu(false);
             setSaveAndCommitBtnOpen(false);
+            setExportBtnOpen(false);
             // setRunTour(false);
             handleClose();
           }}
@@ -2651,6 +2719,7 @@ const App = () => {
                     mr="sm"
                     onClick={() => {
                       setSaveAndCommitBtnOpen(false);
+                      setExportBtnOpen(false);
                       setOpenMenu(!openMenu);
                       setOpenAddNode(false);
                       handleClose();
@@ -2972,6 +3041,7 @@ const App = () => {
                     }
                     onClick={() => {
                       setOpenAddNode(!openAddNode);
+                      setExportBtnOpen(false);
                       setOpenMenu(false);
                       setSaveAndCommitBtnOpen(false);
                       handleClose();
@@ -3169,6 +3239,7 @@ const App = () => {
 
               <Button
                 loading={loading}
+                loaderPosition="right"
                 disabled={handleDisableSave()}
                 // disabled={isCurrenFileLocked}
                 size="sm"
@@ -3185,6 +3256,7 @@ const App = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       setSaveAndCommitBtnOpen(!saveAndCommitBtnOpen);
+                      setExportBtnOpen(false);
                       setOpenMenu(false);
                       setOpenAddNode(false);
                     }}
@@ -3317,13 +3389,60 @@ const App = () => {
               )}
               <Button
                 className="export-btn"
-                onClick={exportFlow}
                 size="sm"
                 variant="outline"
-                bg="#eee"
                 compact
+                bg="#eee"
                 mr="xs"
                 style={{ float: "left" }}
+                rightIcon={
+                  <div
+                    ref={exportRef}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setExportBtnOpen(!exportBtnOpen);
+                      setSaveAndCommitBtnOpen(false);
+                      setOpenMenu(false);
+                      setOpenAddNode(false);
+                    }}
+                  >
+                    <div ref={exportRef}>
+                      <Menu
+                        position="top-start"
+                        opened={exportBtnOpen}
+                        transitionProps={{ transition: "pop" }}
+                      >
+                        <div>
+                          <Menu.Target>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Chevron />
+                            </div>
+                          </Menu.Target>
+
+                          <Menu.Dropdown>
+                            <Menu.Item
+                              onClick={exportFlow}
+                              style={{
+                                backgroundColor: "#e0e0e0",
+                              }}
+                              disabled={isCurrenFileLocked}
+                            >
+                              Export Workflow Config
+                            </Menu.Item>
+                            <Menu.Item onClick={exportIteration} disabled>
+                              Export Iteration
+                            </Menu.Item>
+                          </Menu.Dropdown>
+                        </div>
+                      </Menu>
+                    </div>
+                  </div>
+                }
               >
                 Export
               </Button>
