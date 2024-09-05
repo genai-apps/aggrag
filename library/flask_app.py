@@ -1,5 +1,5 @@
 import shutil
-import json, os, sys, asyncio, time, re
+import json, os, sys, asyncio, time, re, unicodedata
 from dataclasses import dataclass
 from enum import Enum
 from typing import List
@@ -29,10 +29,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 from library.aggrag.core.log_config import app_loger
 from openai import OpenAIError
 from library.aggrag.evals.evaluator import Evaluator
-from ragas.metrics import (
-    answer_similarity,
-    answer_correctness
-)
+from ragas.metrics import answer_similarity, answer_correctness
 from datasets import Dataset
 from deepeval.metrics import GEval
 from deepeval.test_case import LLMTestCaseParams
@@ -61,6 +58,17 @@ app_loger.configure_logs()
 
 
 app = Flask(__name__, static_folder=STATIC_DIR, template_folder=BUILD_DIR)
+
+
+@app.after_request
+def after_request(response):
+    response.headers["Strict-Transport-Security"] = (
+        "max-age=31536000; includeSubDomains; preload"
+    )
+    response.headers["X-Frame-Options"] = "DENY"
+    return response
+
+
 app.config["MAX_CONTENT_LENGTH"] = UPLOAD_FILE_MAXIMUM_SIZE * 1024 * 1024
 
 # Set up CORS for specific routes
@@ -88,6 +96,55 @@ class MetricType(Enum):
     UTIL FUNCTIONS
     ==============
 """
+
+
+def secure_filename_with_spaces(filename):
+    """
+    Pass the filename through a security filter and allow spaces, ignoring them from replacement.
+    """
+    _filename_ascii_strip_re = re.compile(r"[^A-Za-z0-9_ ]")
+    _windows_device_files = {
+        "CON",
+        "PRN",
+        "AUX",
+        "NUL",
+        "COM1",
+        "COM2",
+        "COM3",
+        "COM4",
+        "COM5",
+        "COM6",
+        "COM7",
+        "COM8",
+        "COM9",
+        "LPT1",
+        "LPT2",
+        "LPT3",
+        "LPT4",
+        "LPT5",
+        "LPT6",
+        "LPT7",
+        "LPT8",
+        "LPT9",
+    }
+
+    # Normalize unicode string
+    filename = (
+        unicodedata.normalize("NFKD", filename)
+        .encode("ascii", "ignore")
+        .decode("ascii")
+    )
+
+    # Strip any unwanted characters but allow spaces
+    filename = _filename_ascii_strip_re.sub("", filename)
+
+    # Ensure no special device names (especially on Windows systems)
+    if filename.split(".")[0].upper() in _windows_device_files:
+        filename = f"_{filename}"
+
+    # Strip leading/trailing whitespace and return
+    return filename.strip()
+
 
 HIJACKED_PRINT_LOG_FILE = None
 ORIGINAL_PRINT_METHOD = None
@@ -909,11 +966,6 @@ async def uploadFileToKnowledgeBase():
     if "file" not in request.files:
         return jsonify({"error": "Missing file parameter to upload file."})
 
-    # if request.files["file"] > UPLOAD_FILE_MAXIMUM_SIZE * 1024 * 1024:
-    #     return jsonify(
-    #         {"error": "File exceeds maximum size limit set by the administrator."}
-    #     )
-
     req = request.form
     if "p_folder" not in req or "i_folder" not in req:
         return jsonify({"error": "Missing usecase or iteration to upload file."})
@@ -925,12 +977,12 @@ async def uploadFileToKnowledgeBase():
     # Verify 'raw_docs' directory exists:
     RAW_DOCS_DIR = os.path.join(
         CONFIGURATION_DIR,
-        req["p_folder"],
-        req["i_folder"],
+        secure_filename_with_spaces(req["p_folder"]),
+        secure_filename_with_spaces(req["i_folder"]),
         "raw_docs",
-        req["file_node_id"] + "_" + req["timestamp"],
+        secure_filename(req["file_node_id"]) + "_" + secure_filename(req["timestamp"]),
     )
-    print(RAW_DOCS_DIR)
+
     if not os.path.isdir(RAW_DOCS_DIR):
         os.makedirs(RAW_DOCS_DIR)
 
@@ -941,7 +993,6 @@ async def uploadFileToKnowledgeBase():
             return jsonify({"error": "Missing filename parameter to upload file."})
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            print("Filename data: ", filename)
             file.save(os.path.join(RAW_DOCS_DIR, filename))
             return jsonify({"success": True})
     except Exception as e:
@@ -1048,13 +1099,10 @@ def indexRAGFiles():
 
     except ValidationError as e:
         # Return a JSON response with the validation errors
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         # Handle other exceptions
-        return jsonify({'error': str(e)}), 500
-
-
-
+        return jsonify({"error": str(e)}), 500
 
     aggrag = AggRAG(
         ragstore_bool=RagStoreBool(**{rag_name: True}),
@@ -1084,7 +1132,7 @@ def indexRAGFiles():
 @app.route("/app/createiteration", methods=["POST"])
 def create_iter_folder():
     data = request.get_json()
-    usecase_folder_name = data.get("folderName")
+    usecase_folder_name = secure_filename_with_spaces(data.get("folderName"))
 
     parent_dir = os.path.join(os.getcwd(), "configurations")
     if not os.path.exists(parent_dir):
@@ -1170,9 +1218,9 @@ def generate_unique_folder_name(base_folder_name, parent_path):
 @app.route("/app/copyiteration", methods=["POST"])
 def copy_iteration():
     data = request.get_json()
-    usecase_folder_name = data.get("folderName")
-    iter_folder_name = data.get("iterationName")
-    file_name = data.get("fileName")
+    usecase_folder_name = secure_filename_with_spaces(data.get("folderName"))
+    iter_folder_name = secure_filename_with_spaces(data.get("iterationName"))
+    file_name = secure_filename(data.get("fileName"))
 
     parent_dir = os.path.join(os.getcwd(), "configurations")
     ensure_directory_exists(parent_dir)
@@ -1229,8 +1277,10 @@ def generate_unique_usecase_folder_name(base_folder_name, parent_path, id):
 @app.route("/app/copyusecase", methods=["POST"])
 def copy_usecase():
     data = request.get_json()
-    source_usecase_folder_name = data.get("sourceUsecase")
-    user_provided_target_usecase_folder = data.get("targetUsecase")
+    source_usecase_folder_name = secure_filename_with_spaces(data.get("sourceUsecase"))
+    user_provided_target_usecase_folder = secure_filename_with_spaces(
+        data.get("targetUsecase")
+    )
     aggrag_user_id = data.get("aggrag_user_id")
     parent_dir = os.path.join(os.getcwd(), "configurations")
 
@@ -1312,12 +1362,16 @@ def copy_usecase():
                     {"iteration_name": item, "files": iteration_files}
                 )
 
-    responseToSend = {"iteration":'',"file_name":''}
-    if iterations_info :
+    responseToSend = {"iteration": "", "file_name": ""}
+    if iterations_info:
         responseToSend = {
-        "iteration": iterations_info[0]['iteration_name'] ,
-        "file_name": iterations_info[0]['files'][0] if iterations_info and iterations_info[0]['files'] else ''
-    }
+            "iteration": iterations_info[0]["iteration_name"],
+            "file_name": (
+                iterations_info[0]["files"][0]
+                if iterations_info and iterations_info[0]["files"]
+                else ""
+            ),
+        }
     return (
         jsonify(
             {
@@ -1333,7 +1387,7 @@ def copy_usecase():
 @app.route("/app/createusecase", methods=["POST"])
 def create_usecase():
     data = request.get_json()
-    folder_name = data.get("folderName")
+    folder_name = secure_filename_with_spaces(data.get("folderName"))
     user_id = data.get("aggrag_user_id")
     parent_dir = os.path.join(os.getcwd(), "configurations")
 
@@ -1481,9 +1535,9 @@ def save_flow():
     # Retrieve flow and cache data from request JSON
     flow_data = data.get("flow")
     cache_data = data.get("cache")
-    folder_name = data.get("folderName")
-    iteration_name = data.get("iterationName")
-    file_name = data.get("fileName")  # This can be an empty string
+    folder_name = secure_filename_with_spaces(data.get("folderName"))
+    iteration_name = secure_filename_with_spaces(data.get("iterationName"))
+    file_name = secure_filename(data.get("fileName"))  # This can be an empty string
 
     # Check if folder name or iteration name is empty
     if not folder_name or not iteration_name:
@@ -1642,11 +1696,11 @@ def RAGStoreChat():
 
     except ValidationError as e:
         # Return a JSON response with the validation errors
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         # Handle other exceptions
-        return jsonify({'error': str(e)}), 500
-    
+        return jsonify({"error": str(e)}), 500
+
     aggrag = AggRAG(
         ragstore_bool=RagStoreBool(**{rag_name: True}),
         usecase_name=use_case_name,
@@ -1690,16 +1744,28 @@ def RAGStoreChat():
     except OpenAIError as e:
         # Handle OpenAI API errors
         logger.error(f"OpenAI API error: {str(e)}")
-        return jsonify({'error': 'An error occurred while communicating with the OpenAI API.', 'details': str(e)}), 500
+        return (
+            jsonify(
+                {
+                    "error": "An error occurred while communicating with the OpenAI API.",
+                    "details": str(e),
+                }
+            ),
+            500,
+        )
     except FileNotFoundError as e:
-        return jsonify({'error': str(e)})
+        return jsonify({"error": str(e)})
 
     except Exception as e:
         # Handle other exceptions
         logging.error(f"Unexpected error: {str(e)}")
-        return jsonify({'error': 'An unexpected error occurred.', 'details': str(e)}), 500
-        
-@app.route('/app/deleteiteration', methods=['DELETE'])
+        return (
+            jsonify({"error": "An unexpected error occurred.", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/app/deleteiteration", methods=["DELETE"])
 def delete_iteration():
     data = request.get_json()
     usecase_folder_name = data.get("folderName")
@@ -1739,34 +1805,40 @@ def delete_usecase():
     else:
         return jsonify({"message": "Folder does not exist."}), 404
 
-@app.route('/app/ragasevaluation', methods=['POST'])
+
+@app.route("/app/ragasevaluation", methods=["POST"])
 def ragas_evaluation():
     data = request.get_json()
-    metrics = [
-        answer_similarity,
-        answer_correctness
-    ]
+    metrics = [answer_similarity, answer_correctness]
 
     llm, embed_llm = load_llms_for_ragas()
     dataset = Dataset.from_dict(data)
 
-    evaluator = Evaluator(response_dataset=dataset, llm_model=llm, llm_embeddings=embed_llm, metrics=metrics)
+    evaluator = Evaluator(
+        response_dataset=dataset,
+        llm_model=llm,
+        llm_embeddings=embed_llm,
+        metrics=metrics,
+    )
     score_df = evaluator.evaluate_models()
     score_dict = score_df.to_dict()
     # Convert to list of dictionaries
     result = []
-    for i in score_dict['question']:
-        result.append({
-            'question': score_dict['question'][i],
-            'ground_truth': score_dict['ground_truth'][i],
-            'answer': score_dict['answer'][i],
-            'answer_similarity': score_dict['answer_similarity'][i],
-            'answer_correctness': score_dict['answer_correctness'][i]
-        })
+    for i in score_dict["question"]:
+        result.append(
+            {
+                "question": score_dict["question"][i],
+                "ground_truth": score_dict["ground_truth"][i],
+                "answer": score_dict["answer"][i],
+                "answer_similarity": score_dict["answer_similarity"][i],
+                "answer_correctness": score_dict["answer_correctness"][i],
+            }
+        )
 
     return result
 
-@app.route('/app/deepevalevaluation', methods=['POST'])
+
+@app.route("/app/deepevalevaluation", methods=["POST"])
 def deepeval_evaluation():
     data = request.get_json()
 
@@ -1775,33 +1847,46 @@ def deepeval_evaluation():
     rag_answers = data["answer"]
     test_cases = []
 
-    for question, ground_truth_answer, rag_answer in zip(questions, ground_truth_answers, rag_answers):
-        test_case = LLMTestCase(input=question, expected_output=ground_truth_answer, actual_output=rag_answer)
+    for question, ground_truth_answer, rag_answer in zip(
+        questions, ground_truth_answers, rag_answers
+    ):
+        test_case = LLMTestCase(
+            input=question,
+            expected_output=ground_truth_answer,
+            actual_output=rag_answer,
+        )
         test_cases.append(test_case)
 
     dataset = EvaluationDataset(test_cases=test_cases)
 
-
     correctness_metric = GEval(
-    name="Correctness",
-    criteria="Determine whether the actual output is factually correct based on the expected output.",
-    # NOTE: you can only provide either criteria or evaluation_steps, and not both
-    evaluation_steps=[
-        "Check whether the facts in 'actual output' contradicts any facts in 'expected output'",
-        "You should also heavily penalize omission of detail",
-        "Vague language, or contradicting OPINIONS, are OK"
-    ],
-    evaluation_params=[LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT, LLMTestCaseParams.EXPECTED_OUTPUT], model=load_llm_for_deepeval())
+        name="Correctness",
+        criteria="Determine whether the actual output is factually correct based on the expected output.",
+        # NOTE: you can only provide either criteria or evaluation_steps, and not both
+        evaluation_steps=[
+            "Check whether the facts in 'actual output' contradicts any facts in 'expected output'",
+            "You should also heavily penalize omission of detail",
+            "Vague language, or contradicting OPINIONS, are OK",
+        ],
+        evaluation_params=[
+            LLMTestCaseParams.INPUT,
+            LLMTestCaseParams.ACTUAL_OUTPUT,
+            LLMTestCaseParams.EXPECTED_OUTPUT,
+        ],
+        model=load_llm_for_deepeval(),
+    )
 
     metrics = [correctness_metric]
 
-    test_results = evaluate(dataset, metrics=metrics, print_results=False, write_cache=True, use_cache=True)
+    test_results = evaluate(
+        dataset, metrics=metrics, print_results=False, write_cache=True, use_cache=True
+    )
     json_data = []
     for test_result in test_results:
         response_dict = {
-                    "question": test_result.input,
-                    "answer": test_result.actual_output,
-                    "ground_truth": test_result.expected_output
+            "question": test_result.input,
+            "answer": test_result.actual_output,
+            "ground_truth": test_result.expected_output,
         }
         for met in test_result.metrics_metadata:
             response_dict["answer_correctness"] = met.score
@@ -1809,22 +1894,28 @@ def deepeval_evaluation():
         json_data.append(response_dict)
     return json_data
 
+
 @app.route("/app/healthCheck", methods=["GET"])
 def get_health_check():
     return jsonify({"message": "ok"}), 200
 
 
-@app.route('/app/exportFiles', methods=['GET'])
+@app.route("/app/exportFiles", methods=["GET"])
 def exportFiles():
-    folder_to_zip = request.args.get('folder_path')
+    folder_to_zip = request.args.get("folder_path")
     if not folder_to_zip:
-        return jsonify({'error': f"folder_path is required"})
+        return jsonify({"error": f"folder_path is required"})
 
     memory_file = zip_directory(folder_to_zip)
     if not memory_file:
-        return jsonify({'error': f"Failed to zip provided directory"})
+        return jsonify({"error": f"Failed to zip provided directory"})
 
-    return send_file(memory_file, mimetype='application/zip', as_attachment=True, download_name='files.zip')
+    return send_file(
+        memory_file,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name="files.zip",
+    )
 
 
 def run_server(host="", port=8000, cmd_args=None):
@@ -1844,6 +1935,7 @@ def get_event_loop():
         asyncio.set_event_loop(loop)
 
     return loop
+
 
 if __name__ == "__main__":
     print("Run app.py instead.")
