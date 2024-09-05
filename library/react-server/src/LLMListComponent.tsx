@@ -1,4 +1,4 @@
-import {
+import React, {
   useState,
   useEffect,
   useCallback,
@@ -465,13 +465,29 @@ export const LLMListContainer = forwardRef<
 
   const getLLMListTooltipContent = () => {
     return (
-      <div>
-        <p>Configuring an LLM is a two step process:</p>
-        <ol>
-          <li>Choose and configure the settings of an LLM from the modelstore.</li>
-          <li>Add the necessary api key's in <i>settings</i>, the right most icon on top banner.</li>
-          <li>Add or connect prompts and variables as required by your use case.</li>
-        </ol>
+      <div className="tooltip-container">
+        <div className="tooltip-title-container">
+          <div className="tooltip-title">
+            <div className="info-circle">
+              <IconInfoCircle size={18} />
+            </div>
+            <p>Configuring an LLM is a two step process:</p>
+          </div>
+        </div>
+        <div className="tooltip-description">
+          <ol className="tooltip-instruction-list">
+            <li>
+              Choose and configure the settings of an LLM from the modelstore.
+            </li>
+            <li>
+              Add the necessary api key&apos;s in <i>settings</i>, the right
+              most icon on top banner.
+            </li>
+            <li>
+              Add or connect prompts and variables as required by your use case.
+            </li>
+          </ol>
+        </div>
       </div>
     );
   };
@@ -492,8 +508,8 @@ export const LLMListContainer = forwardRef<
           zIndex={10000000}
           styles={{
             tooltip: {
-              backgroundColor: "#212529",
-              color: "#fff",
+              backgroundColor: "white",
+              boxShadow: "1px 1px 8px #ccc",
             },
           }}
           position="bottom"
