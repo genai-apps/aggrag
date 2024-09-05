@@ -2215,7 +2215,7 @@ const CommonRagSettings = {
         properties: {
           llm_model: {
             default: "gpt-3.5-turbo",
-            enum: ["gpt-3.5-turbo","gpt-4", "gpt-4-turbo", "gpt-4o"],
+            enum: ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo", "gpt-4o"],
             title: "LLM Model",
             type: "string",
           },
@@ -2234,7 +2234,7 @@ const CommonRagSettings = {
         properties: {
           llm_model: {
             default: "gpt-35-turbo",
-            enum: ["gpt-35-turbo","gpt-4", "gpt-4-turbo", "gpt-4o"],
+            enum: ["gpt-35-turbo", "gpt-4", "gpt-4-turbo", "gpt-4o"],
             title: "LLM Model",
             type: "string",
           },
@@ -2569,6 +2569,10 @@ const SubQARagSettings: ModelSettingsDict = {
             const: "Together",
             title: "Together",
           },
+          {
+            const: "Anthropic",
+            title: "Anthropic",
+          },
         ],
         title: "AI service",
         type: "string",
@@ -2715,6 +2719,10 @@ const RaptorRagSettings: ModelSettingsDict = {
             const: "Together",
             title: "Together",
           },
+          {
+            const: "Anthropic",
+            title: "Anthropic",
+          },
         ],
         title: "AI service",
         type: "string",
@@ -2838,18 +2846,18 @@ const Meta_llamaRagSettings: ModelSettingsDict = {
             const: "AzureOpenAI",
             title: "AzureOpenAI",
           },
-          {
-            const: "Nvidia",
-            title: "Nvidia",
-          },
-          {
-            const: "Replicate",
-            title: "Replicate",
-          },
-          {
-            const: "Together",
-            title: "Together",
-          },
+          // {
+          //   const: "Nvidia",
+          //   title: "Nvidia",
+          // },
+          // {
+          //   const: "Replicate",
+          //   title: "Replicate",
+          // },
+          // {
+          //   const: "Together",
+          //   title: "Together",
+          // },
         ],
         title: "AI service",
         type: "string",
@@ -2971,22 +2979,22 @@ const Meta_langRagSettings: ModelSettingsDict = {
             const: "OpenAI",
             title: "OpenAI",
           },
-          {
-            const: "AzureOpenAI",
-            title: "AzureOpenAI",
-          },
-          {
-            const: "Nvidia",
-            title: "Nvidia",
-          },
-          {
-            const: "Replicate",
-            title: "Replicate",
-          },
-          {
-            const: "Together",
-            title: "Together",
-          },
+          // {
+          //   const: "AzureOpenAI",
+          //   title: "AzureOpenAI",
+          // },
+          // {
+          //   const: "Nvidia",
+          //   title: "Nvidia",
+          // },
+          // {
+          //   const: "Replicate",
+          //   title: "Replicate",
+          // },
+          // {
+          //   const: "Together",
+          //   title: "Together",
+          // },
         ],
         title: "AI service",
         type: "string",
@@ -3116,6 +3124,10 @@ const Table_baseRagSettings: ModelSettingsDict = {
           {
             const: "Together",
             title: "Together",
+          },
+          {
+            const: "Anthropic",
+            title: "Anthropic",
           },
         ],
         title: "AI service",
