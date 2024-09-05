@@ -1,4 +1,4 @@
-import React, {
+import {
   useState,
   useEffect,
   useCallback,
@@ -24,7 +24,6 @@ import ModelSettingsModal, {
   ModelSettingsModalRef,
 } from "./ModelSettingsModal";
 import {
-  getDefaultModelFormData,
   getDefaultModelSettings,
 } from "./ModelSettingSchemas";
 import useStore, { initRAGProviderMenu } from "./store";
@@ -32,8 +31,10 @@ import { Dict, JSONCompatible, LLMSpec } from "./backend/typing";
 import { useContextMenu } from "mantine-contextmenu";
 import { ContextMenuItemOptions } from "mantine-contextmenu/dist/types";
 import { Tooltip } from "@mantine/core";
+import { IconInfoCircle } from "@tabler/icons-react";
 
 // The RAG(s) to include by default on a PromptNode whenever one is created.
+const DEFAULT_INIT_RAGS: Dict[] = [initRAGProviderMenu[0]]
 // Helper funcs
 // Ensure that a name is 'unique'; if not, return an amended version with a count tacked on (e.g. "GPT-4 (2)")
 const ensureUniqueName = (_name: string, _prev_names: string[]) => {
@@ -329,7 +330,14 @@ export const RAGListContainer = forwardRef<
   };
 
   // Selecting RAG models to prompt
-  const [ragItems, setRAGItems] = useState(initRAGItems);
+  const [ragItems, setRAGItems] = useState(
+    initRAGItems ||
+      DEFAULT_INIT_RAGS.map((i) => ({
+        key: uuid(),
+        settings: getDefaultModelSettings(i.base_model),
+        ...i,
+      })),
+  );
   const [ragItemsCurrState, setRAGItemsCurrState] = useState<LLMSpec[]>([]);
   const resetRAGItemsProgress = useCallback(() => {
     setRAGItems(
@@ -496,6 +504,19 @@ export const RAGListContainer = forwardRef<
     return res;
   }, [AvailableRAGs, handleSelectModel]);
 
+  const getRAGListTooltipContent = () => {
+    return (
+      <div>
+        <p>Configuring a RAG is a three-step process:</p>
+        <ol>
+          <li>Choose and configure the settings of any RAG from the ragstore.</li>
+          <li>Create an index after connecting a <b><i>Knowledge Base</i></b> node with the <b><i>rag_knowledge_base</i></b> variable in the Prompt Node.</li>
+          <li>Add or connect prompts and variables as required by your use case.</li>
+        </ol>
+      </div>
+    );
+  };
+  
   // Mantine ContextMenu does not fix the position of the menu
   // to be below the clicked button, so we must do it ourselves.
   const addBtnRef = useRef(null);
@@ -506,6 +527,27 @@ export const RAGListContainer = forwardRef<
     <div className="llm-list-container nowheel" style={_bgStyle}>
       <div className="llm-list-backdrop" style={_bgStyle}>
         {description || "RAGs to query:"}
+        <Tooltip
+          label={getRAGListTooltipContent()}
+          withinPortal
+          withArrow
+          zIndex={10000000}
+          styles={{
+            tooltip: {
+              backgroundColor: "#212529",
+              color: "#fff",
+            },
+          }}
+          position="bottom"
+          multiline
+          arrowSize={10}
+        >
+          <IconInfoCircle
+            size="12pt"
+            color="gray"
+            style={{ marginBottom: "-4px" }}
+          />
+        </Tooltip>
         <div
           className={`add-llm-model-btn ${!disable ? "create-index-btn" : ""} nodrag`}
         >
