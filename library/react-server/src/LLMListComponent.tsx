@@ -24,7 +24,7 @@ import ModelSettingsModal, {
   ModelSettingsModalRef,
 } from "./ModelSettingsModal";
 import { getDefaultModelSettings } from "./ModelSettingSchemas";
-import useStore, { initLLMProviderMenu } from "./store";
+import useStore, { initLLMProviders, initLLMProviderMenu } from "./store";
 import { Dict, JSONCompatible, LLMGroup, LLMSpec } from "./backend/typing";
 import { useContextMenu } from "mantine-contextmenu";
 import { ContextMenuItemOptions } from "mantine-contextmenu/dist/types";
@@ -33,7 +33,7 @@ import { IconInfoCircle } from "@tabler/icons-react";
 
 // The LLM(s) to include by default on a PromptNode whenever one is created.
 // Defaults to ChatGPT (GPT3.5) when running locally, and HF-hosted falcon-7b for online version since it's free.
-const DEFAULT_INIT_LLMS: Dict[] = [];
+const DEFAULT_INIT_LLMS: Dict[] = [initLLMProviders[0]];
 
 // Helper funcs
 // Ensure that a name is 'unique'; if not, return an amended version with a count tacked on (e.g. "GPT-4 (2)")
