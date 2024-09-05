@@ -70,20 +70,11 @@ class OpenAIModelNames(Enum):
     """
     Enum representing different OpenAI model names, each identified by a unique model string.
     """
-    gpt_35_turbo = openai_service.get('chat_models').get("gpt-35-turbo", {}).get("model_name", None)
-    gpt_35_turbo_16k = openai_service.get('chat_models').get("gpt-35-turbo-16k", {}).get("model_name", None)
+    gpt_4 = openai_service.get('chat_models').get("gpt-4", {}).get("model_name", None)
+    gpt_35_turbo = openai_service.get('chat_models').get("gpt-3.5-turbo", {}).get("model_name", None)
     gpt_4_turbo = openai_service.get('chat_models').get("gpt-4-turbo", {}).get("model_name", None)
-    gpt_4_32k = openai_service.get('chat_models').get("gpt-4-32k", {}).get("model_name", None)
     text_embedding_ada_002 = openai_service.get("embed_models").get("text-embedding-ada-002", {}).get("model_name", None)
     gpt_4o = openai_service.get('chat_models').get("gpt-4o", {}).get("model_name", None)
-
-
-class OpenAIModelEngines(Enum):
-    """
-    Enum representing different OpenAI model engines on Azure, each identified by a unique deployment string.
-    """
-    gpt_35_turbo = azure_service.get('chat_models').get("gpt-35-turbo", {}).get("deployment_name", None)
-    text_embedding_ada_002 = azure_service.get('chat_models').get("text-embedding-ada-002", {}).get("model_name", None)
 
 
 class AzureOpenAIModelEngines(Enum):
@@ -116,18 +107,6 @@ class NemoModelNames(Enum):
     nvolveqa_40k = nemo_service.get('chat_models', {}).get("nvolveqa_40k", {}).get("model_name", None)
     ai_embed_qa_4 = nemo_service.get('chat_models', {}).get("ai-embed-qa-4", {}).get("model_name", None)
 
-
-class OpenAIModelNames(Enum):
-    """
-    Enum representing different OpenAI model names, each identified by a unique deployment string.
-    """
-    gpt_35_turbo = openai_service.get('chat_models').get("gpt-35-turbo", {}).get("model_name", None)
-    gpt_35_turbo_16k = openai_service.get('chat_models').get("gpt-35-turbo-16k", {}).get("model_name", None)
-    gpt_4_turbo = openai_service.get('chat_models').get("gpt-4-turbo", {}).get("model_name", None)
-    gpt_4_32k = openai_service.get('chat_models').get("gpt-4-32k", {}).get("model_name", None)
-    text_embedding_ada_002 = openai_service.get('embed_models').get("text-embedding-ada-002", {}).get("model_name", None)
-    gpt_4o = openai_service.get('chat_models').get("gpt-4o", {}).get("model_name", None)
-    text_embedding_ada_003 = openai_service.get('chat_models').get("text-embedding-ada-003", {}).get("model_name", None)
 
 
 class TogetherLLMModelNames(Enum):

@@ -35,8 +35,8 @@ class AzureAIService:
                 model_config = service_config.chat_models.get(llm_model)
                 if not model_config:
                     raise ValueError(f"Configuration not found for LLM model '{llm_model}' in AzureOpenAI chat_models.")
-                model = model_config.get("model_name")
-                deployment_name = model_config.get("deployment_name")
+                model = model_config.model_name
+                deployment_name = model_config.deployment_name
             else:
                 model = AzureOpenAIModelNames.gpt_35_turbo.value
                 deployment_name = AzureOpenAIModelEngines.gpt_35_turbo.value
@@ -72,8 +72,8 @@ class AzureAIService:
                 model_config = service_config.embed_models.get(embed_model)
                 if not model_config:
                     raise ValueError(f"Configuration not found for embedding model '{embed_model}' in AzureOpenAI embed_models.")
-                embed_model = model_config.get("model_name")
-                deployment_name = model_config.get("deployment_name")
+                embed_model = model_config.model_name
+                deployment_name = model_config.deployment_name
             else:
                 embed_model = AzureOpenAIModelNames.text_embedding_ada_002.value
                 deployment_name = AzureOpenAIModelEngines.text_embedding_ada_002.value
@@ -106,7 +106,7 @@ class ReplicateAIService:
                 model_config = service_config.chat_models.get(llm_model)
                 if not model_config:
                     raise ValueError(f"Configuration not found for LLM model '{llm_model}' in Replicate chat_models.")
-                model = model_config.get("model_name")
+                model = model_config.model_name
             else:
                 model = ReplicateModelNames.meta_llama_3_70b_instruct.value
 
@@ -134,7 +134,7 @@ class TogetherAIService:
                 model_config = service_config.chat_models.get(llm_model)
                 if not model_config:
                     raise ValueError(f"Configuration not found for LLM model '{llm_model}' in Together chat_models.")
-                model = model_config.get("model_name")
+                model = model_config.model_name
             else:
                 model = TogetherLLMModelNames.mixtral_8x7b_instruct.value
 
@@ -166,7 +166,7 @@ class OpenAIService:
                 model_config = service_config.chat_models.get(llm_model)
                 if not model_config:
                     raise ValueError(f"Configuration not found for LLM model '{llm_model}' in OpenAI chat_models.")
-                model = model_config.get("model_name")
+                model = model_config.model_name
             else:
                 model = OpenAIModelNames.gpt_35_turbo.value
 
@@ -195,7 +195,7 @@ class OpenAIService:
                 model_config = service_config.embed_models.get(embed_model)
                 if not model_config:
                     raise ValueError(f"Configuration not found for embedding model '{embed_model}' in OpenAI embed_models.")
-                model = model_config.get("model_name")
+                model = model_config.model_name
             else:
                 model = OpenAIModelNames.text_embedding_ada_002.value
 
@@ -218,13 +218,12 @@ class AnthropicAIService:
             service_config = AI_SERVICES_CONFIG.Anthropic
             if not service_config:
                 raise ValueError("Anthropic configuration not found in AI_SERVICES_CONFIG.")
-
             llm_model = kwargs.get("llm_model")
             if llm_model:
                 model_config = service_config.chat_models.get(llm_model)
                 if not model_config:
                     raise ValueError(f"Configuration not found for LLM model '{llm_model}' in Anthropic chat_models.")
-                model = model_config.get("model_name")
+                model = model_config.model_name
             else:
                 model = AnthropicModelNames.claude_3_sonnet_20240229.value
 

@@ -2215,7 +2215,7 @@ const CommonRagSettings = {
         properties: {
           llm_model: {
             default: "gpt-3.5-turbo",
-            enum: ["gpt-4", "gpt-3.5-turbo", "gpt-4-turbo", "gpt-4o"],
+            enum: ["gpt-3.5-turbo","gpt-4", "gpt-4-turbo", "gpt-4o"],
             title: "LLM Model",
             type: "string",
           },
@@ -2234,7 +2234,7 @@ const CommonRagSettings = {
         properties: {
           llm_model: {
             default: "gpt-35-turbo",
-            enum: ["gpt-4", "gpt-35-turbo", "gpt-4-turbo", "gpt-4o"],
+            enum: ["gpt-35-turbo","gpt-4", "gpt-4-turbo", "gpt-4o"],
             title: "LLM Model",
             type: "string",
           },
@@ -2335,10 +2335,10 @@ const CommonRagSettings = {
       then: {
         properties: {
           llm_model: {
-            default: "claude-3-opus-20240229",
+            default: "claude-3-sonnet-20240229",
             enum: [
-              "claude-3-opus-20240229",
               "claude-3-sonnet-20240229",
+              "claude-3-opus-20240229",
               "claude-3-haiku-20240307",
             ],
             title: "LLM Model",
