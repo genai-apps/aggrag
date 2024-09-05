@@ -168,7 +168,7 @@ class OpenAIService:
                     raise ValueError(f"Configuration not found for LLM model '{llm_model}' in OpenAI chat_models.")
                 model = model_config.get("model_name")
             else:
-                model = OpenAIModelNames.gpt_4_turbo.value
+                model = OpenAIModelNames.gpt_35_turbo.value
 
             api_key = kwargs.get("api_key", settings.OPENAI_API_KEY)
             temperature = kwargs.get("temperature", 0.1)
