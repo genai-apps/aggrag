@@ -1,4 +1,4 @@
-import {
+import React, {
   useState,
   useEffect,
   useCallback,
@@ -23,9 +23,7 @@ import { StrictModeDroppable } from "./StrictModeDroppable";
 import ModelSettingsModal, {
   ModelSettingsModalRef,
 } from "./ModelSettingsModal";
-import {
-  getDefaultModelSettings,
-} from "./ModelSettingSchemas";
+import { getDefaultModelSettings } from "./ModelSettingSchemas";
 import useStore, { initRAGProviderMenu } from "./store";
 import { Dict, JSONCompatible, LLMSpec } from "./backend/typing";
 import { useContextMenu } from "mantine-contextmenu";
@@ -34,7 +32,7 @@ import { Tooltip } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 
 // The RAG(s) to include by default on a PromptNode whenever one is created.
-const DEFAULT_INIT_RAGS: Dict[] = [initRAGProviderMenu[0]]
+const DEFAULT_INIT_RAGS: Dict[] = [initRAGProviderMenu[0]];
 // Helper funcs
 // Ensure that a name is 'unique'; if not, return an amended version with a count tacked on (e.g. "GPT-4 (2)")
 const ensureUniqueName = (_name: string, _prev_names: string[]) => {
@@ -506,17 +504,40 @@ export const RAGListContainer = forwardRef<
 
   const getRAGListTooltipContent = () => {
     return (
-      <div>
-        <p>Configuring a RAG is a three-step process:</p>
-        <ol>
-          <li>Choose and configure the settings of any RAG from the ragstore.</li>
-          <li>Create an index after connecting a <b><i>Knowledge Base</i></b> node with the <b><i>rag_knowledge_base</i></b> variable in the Prompt Node.</li>
-          <li>Add or connect prompts and variables as required by your use case.</li>
-        </ol>
+      <div className="tooltip-container">
+        <div className="tooltip-title-container">
+          <div className="tooltip-title">
+            <div className="info-circle">
+              <IconInfoCircle size={18} />
+            </div>
+            <p>Configuring a RAG is a three-step process:</p>
+          </div>
+        </div>
+        <div className="tooltip-description">
+          <ol className="tooltip-instruction-list">
+            <li>
+              Choose and configure the settings of any RAG from the ragstore.
+            </li>
+            <li>
+              Create an index after connecting a{" "}
+              <b>
+                <i>Knowledge Base</i>
+              </b>{" "}
+              node with the{" "}
+              <b>
+                <i>rag_knowledge_base</i>
+              </b>{" "}
+              variable in the Prompt Node.
+            </li>
+            <li>
+              Add or connect prompts and variables as required by your use case.
+            </li>
+          </ol>
+        </div>
       </div>
     );
   };
-  
+
   // Mantine ContextMenu does not fix the position of the menu
   // to be below the clicked button, so we must do it ourselves.
   const addBtnRef = useRef(null);
@@ -534,8 +555,8 @@ export const RAGListContainer = forwardRef<
           zIndex={10000000}
           styles={{
             tooltip: {
-              backgroundColor: "#212529",
-              color: "#fff",
+              backgroundColor: "white",
+              boxShadow: "1px 1px 8px #ccc",
             },
           }}
           position="bottom"
