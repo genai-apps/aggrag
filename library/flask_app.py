@@ -1312,12 +1312,18 @@ def copy_usecase():
                     {"iteration_name": item, "files": iteration_files}
                 )
 
+    responseToSend = {"iteration":'',"file_name":''}
+    if iterations_info :
+        responseToSend = {
+        "iteration": iterations_info[0]['iteration_name'] ,
+        "file_name": iterations_info[0]['files'][0] if iterations_info and iterations_info[0]['files'] else ''
+    }
     return (
         jsonify(
             {
                 "message": "Use case and iterations copied successfully!",
                 "target_usecase_folder_name": target_usecase_folder_name,
-                "iterations_info": iterations_info,
+                "iterations_info": responseToSend,
             }
         ),
         201,
@@ -1514,7 +1520,6 @@ def save_flow():
             jsonify(
                 {
                     "message": "Flow saved successfully!",
-                    "file_path": file_path,
                     "file_name": file_name,
                 }
             ),
