@@ -1,4 +1,4 @@
-import React, {
+import {
   useState,
   useEffect,
   useCallback,
@@ -28,6 +28,8 @@ import useStore, { initLLMProviderMenu } from "./store";
 import { Dict, JSONCompatible, LLMGroup, LLMSpec } from "./backend/typing";
 import { useContextMenu } from "mantine-contextmenu";
 import { ContextMenuItemOptions } from "mantine-contextmenu/dist/types";
+import { Tooltip } from "@mantine/core";
+import { IconInfoCircle } from "@tabler/icons-react";
 
 // The LLM(s) to include by default on a PromptNode whenever one is created.
 // Defaults to ChatGPT (GPT3.5) when running locally, and HF-hosted falcon-7b for online version since it's free.
@@ -461,6 +463,19 @@ export const LLMListContainer = forwardRef<
     return res;
   }, [AvailableLLMs, handleSelectModel]);
 
+  const getLLMListTooltipContent = () => {
+    return (
+      <div>
+        <p>Configuring an LLM is a two step process:</p>
+        <ol>
+          <li>Choose and configure the settings of an LLM from the modelstore.</li>
+          <li>Add the necessary api key's in <i>settings</i>, the right most icon on top banner.</li>
+          <li>Add or connect prompts and variables as required by your use case.</li>
+        </ol>
+      </div>
+    );
+  };
+
   // Mantine ContextMenu does not fix the position of the menu
   // to be below the clicked button, so we must do it ourselves.
   const addBtnRef = useRef(null);
@@ -470,6 +485,27 @@ export const LLMListContainer = forwardRef<
     <div className="llm-list-container nowheel" style={_bgStyle}>
       <div className="llm-list-backdrop" style={_bgStyle}>
         {description || "Models to query:"}
+        <Tooltip
+          label={getLLMListTooltipContent()}
+          withinPortal
+          withArrow
+          zIndex={10000000}
+          styles={{
+            tooltip: {
+              backgroundColor: "#212529",
+              color: "#fff",
+            },
+          }}
+          position="bottom"
+          multiline
+          arrowSize={10}
+        >
+          <IconInfoCircle
+            size="12pt"
+            color="gray"
+            style={{ marginBottom: "-4px" }}
+          />
+        </Tooltip>
         <div className="add-llm-model-btn nodrag">
           <button
             ref={addBtnRef}
