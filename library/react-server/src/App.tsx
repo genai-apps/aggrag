@@ -1885,6 +1885,7 @@ const App = () => {
   };
 
   const handleCopyUsecase = async (usecaseName: any) => {
+    setOpenMenu(false);
     setLoading(true);
     setEditUsecaseforCopy("");
     const aggragUserId = localStorage.getItem("aggrag-userId");
@@ -1912,15 +1913,12 @@ const App = () => {
         open: false,
         usecase: "",
       });
-      const res_file_name =
-        usecaseResponse.iterations_info.length > 0 &&
-        usecaseResponse.iterations_info[0].files[0]
-          ? usecaseResponse.iterations_info[0].files[0]
-          : "";
-      const res_iteration_name =
-        usecaseResponse.iterations_info.length > 0
-          ? usecaseResponse.iterations_info[0].iteration_name
-          : "";
+      const res_file_name = usecaseResponse.iterations_info
+        ? usecaseResponse.iterations_info.file_name
+        : "";
+      const res_iteration_name = usecaseResponse.iterations_info
+        ? usecaseResponse.iterations_info.iteration
+        : "";
       setActiveUseCase({
         usecase: usecaseResponse.target_usecase_folder_name,
         iteration: res_iteration_name,
@@ -1946,8 +1944,14 @@ const App = () => {
           },
         ],
       );
+      // If the file is empty, we should reset the flow to avoid affecting the previous file in the iteration.
+      if (res_file_name === "") {
+        resetFlowToBlankCanvas();
+      }
       setEditUsecaseforCopy("");
+      setLoading(false);
     } else {
+      setLoading(false);
       setErrorMessage({ error: true, message: usecaseResponse.message });
     }
     setLoading(false);
@@ -2807,9 +2811,10 @@ const App = () => {
                                       </Tooltip>
                                       <div
                                         style={{ marginTop: "4px" }}
-                                        onClick={() =>
-                                          handleCopyUsecaseModal(item)
-                                        }
+                                        onClick={() => {
+                                          handleCopyUsecaseModal(item);
+                                          setOpenMenu(false);
+                                        }}
                                       >
                                         <CopyIcon />
                                       </div>
