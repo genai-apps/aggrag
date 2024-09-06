@@ -2090,7 +2090,11 @@ const App = () => {
   const handleClose = () => {
     const currentNodes = getCurrentNodesOnCanvas();
     setRunTour(false);
-    if (
+    if (triggerHint === "promptNode") {
+      setTimeout(() => {
+        setTriggerHint("model-added");
+      }, 500);
+    } else if (
       triggerHint === "uploadFileFieldsNode" ||
       triggerHint === "textFieldsNode"
     ) {

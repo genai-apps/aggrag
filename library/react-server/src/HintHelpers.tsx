@@ -183,7 +183,7 @@ export const setHintSteps = (
           ".file-fields-node",
           // `.${nodeId}`,
           "Hint",
-          "'Add a RAG' to connect the FileFields Node to the Prompt Node, first. Then, connect the nodes and select 'Create Index'.",
+          "Connect FileFields Node to the Prompt Node and select 'Create Index'",
           "bottom",
           true,
           true,

@@ -506,7 +506,7 @@ const PromptNode: React.FC<PromptNodeProps> = ({
       const localStorageHintRuns: any = localStorage.getItem("hintRuns");
       if (localStorageHintRuns) {
         const parsedData = JSON.parse(localStorageHintRuns);
-        if (parsedData && parsedData.prompthitplay < 1) {
+        if (parsedData && parsedData.prompthitplay <= 1) {
           setTriggerHint("prompt-play");
         }
       }
@@ -1217,7 +1217,7 @@ Soft failing by replacing undefined with empty strings.`,
               LlmRagJsonResponses = json.responses;
             }
             setJSONResponses(LlmRagJsonResponses);
-
+            triggerHintForPromptRun();
             // Log responses for debugging:
             // console.log(LlmRagJsonResponses);
 
@@ -1292,6 +1292,7 @@ Soft failing by replacing undefined with empty strings.`,
 
             // Set error status
             setStatus(Status.ERROR);
+
             setContChatToggleDisabled(false);
 
             // Trigger alert and display one error message per RAG of all collected errors:
