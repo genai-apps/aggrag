@@ -126,8 +126,8 @@ export const setHintSteps = (
       break;
 
     case "textfields2":
-      // when a textFieldsNode is added, and if user closes then we need to show this hint
-      if (hintRuns && hintRuns.textfields2 <= 1) {
+      // when a textFieldsNode or uploadFileFieldsNode is added, and if user closes  then we need to show this hint
+      if (hintRuns && hintRuns.textfields2 <= 4) {
         setUpdateSteps(
           ".add-node",
           "Hint",

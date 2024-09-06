@@ -501,6 +501,17 @@ const PromptNode: React.FC<PromptNodeProps> = ({
     debounce((_value) => refreshTemplateHooks(_value), 500)(value);
   };
 
+  const triggerHintForPromptRun = () => {
+    if (promptText && varConnected) {
+      const localStorageHintRuns: any = localStorage.getItem("hintRuns");
+      if (localStorageHintRuns) {
+        const parsedData = JSON.parse(localStorageHintRuns);
+        if (parsedData && parsedData.prompthitplay < 1) {
+          setTriggerHint("prompt-play");
+        }
+      }
+    }
+  };
   // On initialization
   useEffect(() => {
     refreshTemplateHooks(promptText);
@@ -542,7 +553,13 @@ const PromptNode: React.FC<PromptNodeProps> = ({
   useEffect(() => {
     if (calledHandleInputChange === "inputchange") {
       if (templateVars.length > 0) {
-        setTriggerHint("textfields3");
+        const localStorageHintRuns: any = localStorage.getItem("hintRuns");
+        if (localStorageHintRuns) {
+          const parsedData = JSON.parse(localStorageHintRuns);
+          if (parsedData && parsedData.textfields3 < 1) {
+            setTriggerHint("textfields3");
+          }
+        }
       }
     }
   }, [calledHandleInputChange, templateVars]);
@@ -1147,7 +1164,8 @@ Soft failing by replacing undefined with empty strings.`,
 
           // All responses collected! Change status to 'ready':
           setStatus(Status.READY);
-
+          // showing hint when play button is clicked (for LLM's)
+          triggerHintForPromptRun();
           // Ping any inspect nodes attached to this node to refresh their contents:
           pingOutputNodes(id);
         });
@@ -1312,14 +1330,9 @@ Soft failing by replacing undefined with empty strings.`,
 
           // All responses collected! Change status to 'ready':
           setStatus(Status.READY);
-
           // Ping any inspect nodes attached to this node to refresh their contents:
           pingOutputNodes(id);
         });
-      }
-      // code for showing hint when play button is clicked
-      if (promptText && varConnected) {
-        setTriggerHint("prompt-play");
       }
     };
 

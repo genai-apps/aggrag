@@ -400,7 +400,13 @@ export const LLMListContainer = forwardRef<
 
       setLLMItems(new_items);
       if (onSelectModel) onSelectModel(item, new_items);
-      setTriggerHint("model-added");
+      const localStorageHintRuns: any = localStorage.getItem("hintRuns");
+      if (localStorageHintRuns) {
+        const parsedData = JSON.parse(localStorageHintRuns);
+        if (parsedData && parsedData.prompthitplay < 1) {
+          setTriggerHint("model-added");
+        }
+      }
     },
     [llmItemsCurrState, onSelectModel, selectModelAction, AvailableLLMs],
   );
