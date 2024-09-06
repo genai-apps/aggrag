@@ -303,6 +303,7 @@ const App = () => {
   const [isCurrenFileLocked, setIsCurrentFileLocked] = useState(false);
   const [saveAndCommitBtnOpen, setSaveAndCommitBtnOpen] = useState(false);
   const [exportBtnOpen, setExportBtnOpen] = useState(false);
+  const [importBtnOpen, setImportBtnOpen] = useState(false);
   const [isChangesNotSaved, setIsChangesNotSaved] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [modalOpen, setModalOpen] = useState<{
@@ -365,6 +366,7 @@ const App = () => {
   const settingsModal = useRef<GlobalSettingsModalRef>(null);
   const saveRef = useRef<any>(null);
   const exportRef = useRef<any>(null);
+  const importRef = useRef<any>(null);
   // For modal popup of example flows
   const examplesModal = useRef<ExampleFlowsModalRef>(null);
   const queryString = window.location.search;
@@ -723,6 +725,7 @@ const App = () => {
     setLoading(true);
     setOpenMenu(false);
     setExportBtnOpen(false);
+    setImportBtnOpen(false);
     setTriggerHint("");
     const iterationCreation = forIterationCreation ?? false;
     if (menuData && menuData.length === 0) {
@@ -1073,6 +1076,7 @@ const App = () => {
 
             // Import it to React Flow and import cache data on the backend
             importFlowFromJSON(flow_and_cache);
+            setImportBtnOpen(false);
           } catch (error) {
             handleError(error as Error);
           }
@@ -2597,6 +2601,7 @@ const App = () => {
             setOpenMenu(false);
             setSaveAndCommitBtnOpen(false);
             setExportBtnOpen(false);
+            setImportBtnOpen(false);
             // setRunTour(false);
             handleClose();
           }}
@@ -2724,6 +2729,7 @@ const App = () => {
                     onClick={() => {
                       setSaveAndCommitBtnOpen(false);
                       setExportBtnOpen(false);
+                      setImportBtnOpen(false);
                       setOpenMenu(!openMenu);
                       setOpenAddNode(false);
                       handleClose();
@@ -3047,6 +3053,7 @@ const App = () => {
                     onClick={() => {
                       setOpenAddNode(!openAddNode);
                       setExportBtnOpen(false);
+                      setImportBtnOpen(false);
                       setOpenMenu(false);
                       setSaveAndCommitBtnOpen(false);
                       handleClose();
@@ -3262,6 +3269,7 @@ const App = () => {
                       e.stopPropagation();
                       setSaveAndCommitBtnOpen(!saveAndCommitBtnOpen);
                       setExportBtnOpen(false);
+                      setImportBtnOpen(false);
                       setOpenMenu(false);
                       setOpenAddNode(false);
                     }}
@@ -3400,12 +3408,14 @@ const App = () => {
                 bg="#eee"
                 mr="xs"
                 style={{ float: "left" }}
+                onClick={exportFlow}
                 rightIcon={
                   <div
                     ref={exportRef}
                     onClick={(e) => {
                       e.stopPropagation();
                       setExportBtnOpen(!exportBtnOpen);
+                      setImportBtnOpen(false);
                       setSaveAndCommitBtnOpen(false);
                       setOpenMenu(false);
                       setOpenAddNode(false);
@@ -3431,15 +3441,14 @@ const App = () => {
 
                           <Menu.Dropdown>
                             <Menu.Item
-                              onClick={exportFlow}
                               style={{
                                 backgroundColor: "#e0e0e0",
                               }}
-                              disabled={isCurrenFileLocked}
+                              onClick={exportFlow}
                             >
                               Export Workflow Config
                             </Menu.Item>
-                            <Menu.Item onClick={exportIteration} disabled>
+                            <Menu.Item onClick={exportIteration}>
                               Export Iteration
                             </Menu.Item>
                           </Menu.Dropdown>
@@ -3452,12 +3461,55 @@ const App = () => {
                 Export
               </Button>
               <Button
-                onClick={importFlowFromFile}
+                className="import-btn"
                 size="sm"
                 variant="outline"
-                bg="#eee"
                 compact
+                bg="#eee"
+                mr="xs"
                 style={{ float: "left", marginRight: "8px" }}
+                onClick={importFlowFromFile}
+                rightIcon={
+                  <div
+                    ref={importRef}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImportBtnOpen(!importBtnOpen);
+                      setExportBtnOpen(false);
+                      setSaveAndCommitBtnOpen(false);
+                      setOpenMenu(false);
+                      setOpenAddNode(false);
+                    }}
+                  >
+                    <div ref={importRef}>
+                      <Menu
+                        position="top-start"
+                        opened={importBtnOpen}
+                        transitionProps={{ transition: "pop" }}
+                      >
+                        <div>
+                          <Menu.Target>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Chevron />
+                            </div>
+                          </Menu.Target>
+
+                          <Menu.Dropdown>
+                            <Menu.Item onClick={importFlowFromFile}>
+                              Import Workflow Config
+                            </Menu.Item>
+                            <Menu.Item disabled>Import Iteration</Menu.Item>
+                          </Menu.Dropdown>
+                        </div>
+                      </Menu>
+                    </div>
+                  </div>
+                }
               >
                 Import
               </Button>
@@ -3472,6 +3524,14 @@ const App = () => {
                     size="sm"
                     variant="outline"
                     bg="#eee"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImportBtnOpen(false);
+                      setExportBtnOpen(false);
+                      setSaveAndCommitBtnOpen(false);
+                      setOpenMenu(false);
+                      setOpenAddNode(false);
+                    }}
                     compact
                     style={{ float: "left", marginRight: "8px" }}
                   >
