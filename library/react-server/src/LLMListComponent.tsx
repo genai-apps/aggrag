@@ -400,7 +400,6 @@ export const LLMListContainer = forwardRef<
 
       setLLMItems(new_items);
       if (onSelectModel) onSelectModel(item, new_items);
-      setTriggerHint("model-added");
     },
     [llmItemsCurrState, onSelectModel, selectModelAction, AvailableLLMs],
   );
