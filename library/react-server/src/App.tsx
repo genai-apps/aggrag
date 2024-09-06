@@ -1720,7 +1720,7 @@ const App = () => {
         );
         // handleSaveFlow(false);
         setTriggerHint("created-iteration");
-        // Ensuring that each hint is run for every iteration, we reset the remaining counts to 0 after 3 iterations.
+        // Ensuring that each hint is run for every iteration, we reset the remaining counts to 0 upto 3 new iterations.
         // In the HintHelpers.tsx, we re-evaluate the condition for each hint to ensure that every hint is triggered.
         if (hintRuns.iteration < 3) {
           const updatedHintRuns: HintRunsType = {
