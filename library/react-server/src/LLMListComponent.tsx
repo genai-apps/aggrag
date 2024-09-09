@@ -485,7 +485,7 @@ export const LLMListContainer = forwardRef<
             <li>
               Add or connect prompts and variables as required by your use case.
             </li>
-            <p>Note: LLMs don't accept the content from <i>Knowledge Base</i> nodes.</p>
+            <p>Note: Knowledge Base nodes do not pass any context to LLMs at this point.</p>
           </ol>
         </div>
       </div>

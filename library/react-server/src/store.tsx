@@ -326,8 +326,7 @@ export const initRAGProviderMenu: LLMSpec[] = [
       <>
         The Meta Llama 📚 is a metadata extraction wizard! 🧙‍♂️ It can parse{" "}
         <br />
-        through documents in various formats (PDFs, HTMLs, and more) and{" "}
-        <br />
+        through documents in various formats (PDFs, HTMLs, and more) and <br />
         extract key metadata based on your custom schema. 🔑
         <br />
         <br />
@@ -335,19 +334,15 @@ export const initRAGProviderMenu: LLMSpec[] = [
         <br />
         diligently scour the documents, extracting the relevant information{" "}
         <br />
-        and presenting it in a structured format. 📂 It's like having a{" "}
-        <br />
-        personal librarian who can quickly find and organize the most{" "}
-        <br />
+        and presenting it in a structured format. 📂 It is like having a <br />
+        personal librarian who can quickly find and organize the most <br />
         important details for you!
         <br />
         <br />
         <i>
-          Pro tip: Use the Meta Llama when you need to extract specific{" "}
-          <br />
-          information from a large collection of documents, like product{" "}
-          <br />
-          details, legal clauses, or research findings. It'll save you hours{" "}
+          Pro tip: Use the Meta Llama when you need to extract specific <br />
+          information from a large collection of documents, like product <br />
+          details, legal clauses, or research findings. It will save you hours{" "}
           <br />
           of manual sifting and sorting! 🕰️
         </i>
@@ -362,32 +357,23 @@ export const initRAGProviderMenu: LLMSpec[] = [
     temp: 0.1,
     description: (
       <>
-        The Meta Lang 📚 is a versatile document wizard! 🧙‍♂️ It can parse{" "}
-        <br />
-        through documents in various formats (PDFs, HTMLs, and more) and{" "}
-        <br />
+        The Meta Lang 📚 is a versatile document wizard! 🧙‍♂️ It can parse <br />
+        through documents in various formats (PDFs, HTMLs, and more) and <br />
         extract key information based on your queries. 🔍
         <br />
         <br />
-        Simply ask a question, and the Meta Lang will diligently search{" "}
-        <br />
-        through the documents, retrieving the most relevant information{" "}
-        <br />
-        and presenting it in a concise response. 💬 It's like having a{" "}
-        <br />
-        personal research assistant who can quickly find and synthesize{" "}
-        <br />
+        Simply ask a question, and the Meta Lang will diligently search <br />
+        through the documents, retrieving the most relevant information <br />
+        and presenting it in a concise response. 💬 It is like having a <br />
+        personal research assistant who can quickly find and synthesize <br />
         the details you need!
         <br />
         <br />
         <i>
-          Pro tip: Use the Meta Lang when you need to find specific{" "}
-          <br />
-          information buried within a large collection of documents, like{" "}
-          <br />
-          technical specifications, research papers, or legal contracts.{" "}
-          <br />
-          It'll save you hours of manual searching and reading! ⏱️
+          Pro tip: Use the Meta Lang when you need to find specific <br />
+          information buried within a large collection of documents, like <br />
+          technical specifications, research papers, or legal contracts. <br />
+          It will save you hours of manual searching and reading! ⏱️
         </i>
       </>
     ),
@@ -400,33 +386,24 @@ export const initRAGProviderMenu: LLMSpec[] = [
     temp: 0.7,
     description: (
       <>
-        The Table Base 📊 is an experimental RAG designed to extract and{" "}
-        <br />
-        process tabular data from PDF documents. 🗄️ It leverages powerful{" "}
-        <br />
-        libraries like Camelot and Tabula to identify and parse tables{" "}
-        <br />
+        The Table Base 📊 is an experimental RAG designed to extract and <br />
+        process tabular data from PDF documents. 🗄️ It leverages powerful <br />
+        libraries like Camelot and Tabula to identify and parse tables <br />
         within PDFs, transforming them into structured data formats.
         <br />
         <br />
-        With the Table Base, you can unlock insights hidden within{" "}
-        <br />
-        complex tables, enabling you to analyze and manipulate the data{" "}
-        <br />
-        with ease. 📈 Whether you need to extract financial reports,{" "}
-        <br />
-        scientific data, or any other tabular information, this RAG has{" "}
-        <br />
+        With the Table Base, you can unlock insights hidden within <br />
+        complex tables, enabling you to analyze and manipulate the data <br />
+        with ease. 📈 Whether you need to extract financial reports, <br />
+        scientific data, or any other tabular information, this RAG has <br />
         you covered.
         <br />
         <br />
         <i>
-          Pro tip: Use the Table Base when you need to extract and{" "}
+          Pro tip: Use the Table Base when you need to extract and <br />
+          process tabular data from a collection of PDF documents. It will{" "}
           <br />
-          process tabular data from a collection of PDF documents. It'll{" "}
-          <br />
-          save you countless hours of manual data entry and formatting,{" "}
-          <br />
+          save you countless hours of manual data entry and formatting, <br />
           allowing you to focus on the analysis and insights! ⏱️
         </i>
       </>
