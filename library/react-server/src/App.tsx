@@ -413,6 +413,9 @@ const App = () => {
     return { x: -(x / zoom) + centerX / zoom, y: -(y / zoom) + centerY / zoom };
   };
 
+  function checkHintRunsValue(key: keyof HintRunsType): number {
+    return hintRuns[key];
+  }
   const addNode = (
     id: string,
     type?: string,
@@ -434,13 +437,17 @@ const App = () => {
 
     // if user adds node without closing previous hint
     setRunTour(false);
-    // setting id to trigger respective HINT
-    if (id) {
+    // Here, we ensure that each hint is executed atleast once per new iteration.
+    if (
+      (id && checkHintRunsValue(id as keyof HintRunsType) < 2) ||
+      (data && data.language === "python")
+    ) {
       // as id is same for both python and javascript, so to differentiate here we are using data.language
       if (data && data.language === "python") {
         setTriggerHint("pythonEvalNode");
         incrementHintRun("pythonEvalNode", setHintRuns);
       } else {
+        // setting id to trigger respective HINT
         setTriggerHint(id);
         incrementHintRun(id, setHintRuns);
       }
@@ -1713,14 +1720,30 @@ const App = () => {
         );
         // handleSaveFlow(false);
         setTriggerHint("created-iteration");
-        incrementHintRun("iteration", setHintRuns);
+        // Ensuring that each hint is run for every iteration, we reset the remaining counts to 0 upto 3 new iterations.
+        // In the HintHelpers.tsx, we re-evaluate the condition for each hint to ensure that every hint is triggered.
+        if (hintRuns.iteration < 3) {
+          const updatedHintRuns: HintRunsType = {
+            ...hintRuns,
+            usecase: hintRuns.usecase,
+            iteration: hintRuns.iteration,
+          };
+
+          (Object.keys(hintRuns) as (keyof HintRunsType)[]).forEach((key) => {
+            if (key !== "iteration" && key !== "usecase") {
+              updatedHintRuns[key] = 0;
+            }
+          });
+          setHintRuns(updatedHintRuns);
+          localStorage.setItem("hintRuns", JSON.stringify(updatedHintRuns));
+          incrementHintRun("iteration", setHintRuns);
+        }
       }
     } catch (e) {
       console.log("error in creating iteration");
       showNotification("Failed", "Error in creating iteration", "red");
     }
   };
-
   const fetchFoldersAndContents = async () => {
     try {
       const aggragUserId = localStorage.getItem("aggrag-userId");
@@ -2063,16 +2086,27 @@ const App = () => {
     }
   }, []);
 
+  const getCurrentNodesOnCanvas = useCallback(() => {
+    const currentNodes = nodes && nodes.map((each) => each.type);
+    return currentNodes;
+  }, [nodes]);
+
   const handleClose = () => {
+    const currentNodes = getCurrentNodesOnCanvas();
     setRunTour(false);
     if (triggerHint === "promptNode") {
-      // setTimeout(() => {
-      //   setTriggerHint("textfields3");
-      // }, 1000);
-    } else if (triggerHint === "textFieldsNode") {
       setTimeout(() => {
-        setTriggerHint("textfields2");
+        setTriggerHint("model-added");
       }, 500);
+    } else if (
+      triggerHint === "uploadFileFieldsNode" ||
+      triggerHint === "textFieldsNode"
+    ) {
+      if (!(currentNodes.indexOf("prompt") > -1)) {
+        setTimeout(() => {
+          setTriggerHint("textfields2");
+        }, 500);
+      }
     }
   };
 

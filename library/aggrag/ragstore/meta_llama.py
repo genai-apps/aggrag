@@ -23,8 +23,7 @@ import logging
 import os
 import json
 
-from llama_index.llms.azure_openai import AzureOpenAI
-from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
+from llama_index.core.schema import TextNode
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.node_parser import HTMLNodeParser
 from llama_index.core.ingestion import IngestionPipeline
@@ -177,6 +176,7 @@ class MetaLlama:
         Returns:
             VectorStoreIndex: The created index object containing the document vectors.
         """
+        persistent_path = os.path.join(self.PERSIST_DIR, self.index_name)
         index = None
         if not documents:
             documents = self.documents
@@ -235,13 +235,13 @@ class MetaLlama:
                 all_nodes, embed_model=self.embed_model, show_progress=True
             )
         else:
-            pass
-        #     index = VectorStoreIndex.from_documents(documents,
-        #                                             embed_model=self.embed_model,
-        #                                             show_progress=True, #use_async=True
-        #                                             )
-        # os.makedirs(os.path.dirname(persistent_path), exist_ok=True)
-        # index.storage_context.persist(persist_dir=persistent_path)
+            dummy_node = TextNode(text="this is a dummy node")
+            index = VectorStoreIndex(
+                nodes=[dummy_node], embed_model=self.embed_model, show_progress=True
+            )
+
+        os.makedirs(os.path.dirname(persistent_path), exist_ok=True)
+        index.storage_context.persist(persist_dir=persistent_path)
 
         return index
 

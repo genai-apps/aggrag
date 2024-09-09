@@ -27,9 +27,7 @@ import logging
 import os
 
 from llama_index.llms.azure_openai import AzureOpenAI
-from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, StorageContext, load_index_from_storage
-from llama_index.core.settings import Settings
+from llama_index.core.schema import TextNode
 from llama_index.core.node_parser import HTMLNodeParser
 from langchain_core.documents import Document
 
@@ -209,7 +207,13 @@ class MetaLang:
 
             index = VectorStoreIndex(all_nodes, embed_model=self.embed_model, show_progress=True)
         else:
-            pass
+            
+            dummy_node = TextNode(text="this is a dummy node")
+            index = VectorStoreIndex(nodes=[dummy_node], embed_model=self.embed_model, show_progress=True)
+            # index = VectorStoreIndex(nodes=[BaseNode]) # empty index for placeholder
+
+        os.makedirs(os.path.dirname(persistent_path), exist_ok=True)  
+        index.storage_context.persist(persist_dir=persistent_path)
 
         return index
 

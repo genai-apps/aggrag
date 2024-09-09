@@ -126,8 +126,8 @@ export const setHintSteps = (
       break;
 
     case "textfields2":
-      // when a textFieldsNode is added, and if user closes then we need to show this hint
-      if (hintRuns && hintRuns.textfields2 <= 1) {
+      // when a textFieldsNode or uploadFileFieldsNode is added, and if user closes  then we need to show this hint
+      if (hintRuns && hintRuns.textfields2 <= 4) {
         setUpdateSteps(
           ".add-node",
           "Hint",
@@ -183,7 +183,7 @@ export const setHintSteps = (
           ".file-fields-node",
           // `.${nodeId}`,
           "Hint",
-          "'Add a RAG' to connect the FileFields Node to the Prompt Node, first. Then, connect the nodes and select 'Create Index'.",
+          "Connect FileFields Node to the Prompt Node and select 'Create Index'",
           "bottom",
           true,
           true,
