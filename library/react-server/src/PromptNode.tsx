@@ -72,6 +72,7 @@ import {
   queryRAG,
 } from "./backend/backend";
 import { typecastRagSettingsDict } from "./ModelSettingSchemas";
+import { useNotification } from "./Notification";
 
 const getUniqueLLMMetavarKey = (responses: LLMResponse[]) => {
   const metakeys = new Set(
@@ -238,6 +239,7 @@ const PromptNode: React.FC<PromptNodeProps> = ({
   const setDataPropsForNode = useStore((state) => state.setDataPropsForNode);
   const pingOutputNodes = useStore((state) => state.pingOutputNodes);
   const bringNodeToFront = useStore((state) => state.bringNodeToFront);
+  const { showNotification } = useNotification();
 
   // API Keys (set by user in popup GlobalSettingsModal)
   const apiKeys = useStore((state) => state.apiKeys);
@@ -1399,7 +1401,10 @@ Soft failing by replacing undefined with empty strings.`,
                 rag_params = rag.settings;
 
               const dataObj: any = {
-                files_path: `configurations/${node_obj.data.fields[key]}`,
+                p_folder: urlParams.get("p_folder") || "",
+                i_folder: urlParams.get("i_folder") || "",
+                file_node_id: node_obj.data.fields[key].split("/")[3],
+                file: node_obj.data.fields[key].split("/")[4],
                 rag_name: rag.model,
                 settings: {
                   ...rag_params,
@@ -1436,15 +1441,17 @@ Soft failing by replacing undefined with empty strings.`,
                 }
                 return item;
               });
-              setRunTooltip("Error while indexing file.");
               console.error(err);
+              showNotification("Failed", "Error while indexing file.", "red");
+              setRunTooltip("Error while indexing file.");
             }
           });
         });
       });
     } catch (err) {
-      setRunTooltip("Error: Duplicate variables detected.");
       console.error(err);
+      showNotification("Failed", "Error while indexing file.", "red");
+      setRunTooltip("Error while indexing file.");
     }
   };
 

@@ -2301,7 +2301,10 @@ export async function upload_raw_docs_file(params: FormData): Promise<Dict> {
 
 export async function index_file(params: Dict): Promise<Dict> {
   const query: Dict = {
-    files_path: params.files_path,
+    p_folder: params.p_folder,
+    i_folder: params.i_folder,
+    file_node_id: params.file_node_id,
+    file: params.file,
     rag_name: params.rag_name,
     ragstore_settings: {},
   };

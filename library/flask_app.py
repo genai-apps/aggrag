@@ -967,7 +967,12 @@ async def uploadFileToKnowledgeBase():
         return jsonify({"error": "Missing file parameter to upload file."})
 
     req = request.form
-    if "p_folder" not in req or "i_folder" not in req:
+    if (
+        "p_folder" not in req
+        or "i_folder" not in req
+        or not bool(req["p_folder"])
+        or not bool(req["i_folder"])
+    ):
         return jsonify({"error": "Missing usecase or iteration to upload file."})
     if "file_node_id" not in req:
         return jsonify({"error": "Missing file_node_id parameter to upload file."})
@@ -1015,8 +1020,12 @@ def indexRAGFiles():
 
     Example JSON request body:
     {
-        "files_path": "/path/to/files",
+        "p_folder": "usecase_name"
+        "i_folder": "iteration_name"
+        "file_node_id": "fid"
+        "file": "file_name"
         "rag_name": "example_rag"
+        "ragstore_settings": {}
     }
 
     Example JSON response:
@@ -1026,12 +1035,24 @@ def indexRAGFiles():
 
     """
     data = request.get_json()
-    working_dir = data.get("files_path")
+    working_dir = os.path.join(
+        "configurations",
+        data.get("p_folder"),
+        data.get("i_folder"),
+        "raw_docs",
+        data.get("file_node_id"),
+        data.get("file"),
+    )
     rag_name = data.get("rag_name")
-    use_case_name = working_dir.split("/")[1]
-    iteration = working_dir.split("/")[2]
+    use_case_name = data.get("p_folder")
+    iteration = data.get("i_folder")
 
     raw_docs_path = os.path.dirname(working_dir)
+
+    if not use_case_name or not iteration:
+        return jsonify({"error": "Missing usecase or iteration to upload file."})
+    if not data.get("file_node_id") or not data.get("file"):
+        return jsonify({"error": "Missing file related parameters to upload file."})
 
     rag_models = ["base", "raptor", "subqa", "meta_llama", "meta_lang", "tableBase"]
     if rag_name not in rag_models:
