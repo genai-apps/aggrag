@@ -61,9 +61,6 @@ app_loger.configure_logs()
 
 app = Flask(__name__, static_folder=STATIC_DIR, template_folder=BUILD_DIR)
 
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-
 
 limiter = Limiter(
     get_remote_address,
