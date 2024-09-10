@@ -123,6 +123,7 @@ import {
 } from "./SvgIcons";
 import "./CssStyles.css";
 import { HintRunsType, incrementHintRun, setHintSteps } from "./HintHelpers";
+import CustomModal from "./CustomModal";
 const IS_ACCEPTED_BROWSER =
   (isChrome ||
     isChromium ||
@@ -501,8 +502,14 @@ const App = () => {
   };
 
   const onClickExamples = () => {
-    if (examplesModal && examplesModal.current) examplesModal.current.trigger();
+    const isDisabled = true;
+    if (isDisabled) return;
+
+    if (examplesModal?.current) {
+      examplesModal.current.trigger();
+    }
   };
+
   const onClickSettings = () => {
     if (settingsModal && settingsModal.current) settingsModal.current.trigger();
   };
@@ -2353,88 +2360,44 @@ const App = () => {
           message={confirmationDialogProps.message}
           onConfirm={confirmationDialogProps.onConfirm}
         />
-        <Modal
+        {/* Modal for Copy Use Case */}
+        <CustomModal
+          titleText="Copy use case"
           opened={copyModalOpen.open}
-          onClose={() => {
+          onClose={() =>
             setCopyModalOpen({
               for: "",
               open: false,
               usecase: "",
-            });
-          }}
-          title={<div style={{ fontWeight: "500" }}>Copy Use case</div>}
-          styles={{
-            header: { backgroundColor: "#228be6", color: "white" },
-            root: { position: "relative", left: "-5%" },
-            close: {
-              color: "#fff",
-              "&:hover": {
-                color: "black",
-              },
-            },
-          }}
-        >
-          <Box maw={400} mx="auto" mt="md" mb="md">
-            <Text>Use case name:</Text>
-            <Input
-              value={editUsecaseforCopy}
-              onChange={(e: any) => handleEditUsecaseForCopy(e.target.value)}
-              style={{ marginTop: "6px", marginBottom: "6px" }}
-              title="Use case name"
-            />
-            <div
-              style={{ color: "red", marginBottom: "10px", fontSize: "12px" }}
-            >
-              {errorMessage.message}
-            </div>
-            <Text>Description: </Text>
-            <Textarea
-              placeholder="Use Case Description (optional)"
-              style={{ marginTop: "10px" }}
-            />
-          </Box>
-          <Flex
-            mih={50}
-            gap="md"
-            justify="space-evenly"
-            align="center"
-            direction="row"
-            wrap="wrap"
-          >
-            <Button
-              variant="light"
-              color="orange"
-              type="submit"
-              w="40%"
-              onClick={() =>
-                setCopyModalOpen({
-                  for: "",
-                  open: false,
-                  usecase: "",
-                })
-              }
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="filled"
-              color="blue"
-              type="submit"
-              w="40%"
-              onClick={() => {
-                setConfirmed(true);
-              }}
-              disabled={!(editUsecaseforCopy.length > 0)}
-              loading={loading}
-            >
-              Confirm
-            </Button>
-          </Flex>
-        </Modal>
-
-        <Modal
-          transitionProps={{ transition: "pop" }}
-          title="Changes are not saved"
+            })
+          }
+          onConfirm={() => setConfirmed(true)}
+          confirmDisabled={!(editUsecaseforCopy.length > 0)}
+          loading={loading}
+          content={
+            <>
+              <Text>Use case name:</Text>
+              <Input
+                value={editUsecaseforCopy}
+                onChange={(e: any) => handleEditUsecaseForCopy(e.target.value)}
+                style={{ marginTop: "6px", marginBottom: "6px" }}
+              />
+              <div
+                style={{ color: "red", marginBottom: "10px", fontSize: "12px" }}
+              >
+                {errorMessage.message}
+              </div>
+              <Text>Description:</Text>
+              <Textarea
+                placeholder="Use Case Description (optional)"
+                style={{ marginTop: "10px" }}
+              />
+            </>
+          }
+        />
+        {/* Modal for unsaved changes  */}
+        <CustomModal
+          titleText="Changes are not saved yet"
           opened={modalOpen.open}
           onClose={() =>
             setModalOpen({
@@ -2445,146 +2408,104 @@ const App = () => {
               for: "",
             })
           }
-          styles={{
-            root: { position: "relative", left: "-5%" },
+          onConfirm={() => {
+            updateIsChangesNotSaved(false);
+            setConfirmed(true);
           }}
-        >
-          Are you sure you want to proceed? Any unsaved changes will be lost.
-          <div style={{ display: "flex", gap: "12px", justifyContent: "end" }}>
-            <Button
-              variant="outline"
-              disabled={false}
-              onClick={() =>
-                setModalOpen({
-                  usecase: "",
-                  iteration: "",
-                  subItems: [],
-                  open: false,
-                  for: "",
-                })
-              }
-              loading={loading}
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={false}
-              onClick={() => {
-                updateIsChangesNotSaved(false);
-                setConfirmed(true);
-              }}
-              loading={loading}
-            >
-              Confirm
-            </Button>
-          </div>
-        </Modal>
+          loading={loading}
+          content={
+            <>
+              Are you sure you want to proceed? Any unsaved changes will be
+              lost.
+            </>
+          }
+          confirmDisabled={false}
+        />
 
-        <Modal
-          transitionProps={{ transition: "pop" }}
-          title="Create a use case"
-          opened={openCreateUseCase}
+        {/* Modal for create use case */}
+        <CustomModal
+          titleText="Create a use case"
           onClose={() => setOpenCreateUseCase(false)}
-          styles={{
-            root: { position: "relative", left: "-5%" },
-          }}
-        >
-          <TextInput
-            value={useCaseName}
-            onChange={(event) => handleUseCaseName(event.target.value)}
-            className="usecase-input"
-            placeholder="Name"
-            label={"Use case name:"}
-            radius={"md"}
-          />
-          <Textarea
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            placeholder="Use Case Description (optional)"
-            style={{ marginTop: "10px" }}
-            label={"Description:"}
-          />
-          <div style={{ color: "red", marginBottom: "10px", fontSize: "12px" }}>
-            {errorMessage.message}
-          </div>
-
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <Button
-              disabled={!(useCaseName.length > 0)}
-              onClick={() => handleCreateUseCase(false)}
-              loading={loading}
-            >
-              Confirm
-            </Button>
-          </div>
-        </Modal>
-
-        <Modal
-          transitionProps={{ transition: "pop" }}
-          title={
-            <b>
-              Delete{" "}
-              {deleteusecaseOrIter.usecase.length > 0 &&
-              deleteusecaseOrIter.iteration.length > 0
-                ? "Iteration"
-                : "Use case"}
-            </b>
+          onConfirm={() => handleCreateUseCase(false)}
+          opened={openCreateUseCase}
+          confirmDisabled={!(useCaseName.length > 0)}
+          loading={loading}
+          content={
+            <>
+              <Text>Use case name:</Text>
+              <Input
+                value={useCaseName}
+                onChange={(event) => handleUseCaseName(event.target.value)}
+                style={{ marginTop: "6px", marginBottom: "6px" }}
+              />
+              <div
+                style={{ color: "red", marginBottom: "10px", fontSize: "12px" }}
+              >
+                {errorMessage.message}
+              </div>
+              <Text>Description:</Text>
+              <Textarea
+                placeholder="Use Case Description (optional)"
+                onChange={(event) => setDescription(event.target.value)}
+                style={{ marginTop: "10px" }}
+              />
+            </>
           }
-          opened={deleteusecaseOrIter.open}
-          onClose={() =>
-            setDeleteUsecaseOrIter({
-              usecase: "",
-              iteration: "",
-              open: false,
-            })
-          }
-          styles={{
-            root: { position: "relative", left: "-5%" },
-          }}
-        >
-          Are you sure you want to delete this{" "}
-          <b>
-            {deleteusecaseOrIter.usecase.length > 0 &&
+        />
+        {/* Modal for delete use case or iteration  */}
+        <CustomModal
+          titleText={`Delete ${
+            deleteusecaseOrIter.usecase.length > 0 &&
             deleteusecaseOrIter.iteration.length > 0
-              ? deleteusecaseOrIter.iteration
-              : deleteusecaseOrIter.usecase.split("__")[0]}
-          </b>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "end",
-              marginTop: "16px",
-              gap: "12px",
-            }}
-          >
-            <Button
-              variant="outline"
-              onClick={() =>
-                setDeleteUsecaseOrIter({
-                  usecase: "",
-                  iteration: "",
-                  open: false,
-                })
-              }
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                deleteusecaseOrIter.usecase.length > 0 &&
-                deleteusecaseOrIter.iteration.length > 0
-                  ? handleDeleteIteration(
-                      deleteusecaseOrIter.usecase,
-                      deleteusecaseOrIter.iteration,
-                    )
-                  : handleDeleteUsecase(deleteusecaseOrIter.usecase);
-              }}
-              loading={loading}
-            >
-              Confirm
-            </Button>
-          </div>
-        </Modal>
+              ? "iteration"
+              : "use case"
+          }`}
+          onClose={() => {
+            setDeleteUsecaseOrIter((prev) => ({
+              ...prev,
+              open: false,
+            }));
+
+            setTimeout(() => {
+              setDeleteUsecaseOrIter({
+                usecase: "",
+                iteration: "",
+                open: false,
+              });
+            }, 300);
+          }}
+          onConfirm={() => {
+            deleteusecaseOrIter.usecase.length > 0 &&
+            deleteusecaseOrIter.iteration.length > 0
+              ? handleDeleteIteration(
+                  deleteusecaseOrIter.usecase,
+                  deleteusecaseOrIter.iteration,
+                )
+              : handleDeleteUsecase(deleteusecaseOrIter.usecase);
+          }}
+          loading={loading}
+          opened={deleteusecaseOrIter.open}
+          confirmDisabled={false}
+          content={
+            <>
+              Are you sure you want to delete{" "}
+              {deleteusecaseOrIter.usecase.length > 0 &&
+              deleteusecaseOrIter.iteration.length > 0 ? (
+                <>
+                  <b>&quot;{deleteusecaseOrIter.iteration}&quot;</b>
+                </>
+              ) : (
+                <>
+                  <b>
+                    &quot;{deleteusecaseOrIter.usecase.split("__")[0]}&quot;
+                  </b>{" "}
+                  use case
+                </>
+              )}
+              ?
+            </>
+          }
+        />
 
         {/* <Modal title={'Welcome to Aggrag'} size='400px' opened={welcomeModalOpened} onClose={closeWelcomeModal} yOffset={'6vh'} styles={{header: {backgroundColor: '#FFD700'}, root: {position: 'relative', left: '-80px'}}}>
           <Box m='lg' mt='xl'>
@@ -3538,7 +3459,7 @@ const App = () => {
                     <Chevron />
                   </Button>
                 </Menu.Target>
-
+                {/* disabling examples for now  */}
                 <Menu.Dropdown>
                   <Menu.Item onClick={onClickExamples}>Examples</Menu.Item>
                 </Menu.Dropdown>
