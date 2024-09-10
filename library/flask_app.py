@@ -5,6 +5,8 @@ from enum import Enum
 from typing import List
 from statistics import mean, median, stdev
 from flask import Flask, request, jsonify, render_template, send_file
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_cors import CORS
 from pydantic import ValidationError
 
@@ -59,6 +61,20 @@ app_loger.configure_logs()
 
 app = Flask(__name__, static_folder=STATIC_DIR, template_folder=BUILD_DIR)
 
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["5000 per day", "1000 per hour"],
+    storage_uri="memory://",
+)
+
+
+# Apply rate limiting to all routes
+@app.before_request
+@limiter.exempt
+def limit_requests():
+    pass
 
 @app.after_request
 def after_request(response):
