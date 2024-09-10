@@ -470,7 +470,7 @@ export const LLMListContainer = forwardRef<
             <div className="info-circle">
               <IconInfoCircle size={18} />
             </div>
-            <p>Configuring an LLM is a two step process:</p>
+            <p>Configuring an LLM is a three-step process:</p>
           </div>
         </div>
         <div className="tooltip-description">
@@ -485,6 +485,7 @@ export const LLMListContainer = forwardRef<
             <li>
               Add or connect prompts and variables as required by your use case.
             </li>
+            <p>Note: Knowledge Base nodes do not pass any context to LLMs at this point.</p>
           </ol>
         </div>
       </div>
