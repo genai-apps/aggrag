@@ -12,19 +12,31 @@ from library.aggrag.core.ai_service import AIServiceFactory
 
 from library.aggrag.ragstore import SubQA, Base, Raptor, MetaLlama, MetaLang, TableBase
 
-from library.aggrag.core.schema import RagStoreBool, RagStore, RagStoreSettings, BaseRagSetting, RaptorRagSetting, SubQARagSetting, MetaLlamaRagSetting, MetaLangRagSetting, TableBaseRagSetting
+from library.aggrag.core.schema import (
+    RagStoreBool,
+    RagStore,
+    RagStoreSettings,
+    BaseRagSetting,
+    RaptorRagSetting,
+    SubQARagSetting,
+    MetaLlamaRagSetting,
+    MetaLangRagSetting,
+    TableBaseRagSetting,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class AggRAGBase:
-    def __init__(self, 
-                 DATA_DIR: str, 
-                 ragstore_bool: RagStoreBool, 
-                 usecase_name:  Optional[str] = None, 
-                 iteration:  Optional[str] = None, 
-                 upload_type: Optional[str] = None, 
-                 ragstore_settings: Optional[RagStoreSettings] = None):
+    def __init__(
+        self,
+        DATA_DIR: str,
+        ragstore_bool: RagStoreBool,
+        usecase_name: Optional[str] = None,
+        iteration: Optional[str] = None,
+        upload_type: Optional[str] = None,
+        ragstore_settings: Optional[RagStoreSettings] = None,
+    ):
 
         self.documents = None
         self.table_docs = None
@@ -34,20 +46,21 @@ class AggRAGBase:
         self.usecase_name = usecase_name or UserConfig.usecase_name
         self.iteration = iteration or UserConfig.iteration
 
-        self.BASE_DIR=os.path.join("/configurations",self.usecase_name, self.iteration)  
-        self.DATA_DIR = os.path.join(self.BASE_DIR,'raw_docs')
-        self.PERSIST_DIR = os.path.join(self.BASE_DIR,'index')
+        self.BASE_DIR = os.path.join(
+            "/configurations", self.usecase_name, self.iteration
+        )
+        self.DATA_DIR = os.path.join(self.BASE_DIR, "raw_docs")
+        self.PERSIST_DIR = os.path.join(self.BASE_DIR, "index")
         self.ragstore_settings = ragstore_settings or RagStoreSettings()
 
         self.upload_type = upload_type
-        if self.upload_type == 'url':
-            self.DATA_DIR = os.path.join(DATA_DIR, 'html_files')
+        if self.upload_type == "url":
+            self.DATA_DIR = os.path.join(DATA_DIR, "html_files")
             logger.info(f"Data directory: {self.DATA_DIR}")
 
-        elif self.upload_type == 'doc' or self.upload_type == 'pdf':
-            self.DATA_DIR = os.path.join(DATA_DIR, 'raw_docs')
+        elif self.upload_type == "doc" or self.upload_type == "pdf":
+            self.DATA_DIR = os.path.join(DATA_DIR, "raw_docs")
             logger.info(f"Data directory: {self.DATA_DIR}")
-
 
         def create_ragstore(ragstore_bool: RagStoreBool) -> RagStore:
             """
@@ -64,95 +77,137 @@ class AggRAGBase:
                 RagStore: An instance of RagStore with the specified components initialized.
             """
             return RagStore(
-                base=Base(
-                    usecase_name=self.usecase_name,
-                    iteration=self.iteration,
-                    base_rag_setting=self.ragstore_settings.base_rag_setting if self.ragstore_settings.base_rag_setting else BaseRagSetting(),
-                    llm=AIServiceFactory.get_ai_service(
+                base=(
+                    Base(
+                        usecase_name=self.usecase_name,
+                        iteration=self.iteration,
+                        base_rag_setting=(
+                            self.ragstore_settings.base_rag_setting
+                            if self.ragstore_settings.base_rag_setting
+                            else BaseRagSetting()
+                        ),
+                        llm=AIServiceFactory.get_ai_service(
                             ai_service=self.ragstore_settings.base_rag_setting.ai_service,
                             llm_model=self.ragstore_settings.base_rag_setting.llm_model,
                         ).llm,
-                    embed_model=AIServiceFactory.get_ai_service(
+                        embed_model=AIServiceFactory.get_ai_service(
                             ai_service=self.ragstore_settings.base_rag_setting.embed_ai_service,
                             embed_model=self.ragstore_settings.base_rag_setting.embed_model,
-                        ).embed_model
-                ) if ragstore_bool.base else None,
-
-                subqa=SubQA(
-                    usecase_name=self.usecase_name,
-                    iteration=self.iteration,
-                    DATA_DIR=self.DATA_DIR,
-                    subqa_rag_setting=self.ragstore_settings.subqa_rag_setting if self.ragstore_settings.subqa_rag_setting else SubQARagSetting(),
-                    llm=AIServiceFactory.get_ai_service(
+                        ).embed_model,
+                    )
+                    if ragstore_bool.base
+                    else None
+                ),
+                subqa=(
+                    SubQA(
+                        usecase_name=self.usecase_name,
+                        iteration=self.iteration,
+                        DATA_DIR=self.DATA_DIR,
+                        subqa_rag_setting=(
+                            self.ragstore_settings.subqa_rag_setting
+                            if self.ragstore_settings.subqa_rag_setting
+                            else SubQARagSetting()
+                        ),
+                        llm=AIServiceFactory.get_ai_service(
                             ai_service=self.ragstore_settings.subqa_rag_setting.ai_service,
                             llm_model=self.ragstore_settings.subqa_rag_setting.llm_model,
                         ).llm,
-                    embed_model=AIServiceFactory.get_ai_service(
+                        embed_model=AIServiceFactory.get_ai_service(
                             ai_service=self.ragstore_settings.subqa_rag_setting.embed_ai_service,
                             embed_model=self.ragstore_settings.subqa_rag_setting.embed_model,
-                        ).embed_model
-                ) if ragstore_bool.subqa else None,
-
-                raptor=Raptor(
-                    usecase_name=self.usecase_name,
-                    iteration=self.iteration,
-                    DATA_DIR=self.DATA_DIR,
-                    raptor_rag_setting=self.ragstore_settings.raptor_rag_setting if self.ragstore_settings.raptor_rag_setting else RaptorRagSetting(),
-                    llm=AIServiceFactory.get_ai_service(
+                        ).embed_model,
+                    )
+                    if ragstore_bool.subqa
+                    else None
+                ),
+                raptor=(
+                    Raptor(
+                        usecase_name=self.usecase_name,
+                        iteration=self.iteration,
+                        DATA_DIR=self.DATA_DIR,
+                        raptor_rag_setting=(
+                            self.ragstore_settings.raptor_rag_setting
+                            if self.ragstore_settings.raptor_rag_setting
+                            else RaptorRagSetting()
+                        ),
+                        llm=AIServiceFactory.get_ai_service(
                             ai_service=self.ragstore_settings.raptor_rag_setting.ai_service,
                             llm_model=self.ragstore_settings.raptor_rag_setting.llm_model,
                         ).llm,
-                    embed_model=AIServiceFactory.get_ai_service(
+                        embed_model=AIServiceFactory.get_ai_service(
                             ai_service=self.ragstore_settings.raptor_rag_setting.embed_ai_service,
                             embed_model=self.ragstore_settings.raptor_rag_setting.embed_model,
-                        ).embed_model
-                ) if ragstore_bool.raptor else None,
-
-                meta_llama=MetaLlama(
-                    usecase_name=self.usecase_name,
-                    iteration=self.iteration,
-                    DATA_DIR=self.DATA_DIR,
-                    meta_llama_rag_setting=self.ragstore_settings.meta_llama_rag_setting if self.ragstore_settings.meta_llama_rag_setting else MetaLlamaRagSetting(),
-                    llm=AIServiceFactory.get_ai_service(
+                        ).embed_model,
+                    )
+                    if ragstore_bool.raptor
+                    else None
+                ),
+                meta_llama=(
+                    MetaLlama(
+                        usecase_name=self.usecase_name,
+                        iteration=self.iteration,
+                        DATA_DIR=self.DATA_DIR,
+                        meta_llama_rag_setting=(
+                            self.ragstore_settings.meta_llama_rag_setting
+                            if self.ragstore_settings.meta_llama_rag_setting
+                            else MetaLlamaRagSetting()
+                        ),
+                        llm=AIServiceFactory.get_ai_service(
                             ai_service=self.ragstore_settings.meta_llama_rag_setting.ai_service,
                             llm_model=self.ragstore_settings.meta_llama_rag_setting.llm_model,
                         ).llm,
-                    embed_model=AIServiceFactory.get_ai_service(
+                        embed_model=AIServiceFactory.get_ai_service(
                             ai_service=self.ragstore_settings.meta_llama_rag_setting.embed_ai_service,
                             embed_model=self.ragstore_settings.meta_llama_rag_setting.embed_model,
-                        ).embed_model                        
-                ) if ragstore_bool.meta_llama else None,
-
-                meta_lang=MetaLang(
-                    usecase_name=self.usecase_name,
-                    iteration=self.iteration,
-                    DATA_DIR=self.DATA_DIR,
-                    meta_lang_rag_setting=self.ragstore_settings.meta_lang_rag_setting if self.ragstore_settings.meta_lang_rag_setting else MetaLangRagSetting(),
-                    llm=AIServiceFactory.get_ai_service(
+                        ).embed_model,
+                    )
+                    if ragstore_bool.meta_llama
+                    else None
+                ),
+                meta_lang=(
+                    MetaLang(
+                        usecase_name=self.usecase_name,
+                        iteration=self.iteration,
+                        DATA_DIR=self.DATA_DIR,
+                        meta_lang_rag_setting=(
+                            self.ragstore_settings.meta_lang_rag_setting
+                            if self.ragstore_settings.meta_lang_rag_setting
+                            else MetaLangRagSetting()
+                        ),
+                        llm=AIServiceFactory.get_ai_service(
                             ai_service=self.ragstore_settings.meta_lang_rag_setting.ai_service,
                             llm_model=self.ragstore_settings.meta_lang_rag_setting.llm_model,
                         ).llm,
-                    embed_model=AIServiceFactory.get_ai_service(
+                        embed_model=AIServiceFactory.get_ai_service(
                             ai_service=self.ragstore_settings.meta_lang_rag_setting.embed_ai_service,
                             embed_model=self.ragstore_settings.meta_lang_rag_setting.embed_model,
-                        ).embed_model  
-                ) if ragstore_bool.meta_lang else None,
-
-                tableBase=TableBase(
-                    usecase_name=self.usecase_name,
-                    iteration=self.iteration,
-                    DATA_DIR=self.DATA_DIR,
-                    tableBase_rag_setting=self.ragstore_settings.tableBase_rag_setting if self.ragstore_settings.tableBase_rag_setting else TableBaseRagSetting(),
-                    llm=AIServiceFactory.get_ai_service(
+                        ).embed_model,
+                    )
+                    if ragstore_bool.meta_lang
+                    else None
+                ),
+                tableBase=(
+                    TableBase(
+                        usecase_name=self.usecase_name,
+                        iteration=self.iteration,
+                        DATA_DIR=self.DATA_DIR,
+                        tableBase_rag_setting=(
+                            self.ragstore_settings.tableBase_rag_setting
+                            if self.ragstore_settings.tableBase_rag_setting
+                            else TableBaseRagSetting()
+                        ),
+                        llm=AIServiceFactory.get_ai_service(
                             ai_service=self.ragstore_settings.tableBase_rag_setting.ai_service,
                             llm_model=self.ragstore_settings.tableBase_rag_setting.llm_model,
                         ).llm,
-                    embed_model=AIServiceFactory.get_ai_service(
+                        embed_model=AIServiceFactory.get_ai_service(
                             ai_service=self.ragstore_settings.tableBase_rag_setting.embed_ai_service,
                             embed_model=self.ragstore_settings.tableBase_rag_setting.embed_model,
-                        ).embed_model  
-                ) if ragstore_bool.tableBase else None,
-
+                        ).embed_model,
+                    )
+                    if ragstore_bool.tableBase
+                    else None
+                ),
             )
 
         self.ragstore: RagStore = create_ragstore(ragstore_bool)
@@ -166,10 +221,12 @@ class AggRAGBase:
         self.DATA_DIR = DIR or self.DATA_DIR
         if not os.path.exists(self.DATA_DIR):
             logger.error(f"Data directory does not exist: {self.DATA_DIR}")
-            raise FileNotFoundError(f"Data directory does not exist: {self.DATA_DIR}")
+            raise FileNotFoundError(f"Data directory does not exist")
         if self.ragstore.tableBase:
             self.table_docs = self.ragstore.tableBase.documents_loader(self.DATA_DIR)
-        self.documents = SimpleDirectoryReader(self.DATA_DIR, recursive=True, exclude_hidden=True).load_data()
+        self.documents = SimpleDirectoryReader(
+            self.DATA_DIR, recursive=True, exclude_hidden=True
+        ).load_data()
         return self.documents
 
     async def create_all_index_async(self, documents, exclude=[], include=[]):
@@ -199,19 +256,17 @@ class AggRAGBase:
             tasks.append(self.ragstore.meta_llama.create_index_async(documents))
 
         if self.ragstore.meta_lang and self.ragstore.meta_lang.name not in exclude:
-            tasks.append(self.ragstore.meta_lang.create_index_async(documents)) 
-        
+            tasks.append(self.ragstore.meta_lang.create_index_async(documents))
+
         if self.ragstore.tableBase and self.ragstore.tableBase.name not in exclude:
             tasks.append(self.ragstore.tableBase.create_index_async(self.table_docs))
-
-
 
         # Wait for all index creation tasks to complete
         indexes = await asyncio.gather(*tasks)
         return indexes
 
     async def retrieve_all_index_async(self):
-        """ TODO:
+        """TODO:
         - Retrieve index for the all the registered rags
         """
 
@@ -241,7 +296,7 @@ class AggRAGBase:
         return indexes
 
     async def load_chat_engines(self):
-        """ TODO: Load chat engines for all ragstores"""
+        """TODO: Load chat engines for all ragstores"""
         # Initialize tasks for creating indexes for each RAG in the RagStore
         tasks = []
         if self.ragstore.base:
@@ -258,7 +313,6 @@ class AggRAGBase:
         return chat_engine
 
     async def ragstore_chat(self, query, streaming=False):
-
         """
         Conducts asynchronous chat sessions using all configured RAG store components based on the given query.
 
@@ -282,11 +336,13 @@ class AggRAGBase:
         try:
             _evaluation = False  # to come from the settings
             # Initialize tasks for creating indexes for each RAG in the RagStore
-            chat_history=None
+            chat_history = None
             tasks = []
 
             if self.ragstore.base and streaming:
-                tasks.append(self.ragstore.base.astream_chat(query, chat_history, _evaluation))
+                tasks.append(
+                    self.ragstore.base.astream_chat(query, chat_history, _evaluation)
+                )
             elif self.ragstore.base:
                 tasks.append(self.ragstore.base.achat(query, chat_history, _evaluation))
 
@@ -295,31 +351,39 @@ class AggRAGBase:
                     await self.ragstore.raptor.get_chat_engine()
 
                 if self.ragstore.raptor.chat_engine:
-                    tasks.append(self.ragstore.raptor.achat(query, chat_history, _evaluation))
+                    tasks.append(
+                        self.ragstore.raptor.achat(query, chat_history, _evaluation)
+                    )
 
             if self.ragstore.subqa and streaming:
                 tasks.append(self.ragstore.subqa.astream_chat(query, chat_history))
             elif self.ragstore.subqa:
-                tasks.append(self.ragstore.subqa.achat(query, chat_history, _evaluation))
+                tasks.append(
+                    self.ragstore.subqa.achat(query, chat_history, _evaluation)
+                )
 
             if self.ragstore.meta_llama and streaming:
                 tasks.append(self.ragstore.meta_llama.astream_chat(query, chat_history))
             elif self.ragstore.meta_llama:
-                tasks.append(self.ragstore.meta_llama.achat(query, chat_history, _evaluation))
-
+                tasks.append(
+                    self.ragstore.meta_llama.achat(query, chat_history, _evaluation)
+                )
 
             if self.ragstore.meta_lang and streaming:
                 tasks.append(self.ragstore.meta_lang.astream_chat(query, chat_history))
             elif self.ragstore.meta_lang:
-                tasks.append(self.ragstore.meta_lang.achat(query, chat_history, _evaluation))        
-    
+                tasks.append(
+                    self.ragstore.meta_lang.achat(query, chat_history, _evaluation)
+                )
+
             if self.ragstore.tableBase:
                 if not self.ragstore.tableBase.chat_engine:
                     await self.ragstore.tableBase.get_chat_engine()
 
                 if self.ragstore.tableBase.chat_engine:
-                    tasks.append(self.ragstore.tableBase.achat(query, chat_history, _evaluation))
-
+                    tasks.append(
+                        self.ragstore.tableBase.achat(query, chat_history, _evaluation)
+                    )
 
             response = await asyncio.gather(*tasks)
 
@@ -327,22 +391,23 @@ class AggRAGBase:
             return response
         except Exception as e:
             logger.error(f"Error in ragstorechat: {str(e)}")
-            raise 
+            raise
+
 
 class AggRAG(AggRAGBase):
     def __init__(
-            self,
-            usecase_name=None,
-            iteration=None,
-            ragstore_bool: RagStoreBool = RagStoreBool(base=True),
-            upload_type=None,
-            DATA_DIR=None,
-            ragstore_settings: Optional[RagStoreSettings] = None,
-            cforge_file_path: str = None
+        self,
+        usecase_name=None,
+        iteration=None,
+        ragstore_bool: RagStoreBool = RagStoreBool(base=True),
+        upload_type=None,
+        DATA_DIR=None,
+        ragstore_settings: Optional[RagStoreSettings] = None,
+        cforge_file_path: str = None,
     ):
         if cforge_file_path:
-            ragstore_bool, ragstore_settings, DATA_DIR, iteration, usecase_name = self.__parse_cforge_file(
-                file_path=cforge_file_path
+            ragstore_bool, ragstore_settings, DATA_DIR, iteration, usecase_name = (
+                self.__parse_cforge_file(file_path=cforge_file_path)
             )
 
         super().__init__(
@@ -351,60 +416,81 @@ class AggRAG(AggRAGBase):
             ragstore_bool=ragstore_bool,
             upload_type=upload_type,
             DATA_DIR=DATA_DIR,
-            ragstore_settings=ragstore_settings
+            ragstore_settings=ragstore_settings,
         )
 
-    def __parse_cforge_file(self, file_path: str) -> tuple[RagStoreBool, RagStoreSettings, str, str, str]:
+    def __parse_cforge_file(
+        self, file_path: str
+    ) -> tuple[RagStoreBool, RagStoreSettings, str, str, str]:
         """
-            Parses the cforge file to extract configuration details.
+        Parses the cforge file to extract configuration details.
 
-            param file_path: The path to the cforge file.
-            return: Extracted ragstore_bool, ragstore_settings, working_dir, iteration, usecase_name.
+        param file_path: The path to the cforge file.
+        return: Extracted ragstore_bool, ragstore_settings, working_dir, iteration, usecase_name.
         """
         try:
-            with open(file_path, 'r') as file:
+            with open(file_path, "r") as file:
                 data = json.load(file)
 
             rags_list = list(
                 next(
                     map(
-                        lambda x: x.get('data', {}).get('rags'),
-                        filter(lambda x: bool(x.get('data', {}).get('rags')), data['flow']['nodes'])
+                        lambda x: x.get("data", {}).get("rags"),
+                        filter(
+                            lambda x: bool(x.get("data", {}).get("rags")),
+                            data["flow"]["nodes"],
+                        ),
                     ),
-                    None
+                    None,
                 )
             )
             if not rags_list:
                 raise Exception(f"Unable to parse rag list from the file")
 
             # Extract ragstore_bool, ragstore_settings from the rags data
-            ragstore_bool, ragstore_settings = self.__extract_rag_store_and_settings_from_rags_data(rags_list)
+            ragstore_bool, ragstore_settings = (
+                self.__extract_rag_store_and_settings_from_rags_data(rags_list)
+            )
 
             # Extract working_dir, iteration, usecase_name from the file path
-            working_dir, iteration, usecase_name = self.__extract_properties_from_file_path(file_path)
+            working_dir, iteration, usecase_name = (
+                self.__extract_properties_from_file_path(file_path)
+            )
 
-            return ragstore_bool, ragstore_settings, working_dir, iteration, usecase_name
+            return (
+                ragstore_bool,
+                ragstore_settings,
+                working_dir,
+                iteration,
+                usecase_name,
+            )
 
         except Exception as e:
             raise Exception(f"Unable to parse cforge file with reason -> {e}")
 
-    def __extract_rag_store_and_settings_from_rags_data(self, rags_list: list) -> tuple[RagStoreBool, RagStoreSettings]:
+    def __extract_rag_store_and_settings_from_rags_data(
+        self, rags_list: list
+    ) -> tuple[RagStoreBool, RagStoreSettings]:
         rag_settings_property_name_mapping = {
-            'base': 'base_rag_setting',
-            'raptor': 'raptor_rag_setting',
-            'subqa': 'subqa_rag_setting',
-            'meta_llama': 'meta_llama_rag_setting',
-            'meta_lang': 'meta_lang_rag_setting',
+            "base": "base_rag_setting",
+            "raptor": "raptor_rag_setting",
+            "subqa": "subqa_rag_setting",
+            "meta_llama": "meta_llama_rag_setting",
+            "meta_lang": "meta_lang_rag_setting",
         }
         rags_dict, rag_settings = {}, {}
         for rag in rags_list:
-            rag_name = rag.get('model')
+            rag_name = rag.get("model")
             rags_dict[rag_name] = True
-            rag_settings[rag_settings_property_name_mapping.get(rag_name)] = rag.get('settings')
+            rag_settings[rag_settings_property_name_mapping.get(rag_name)] = rag.get(
+                "settings"
+            )
 
         return RagStoreBool(**rags_dict), RagStoreSettings(**rag_settings)
 
-    def __extract_properties_from_file_path(self, file_path: str) -> tuple[str, str, str]:
+    def __extract_properties_from_file_path(
+        self, file_path: str
+    ) -> tuple[str, str, str]:
         """
         Extracts the Working DIR, Iteration, Use Case Name from the given file path.
 
@@ -413,7 +499,7 @@ class AggRAG(AggRAGBase):
         """
         try:
             working_dir = os.path.dirname(file_path)
-            path_params = working_dir.split('/')
+            path_params = working_dir.split("/")
 
             iteration = path_params[-1]
             usecase_name = path_params[-2]

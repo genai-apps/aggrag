@@ -4,6 +4,13 @@ const webpack = require("webpack");
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 module.exports = {
+  devServer: {
+    headers: {
+      "X-Frame-Options": "DENY",
+      "Strict-Transport-Security":
+        "max-age=31536000; includeSubDomains; preload",
+    },
+  },
   eslint: {
     enable: false,
   },
@@ -52,6 +59,12 @@ module.exports = {
           Buffer: ["buffer", "Buffer"],
         }),
       ],
+    },
+
+    headers: {
+      "X-Frame-Options": "DENY",
+      "Strict-Transport-Security":
+        "max-age=31536000; includeSubDomains; preload",
     },
 
     // plugins: {add: [
