@@ -5,6 +5,8 @@ from enum import Enum
 from typing import List
 from statistics import mean, median, stdev
 from flask import Flask, request, jsonify, render_template, send_file
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_cors import CORS
 from pydantic import ValidationError
 
@@ -59,6 +61,20 @@ app_loger.configure_logs()
 
 app = Flask(__name__, static_folder=STATIC_DIR, template_folder=BUILD_DIR)
 
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["5000 per day", "1000 per hour"],
+    storage_uri="memory://",
+)
+
+
+# Apply rate limiting to all routes
+@app.before_request
+@limiter.exempt
+def limit_requests():
+    pass
 
 @app.after_request
 def after_request(response):
@@ -967,7 +983,12 @@ async def uploadFileToKnowledgeBase():
         return jsonify({"error": "Missing file parameter to upload file."})
 
     req = request.form
-    if "p_folder" not in req or "i_folder" not in req:
+    if (
+        "p_folder" not in req
+        or "i_folder" not in req
+        or not bool(req["p_folder"])
+        or not bool(req["i_folder"])
+    ):
         return jsonify({"error": "Missing usecase or iteration to upload file."})
     if "file_node_id" not in req:
         return jsonify({"error": "Missing file_node_id parameter to upload file."})
@@ -1015,8 +1036,12 @@ def indexRAGFiles():
 
     Example JSON request body:
     {
-        "files_path": "/path/to/files",
+        "p_folder": "usecase_name"
+        "i_folder": "iteration_name"
+        "file_node_id": "fid"
+        "file": "file_name"
         "rag_name": "example_rag"
+        "ragstore_settings": {}
     }
 
     Example JSON response:
@@ -1026,12 +1051,24 @@ def indexRAGFiles():
 
     """
     data = request.get_json()
-    working_dir = data.get("files_path")
+    working_dir = os.path.join(
+        "configurations",
+        data.get("p_folder"),
+        data.get("i_folder"),
+        "raw_docs",
+        data.get("file_node_id"),
+        data.get("file"),
+    )
     rag_name = data.get("rag_name")
-    use_case_name = working_dir.split("/")[1]
-    iteration = working_dir.split("/")[2]
+    use_case_name = data.get("p_folder")
+    iteration = data.get("i_folder")
 
     raw_docs_path = os.path.dirname(working_dir)
+
+    if not use_case_name or not iteration:
+        return jsonify({"error": "Missing usecase or iteration to upload file."})
+    if not data.get("file_node_id") or not data.get("file"):
+        return jsonify({"error": "Missing file related parameters to upload file."})
 
     rag_models = ["base", "raptor", "subqa", "meta_llama", "meta_lang", "tableBase"]
     if rag_name not in rag_models:
@@ -1560,6 +1597,8 @@ def save_flow():
     # Use provided file name or create a new one with the timestamp
     if not file_name:
         file_name = f"flow-{data.get('timestamp')}.cforge"
+    elif not file_name.endswith(".cforge"):
+        return jsonify({"message": "File extension incorrect while saving flow"}), 400
 
     file_path = os.path.join(iteration_dir, file_name)
 
@@ -1618,13 +1657,21 @@ def RAGStoreChat():
     Example JSON request body:
 
     {
-        "index_path": "configurations/upload_test_files/iteration_1",
+        p_folder: <str> # The parent folder (usecase)
+        i_folder: <str> # The iteration folder
         "rag_name": "base",
         "query": "User's query"
-
+    }
     """
     data = request.get_json()
-    working_dir = data.get("index_path")
+    usecase_name = secure_filename_with_spaces(data.get("p_folder"))
+    iteration_name = secure_filename_with_spaces(data.get("i_folder"))
+    if not usecase_name:
+        return jsonify({"error": f"Usecase name is required"})
+    if not iteration_name:
+        return jsonify({"error": f"Iteration name is required"})
+
+    working_dir = os.path.join("configurations", usecase_name, iteration_name)
     rag_name = data.get("rag_name")
     query = data.get("query")
     ragstore_settings = data.get("ragstore_settings")
@@ -1902,10 +1949,14 @@ def get_health_check():
 
 @app.route("/app/exportFiles", methods=["GET"])
 def exportFiles():
-    folder_to_zip = request.args.get("folder_path")
-    if not folder_to_zip:
-        return jsonify({"error": f"folder_path is required"})
+    usecase_name = secure_filename_with_spaces(request.args.get("p_folder"))
+    iteration_name = secure_filename_with_spaces(request.args.get("i_folder"))
+    if not usecase_name:
+        return jsonify({"error": f"Usecase name is required"})
+    if not iteration_name:
+        return jsonify({"error": f"Iteration name is required"})
 
+    folder_to_zip = os.path.join("configurations", usecase_name, iteration_name)
     memory_file = zip_directory(folder_to_zip)
     if not memory_file:
         return jsonify({"error": f"Failed to zip provided directory"})

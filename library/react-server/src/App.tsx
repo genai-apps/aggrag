@@ -692,8 +692,10 @@ const App = () => {
   }, [rfInstance, nodes, handleError]);
 
   const exportIteration = useCallback(async () => {
-    const data: any = {};
-    data.folder_path = `configurations/${urlParams.get("p_folder")}/${urlParams.get("i_folder")}`;
+    const data: any = {
+      p_folder: urlParams.get("p_folder"),
+      i_folder: urlParams.get("i_folder"),
+    };
     fetch(
       `${FLASK_BASE_URL}app/exportFiles?` +
         new URLSearchParams(data).toString(),
