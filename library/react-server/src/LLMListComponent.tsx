@@ -485,7 +485,10 @@ export const LLMListContainer = forwardRef<
             <li>
               Add or connect prompts and variables as required by your use case.
             </li>
-            <p>Note: Knowledge Base nodes do not pass any context to LLMs at this point.</p>
+            <p>
+              Note: Knowledge Base nodes do not pass any context to LLMs at this
+              point.
+            </p>
           </ol>
         </div>
       </div>

@@ -2340,7 +2340,8 @@ export async function rag_store_chat(
   const query: Dict = {
     rag_name: model,
     query: prompt,
-    index_path: params.index_path,
+    p_folder: params.p_folder,
+    i_folder: params.i_folder,
     ragstore_settings: {},
   };
   const rag_provider: RAGProvider | undefined = getRAGProvider(model as RAG);

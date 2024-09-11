@@ -1182,7 +1182,8 @@ Soft failing by replacing undefined with empty strings.`,
           ["rag_knowledge_base"],
           id,
         ).filter((t) => t.type === "uploadfilefields");
-        data.index_path = `configurations/${urlParams.get("p_folder")}/${urlParams.get("i_folder")}`;
+        data.p_folder = urlParams.get("p_folder");
+        data.i_folder = urlParams.get("i_folder");
         data.query = pulled_data;
         data.uid = [];
         pulled_vars.forEach((node_obj) => {

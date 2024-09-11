@@ -1581,6 +1581,8 @@ def save_flow():
     # Use provided file name or create a new one with the timestamp
     if not file_name:
         file_name = f"flow-{data.get('timestamp')}.cforge"
+    elif not file_name.endswith(".cforge"):
+        return jsonify({"message": "File extension incorrect while saving flow"}), 400
 
     file_path = os.path.join(iteration_dir, file_name)
 
@@ -1639,13 +1641,21 @@ def RAGStoreChat():
     Example JSON request body:
 
     {
-        "index_path": "configurations/upload_test_files/iteration_1",
+        p_folder: <str> # The parent folder (usecase)
+        i_folder: <str> # The iteration folder
         "rag_name": "base",
         "query": "User's query"
-
+    }
     """
     data = request.get_json()
-    working_dir = data.get("index_path")
+    usecase_name = secure_filename_with_spaces(data.get("p_folder"))
+    iteration_name = secure_filename_with_spaces(data.get("i_folder"))
+    if not usecase_name:
+        return jsonify({"error": f"Usecase name is required"})
+    if not iteration_name:
+        return jsonify({"error": f"Iteration name is required"})
+
+    working_dir = os.path.join("configurations", usecase_name, iteration_name)
     rag_name = data.get("rag_name")
     query = data.get("query")
     ragstore_settings = data.get("ragstore_settings")
@@ -1923,10 +1933,14 @@ def get_health_check():
 
 @app.route("/app/exportFiles", methods=["GET"])
 def exportFiles():
-    folder_to_zip = request.args.get("folder_path")
-    if not folder_to_zip:
-        return jsonify({"error": f"folder_path is required"})
+    usecase_name = secure_filename_with_spaces(request.args.get("p_folder"))
+    iteration_name = secure_filename_with_spaces(request.args.get("i_folder"))
+    if not usecase_name:
+        return jsonify({"error": f"Usecase name is required"})
+    if not iteration_name:
+        return jsonify({"error": f"Iteration name is required"})
 
+    folder_to_zip = os.path.join("configurations", usecase_name, iteration_name)
     memory_file = zip_directory(folder_to_zip)
     if not memory_file:
         return jsonify({"error": f"Failed to zip provided directory"})
