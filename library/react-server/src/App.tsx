@@ -613,15 +613,17 @@ const App = () => {
     if (flow === undefined) return;
     if (rf_inst) {
       if (flow.viewport) {
-        if (rf_inst && flow.nodes.length > 10) {
-          rf_inst.setViewport({ x: 0, y: 0, zoom: 0.3 });
-        } else
-          rf_inst.setViewport({
-            x: flow.viewport.x || 0,
-            y: flow.viewport.y || 0,
-            // zoom: flow.viewport.zoom || 1,
-            zoom: flow.viewport.zoom || 1,
-          });
+        // COMMENTING: In case there are more than 10 nodes, use default viewport value.
+        // if (rf_inst && flow.nodes.length > 10) {
+        // rf_inst.setViewport({ x: 0, y: 0, zoom: 0.3 });
+        // } else
+
+        rf_inst.setViewport({
+          x: flow.viewport.x || 0,
+          y: flow.viewport.y || 0,
+          // zoom: flow.viewport.zoom || 1,
+          zoom: flow.viewport.zoom || 1,
+        });
       } else rf_inst.setViewport({ x: 0, y: 0, zoom: 1 });
     }
     resetLLMColors();
