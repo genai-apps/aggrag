@@ -41,7 +41,7 @@ You can get your hands dirty by setting up an example flow to learn the capabili
 
 ###### Pre-requisites
 1. AzureOpenAI or OpenAI keys. Each RAG has a settings' UI, where configuration such as models, prompts etc can be modified. 
-2. PDF research papers 
+2. PDF research papers. 1 sample pdf research paper is added in examples/metadata_extraction/
 
 
 By testing the flow with your own research papers, you can explore the capabilities of Aggrag and potentially contribute to improving the metadata extraction use case.
