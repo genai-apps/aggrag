@@ -1,14 +1,7 @@
 
-<!-- TODO: 
-1. Describe clearly the pre-requisites for running the configuration successfuly. 
-2. If they dont align with the pre-requisites, they can follow the configuration file by importing in the aggrag UI. 
-3. Watch the loom video on iteration 1, 2 and 3. 
-4. The use case objective, setup and inference
-5. How to setup locally?
-6. Nuances.
- -->
-
 # Metadata Extraction from Research Papers
+
+## Objective
 
 This use case demonstrates how Aggrag can be used to extract metadata from research papers. The objective is to extract metadata **strictly** in the following format: 
 
