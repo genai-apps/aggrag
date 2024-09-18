@@ -77,7 +77,9 @@ Aggrag library comes with a directory of RAGs that you can integrate into your a
 
 # Example use cases
 
-WIP
+Real-world case studies and sample use cases can be found in the '/examples' directory. We will continue to add more until a substantial number of use cases are covered. 
+
+You are also welcome to contribute by adding your own use cases to this directory:)
 
 ---
 
