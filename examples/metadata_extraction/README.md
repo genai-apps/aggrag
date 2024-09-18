@@ -27,10 +27,12 @@ Note: ideally, adding more than one paper should not affect the time taken as ag
 
 You can get your hands dirty by setting up an example flow to learn the capabilities of what  the aggrag example flows by following these steps:
 
-1. Setup and run the aggrag project locally. Steps here: `https://github.com/garvk/aggrag#local-setup`
+1. Setup and run the aggrag project locally. Steps here: `https://github.com/genai-apps/aggrag#local-setup`
 2. Create a new 'use-case' on aggrag UI.
 3. On iteration 1, import a sample cforge file located in examples/ directory. 'Import' is button on top-right banner on the UI.
 4. To run the flow locally, you'll need to set up the aggrag environment and provide your model API keys in the .env file. Follow the instructions in the Local Setup section of the README.
+
+    Note: You could also follow the on-screen hints on the UI.
 
 ###### Pre-requisites
 1. AzureOpenAI or OpenAI keys. Each RAG has a settings' UI, where configuration such as models, prompts etc can be modified. 
