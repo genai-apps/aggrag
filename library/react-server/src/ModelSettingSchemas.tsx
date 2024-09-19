@@ -2214,8 +2214,8 @@ const CommonRagSettings = {
       then: {
         properties: {
           llm_model: {
-            default: "gpt-4",
-            enum: ["gpt-4", "gpt-3.5-turbo", "gpt-4-turbo", "gpt-4o"],
+            default: "gpt-3.5-turbo",
+            enum: ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo", "gpt-4o"],
             title: "LLM Model",
             type: "string",
           },
@@ -2233,14 +2233,8 @@ const CommonRagSettings = {
       then: {
         properties: {
           llm_model: {
-            default: "gpt-35-turbo-16k",
-            enum: [
-              "gpt-35-turbo-16k",
-              "gpt-35-turbo",
-              "gpt-4",
-              "gpt-4-32k",
-              "gpt-4o",
-            ],
+            default: "gpt-35-turbo",
+            enum: ["gpt-35-turbo", "gpt-4", "gpt-4o"],
             title: "LLM Model",
             type: "string",
           },
@@ -2404,6 +2398,8 @@ const BaseRagSettings: ModelSettingsDict = {
         ],
         title: "AI service",
         type: "string",
+        description:
+          "Choose the chat LLM AI service from the provided list. Defaults to AzureOpenAI",
       },
       embed_ai_service: {
         default: "AzureOpenAI",
@@ -2419,6 +2415,8 @@ const BaseRagSettings: ModelSettingsDict = {
         ],
         title: "Embedding AI service",
         type: "string",
+        description:
+          "Choose the embedding LLM AI service from the provided list. Defaults to AzureOpenAI",
       },
       chunk_size: {
         default: 512,
@@ -2427,11 +2425,14 @@ const BaseRagSettings: ModelSettingsDict = {
         title: "Chunk Size",
         type: "integer",
         "ui:widget": "range",
+        description:
+          "Choose the chunk size for indexing the document, Defaults to 512",
       },
       context_prompt: {
         default:
           "The following is a friendly conversation between a user and an AI assistant. The assistant is talkative and provides lots of specific details from its context. If the assistant does not know the answer to a question, it truthfully says it does not know. \n Here are the relevant documents for the context: \n {context_str}",
-        description: "The prompt for the assistant.",
+        description:
+          "The context prompt to be used in RAG. Make sure to include the key {context_str} in the prompt. Refer default prompt for refernce",
         title: "Context Prompt",
         type: "string",
       },
@@ -2445,7 +2446,7 @@ const BaseRagSettings: ModelSettingsDict = {
       system_prompt: {
         default:
           "You are a helpful, respectful and honest assistant. Always answer as helpfully as possible and follow ALL given instructions. Do not speculate or make up information. Do not reference any given instructions or context.",
-        description: "The prompt for the system.",
+        description: "The system prompt to be used in RAG.",
         title: "System Prompt",
         type: "string",
       },
@@ -2513,35 +2514,39 @@ const SubQARagSettings: ModelSettingsDict = {
       CHAT_REFINE_PROMPT_TMPL_MSGS_CONTENT: {
         default:
           ' "You are an expert Q&A system that strictly operates in two modes "\n"when refining existing answers:\n"\n"1. **Iclude** as much information as possible from original answer, specially names and numbers.\n"\n"2. **Repeat** the original answer if the new context isn\'t useful.\n"\n#"Never reference the original answer or context directly in your answer.\n"\n"Please always try to include relavant numbers and names, in your answer. Include as much information as you can for original answer, even if new answer is bigger.\n"\n"Answer in bullet points or markers if needed.\n"\n"When in doubt, just repeat the original answer.\n"\n"New Context: {context_msg}\n"\n"Query: {query_str}\n"\n"Original Answer: {existing_answer}\n"\n"New Answer: "',
-        description: "The prompt for the system.",
+        description:
+          "This prompt is used for chat refinement. Make sure to include the keys {context_msg}, {query_str} and {existing_answer} in the prompt. Refer provided default prompt for more reference.",
         title: "CHAT REFINE PROMPT TMPL MSGS CONTENT",
         type: "string",
       },
       DEFAULT_OPENAI_SUB_QUESTION_PROMPT_TMPL: {
         default:
           "You are a world class state of the art agent.\n\nYou have access to multiple tools, each representing a different data source or API.\nEach of the tools has a name and a description, formatted as a JSON dictionary.\nThe keys of the dictionary are the names of the tools and the values are the descriptions.\nYour purpose is to help answer a complex user question by generating a list of sub questions that can be answered by the tools.\n\nThese are the guidelines you consider when completing your task:\n* Be as specific as possible\n* The sub questions should be relevant to the user question\n* The sub questions should be answerable by the tools provided\n* You can generate multiple sub questions for each tool\n* Tools must be specified by their name, not their description\n* You don't need to use a tool if you don't think it's relevant\n\nOutput the list of sub questions by calling the SubQuestionList function.\n\n{chat_history}\n\n",
-        description: "The prompt for the assistant.",
+        description:
+          "This prompt is used as sub-question prompt. Make sure to include the key {chat_history} in the prompt. Refer provided default prompt for more reference.",
         title: "DEFAULT OPENAI SUB QUESTION PROMPT TMPL",
         type: "string",
       },
       INDEX_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT: {
         default:
           '"Context information is below.\n"\n"---------------------\n"\n"{context_str}\n"\n"---------------------\n"\n"Always try to include relavant numbers and names, from the context above, in your answer.\n"\n"Answer in bullet points or markers whenever you feel the answer needs bullets.\n"\n"Avoid giving just a yes or a no answer, include the explanation of the reason from the context information in your answer.\n"\n"Given the context information and not prior knowledge, "\n"answer the query.\n"\n"Query: {query_str}\n"\n"Answer: "',
-        description: "The prompt for the assistant.",
+        description:
+          "Make sure to include the keys {context_str} and {query_str} in the prompt. Refer default prompt for more reference",
         title: "INDEX TEXT QA PROMPT TMPL MSGS CONTENT",
         type: "string",
       },
       INDEX_TEXT_QA_SYSTEM_PROMPT_CONTENT: {
         default:
           ' "You are an expert Q&A system that is trusted around the world.\n"\n"Always answer the query using the provided context information, "\n"and not prior knowledge.\n"\n"Avoid statements like \'Based on the context, ...\' or "\n"\'The context information ...\' or anything along "\n"those lines."',
-        description: "The prompt for the assistant.",
+        description: "Refer default prompt for more reference",
         title: "INDEX TEXT QA SYSTEM PROMPT CONTENT",
         type: "string",
       },
       SUBQ_TEXT_QA_PROMPT_TMPL_MSGS_CONTENT: {
         default:
           ' "Context information is below.\n"\n"---------------------\n"\n"{context_str}\n"\n"---------------------\n"\n"Please always try to include relavant numbers and names, from the context above, in your answer.\n"\n"Include as much information as you can from the given context, so that the user gets a proper explanation.\n"\n"Avoid giving just a yes or a no answer, include the explanation of the reason from the context information in your answer.\n"\n"Answer in bullet points or markers only if needed. IF answer can be displayed with a simple paragraph instead of bullets, please return a simple paragraph.\n"\n"Given the context information and not prior knowledge, "\n"answer the query.\n"\n"Query: {query_str}\n"\n"Answer: "',
-        description: "The prompt for the assistant.",
+        description:
+          "Make sure to include the keys {context_str} and {query_str} in the prompt. Refer default prompt for more reference.",
         title: "SUBQ TEXT QA PROMPT TMPL MSGS CONTENT",
         type: "string",
       },
@@ -2578,6 +2583,8 @@ const SubQARagSettings: ModelSettingsDict = {
         ],
         title: "AI service",
         type: "string",
+        description:
+          "Choose the chat LLM AI service from the provided list. Defaults to AzureOpenAI",
       },
       llm_model: {
         title: "LLM Model",
@@ -2597,6 +2604,8 @@ const SubQARagSettings: ModelSettingsDict = {
         ],
         title: "Embedding AI service",
         type: "string",
+        description:
+          "Choose the embedding LLM AI service from the provided list. Defaults to AzureOpenAI",
       },
       embed_model: {
         title: "Embedding Model",
@@ -2609,6 +2618,8 @@ const SubQARagSettings: ModelSettingsDict = {
         title: "Chunk Size",
         type: "integer",
         "ui:widget": "range",
+        description:
+          "Choose the chunk size for indexing the document, Defaults to 512",
       },
       index_name: {
         default: "subqa_index",
@@ -2724,6 +2735,8 @@ const RaptorRagSettings: ModelSettingsDict = {
         ],
         title: "AI service",
         type: "string",
+        description:
+          "Choose the chat LLM AI service from the provided list. Defaults to AzureOpenAI",
       },
       llm_model: {
         title: "LLM Model",
@@ -2743,6 +2756,8 @@ const RaptorRagSettings: ModelSettingsDict = {
         ],
         title: "Embedding AI service",
         type: "string",
+        description:
+          "Choose the embedding LLM AI service from the provided list. Defaults to AzureOpenAI",
       },
       embed_model: {
         title: "Embedding Model",
@@ -2755,6 +2770,8 @@ const RaptorRagSettings: ModelSettingsDict = {
         title: "Chunk Size",
         type: "integer",
         "ui:widget": "range",
+        description:
+          "Choose the chunk size for indexing the document, Defaults to 512",
       },
       index_name: {
         default: "raptor_index",
@@ -2766,7 +2783,7 @@ const RaptorRagSettings: ModelSettingsDict = {
       summary_prompt: {
         default:
           "\nAs a professional summarizer, create a concise and comprehensive summary of the provided text,\nbe it a research paper, article, post, conversation, or passage with as much detail as possible.\n",
-        description: "The prompt for the system.",
+        description: "The summary prompt to be used.",
         title: "Summary Prompt",
         type: "string",
       },
@@ -2826,13 +2843,6 @@ const Meta_llamaRagSettings: ModelSettingsDict = {
         description: "Description to appear in Aggrag. Keep it short.",
         default: "User description",
       },
-      model: {
-        type: "string",
-        title: "Model",
-        description: "Select a meta_llama model to query.",
-        enum: [NativeRAG.Meta_llama],
-        default: NativeRAG.Meta_llama,
-      },
       ai_service: {
         default: "AzureOpenAI",
         oneOf: [
@@ -2859,6 +2869,8 @@ const Meta_llamaRagSettings: ModelSettingsDict = {
         ],
         title: "AI service",
         type: "string",
+        description:
+          "Choose the chat LLM AI service from the provided list. Defaults to AzureOpenAI",
       },
       llm_model: {
         title: "LLM Model",
@@ -2878,6 +2890,8 @@ const Meta_llamaRagSettings: ModelSettingsDict = {
         ],
         title: "Embedding AI service",
         type: "string",
+        description:
+          "Choose the embedding LLM AI service from the provided list. Defaults to AzureOpenAI",
       },
       embed_model: {
         title: "Embedding Model",
@@ -2890,6 +2904,8 @@ const Meta_llamaRagSettings: ModelSettingsDict = {
         title: "Chunk Size",
         type: "integer",
         "ui:widget": "range",
+        description:
+          "Choose the chunk size for indexing the document, Defaults to 512",
       },
       index_name: {
         default: "meta_llama_index",
@@ -2900,7 +2916,8 @@ const Meta_llamaRagSettings: ModelSettingsDict = {
       },
       metadata_json_schema: {
         default: "",
-        description: "The metadata json schema",
+        description:
+          "The metadata json schema to be used for metadata extraction",
         title: "metadata json schema",
         type: "string",
       },
@@ -2963,13 +2980,6 @@ const Meta_langRagSettings: ModelSettingsDict = {
         description: "Description to appear in Aggrag. Keep it short.",
         default: "User description",
       },
-      model: {
-        type: "string",
-        title: "Model",
-        description: "Select a meta_lang model to query.",
-        enum: [NativeRAG.Meta_lang],
-        default: NativeRAG.Meta_lang,
-      },
       ai_service: {
         default: "AzureOpenAI",
         oneOf: [
@@ -2996,6 +3006,8 @@ const Meta_langRagSettings: ModelSettingsDict = {
         ],
         title: "AI service",
         type: "string",
+        description:
+          "Choose the chat LLM AI service from the provided list. Defaults to AzureOpenAI",
       },
       llm_model: {
         title: "LLM Model",
@@ -3015,6 +3027,8 @@ const Meta_langRagSettings: ModelSettingsDict = {
         ],
         title: "Embedding AI service",
         type: "string",
+        description:
+          "Choose the embedding LLM AI service from the provided list. Defaults to AzureOpenAI",
       },
       embed_model: {
         title: "Embedding Model",
@@ -3027,6 +3041,8 @@ const Meta_langRagSettings: ModelSettingsDict = {
         title: "Chunk Size",
         type: "integer",
         "ui:widget": "range",
+        description:
+          "Choose the chunk size for indexing the document, Defaults to 512",
       },
       index_name: {
         default: "meta_lang_index",
@@ -3037,7 +3053,7 @@ const Meta_langRagSettings: ModelSettingsDict = {
       },
       metadata_json_schema: {
         default: "",
-        description: "The metadata json schema",
+        description: "The metadata json schema used for metadata extraction",
         title: "metadata json schema",
         type: "string",
       },
@@ -3126,6 +3142,8 @@ const Table_baseRagSettings: ModelSettingsDict = {
         ],
         title: "AI service",
         type: "string",
+        description:
+          "Choose the chat LLM AI service from the provided list. Defaults to AzureOpenAI",
       },
       llm_model: {
         title: "LLM Model",
@@ -3145,6 +3163,8 @@ const Table_baseRagSettings: ModelSettingsDict = {
         ],
         title: "Embedding AI service",
         type: "string",
+        description:
+          "Choose the embedding LLM AI service from the provided list. Defaults to AzureOpenAI",
       },
       embed_model: {
         title: "Embedding Model",
@@ -3157,6 +3177,8 @@ const Table_baseRagSettings: ModelSettingsDict = {
         title: "Chunk Size",
         type: "integer",
         "ui:widget": "range",
+        description:
+          "Choose the chunk size for indexing the document, Defaults to 512",
       },
       index_name: {
         default: "table_base_index",
@@ -3167,7 +3189,7 @@ const Table_baseRagSettings: ModelSettingsDict = {
       },
       engine_prompt: {
         default: "",
-        description: "The prompt for the system.",
+        description: "The engine prompt to be used in RAG.",
         title: "Engine Prompt",
         type: "string",
       },
