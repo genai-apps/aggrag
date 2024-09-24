@@ -260,6 +260,7 @@ const FileFieldsNode: React.FC<FileFieldsNodeProps> = ({ data, id }) => {
           }
         } catch (error) {
           event.target.value = null;
+          console.log("Error: ", error);
           showNotification("Failed", "Error uploading file", "red");
           setIsLoading(false);
         }

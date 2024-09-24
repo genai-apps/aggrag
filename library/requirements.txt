@@ -132,9 +132,9 @@ flask==3.0.3
     # via
     #   -r library/requirements.in
     #   flask-cors
-    #   flask-limiter
-flask-cors==4.0.1
+flask-cors==5.0.0
     # via -r library/requirements.in
+    #   flask-limiter
 flask-limiter==3.8.0
     # via -r library/requirements.in
 frozenlist==1.4.1

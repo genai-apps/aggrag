@@ -162,7 +162,7 @@ class MetaLang:
         self.DATA_DIR = DIR or self.DATA_DIR
         if not os.path.exists(self.DATA_DIR):
             logger.error(f"Data directory does not exist: {self.DATA_DIR}")
-            raise FileNotFoundError(f"Data directory does not exist: {self.DATA_DIR}")
+            raise FileNotFoundError(f"Data directory does not exist")
         self.documents = SimpleDirectoryReader(self.DATA_DIR, recursive=True, exclude_hidden=True).load_data()
         return self.documents
 
