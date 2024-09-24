@@ -509,12 +509,7 @@ const App = () => {
   };
 
   const onClickExamples = () => {
-    const isDisabled = true;
-    if (isDisabled) return;
-
-    if (examplesModal?.current) {
-      examplesModal.current.trigger();
-    }
+    if (examplesModal && examplesModal.current) examplesModal.current.trigger();
   };
 
   const onClickSettings = () => {
