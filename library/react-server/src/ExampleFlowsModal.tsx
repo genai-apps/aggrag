@@ -408,7 +408,8 @@ const ExampleFlowsModal = forwardRef<
       <Tabs defaultValue="examples">
         <Tabs.List>
           <Tabs.Tab value="examples">Basic Examples</Tabs.Tab>
-          <Tabs.Tab value="openai-evals">OpenAI Evals</Tabs.Tab>
+          {/* Disabled OpenAI Evals tab for now  */}
+          {/* <Tabs.Tab value="openai-evals">OpenAI Evals</Tabs.Tab> */}
         </Tabs.List>
 
         <Tabs.Panel value="examples" pt="xs">
