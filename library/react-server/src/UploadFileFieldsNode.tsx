@@ -251,9 +251,16 @@ const FileFieldsNode: React.FC<FileFieldsNodeProps> = ({ data, id }) => {
           const response = await upload_raw_docs_file(formData);
           const file_path = `${urlParams.get("p_folder")}/${urlParams.get("i_folder")}/raw_docs/${fid}_${timestamp}/${event.target.files[0].name}`;
           handleFileFieldChange(field_id, file_path, false);
-          setTriggerHint("file-upload");
+          const localStorageHintRuns: any = localStorage.getItem("hintRuns");
+          if (localStorageHintRuns) {
+            const parsedData = JSON.parse(localStorageHintRuns);
+            if (parsedData && parsedData.prompthitplay < 1) {
+              setTriggerHint("file-upload");
+            }
+          }
         } catch (error) {
           event.target.value = null;
+          console.log("Error: ", error);
           showNotification("Failed", "Error uploading file", "red");
           setIsLoading(false);
         }

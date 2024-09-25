@@ -123,3 +123,38 @@
   color: #212121;
   padding: 10px;
 }
+
+.tooltip-container {
+  border-radius: 4px;
+  background-color: white;
+  padding: 10px;
+  color: #000;
+}
+.tooltip-instruction-list {
+  margin: 0;
+}
+.tooltip-title-container {
+  color: #ec8538;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+}
+.info-circle {
+  display: flex;
+  align-items: center;
+}
+.tooltip-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+}
+.tooltip-description {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 19.36px;
+  text-align: left;
+  color: #212121;
+  padding: 10px;
+}

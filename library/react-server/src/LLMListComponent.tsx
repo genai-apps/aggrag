@@ -28,10 +28,12 @@ import useStore, { initLLMProviders, initLLMProviderMenu } from "./store";
 import { Dict, JSONCompatible, LLMGroup, LLMSpec } from "./backend/typing";
 import { useContextMenu } from "mantine-contextmenu";
 import { ContextMenuItemOptions } from "mantine-contextmenu/dist/types";
+import { Tooltip } from "@mantine/core";
+import { IconInfoCircle } from "@tabler/icons-react";
 
 // The LLM(s) to include by default on a PromptNode whenever one is created.
 // Defaults to ChatGPT (GPT3.5) when running locally, and HF-hosted falcon-7b for online version since it's free.
-const DEFAULT_INIT_LLMS = [initLLMProviders[0]];
+const DEFAULT_INIT_LLMS: Dict[] = [initLLMProviders[0]];
 
 // Helper funcs
 // Ensure that a name is 'unique'; if not, return an amended version with a count tacked on (e.g. "GPT-4 (2)")
@@ -400,7 +402,6 @@ export const LLMListContainer = forwardRef<
 
       setLLMItems(new_items);
       if (onSelectModel) onSelectModel(item, new_items);
-      setTriggerHint("model-added");
     },
     [llmItemsCurrState, onSelectModel, selectModelAction, AvailableLLMs],
   );
@@ -461,6 +462,39 @@ export const LLMListContainer = forwardRef<
     return res;
   }, [AvailableLLMs, handleSelectModel]);
 
+  const getLLMListTooltipContent = () => {
+    return (
+      <div className="tooltip-container">
+        <div className="tooltip-title-container">
+          <div className="tooltip-title">
+            <div className="info-circle">
+              <IconInfoCircle size={18} />
+            </div>
+            <p>Configuring an LLM is a three-step process:</p>
+          </div>
+        </div>
+        <div className="tooltip-description">
+          <ol className="tooltip-instruction-list">
+            <li>
+              Choose and configure the settings of an LLM from the modelstore.
+            </li>
+            <li>
+              Add the necessary api key&apos;s in <i>settings</i>, the right
+              most icon on top banner.
+            </li>
+            <li>
+              Add or connect prompts and variables as required by your use case.
+            </li>
+            <p>
+              Note: Knowledge Base nodes do not pass any context to LLMs at this
+              point.
+            </p>
+          </ol>
+        </div>
+      </div>
+    );
+  };
+
   // Mantine ContextMenu does not fix the position of the menu
   // to be below the clicked button, so we must do it ourselves.
   const addBtnRef = useRef(null);
@@ -470,6 +504,27 @@ export const LLMListContainer = forwardRef<
     <div className="llm-list-container nowheel" style={_bgStyle}>
       <div className="llm-list-backdrop" style={_bgStyle}>
         {description || "Models to query:"}
+        <Tooltip
+          label={getLLMListTooltipContent()}
+          withinPortal
+          withArrow
+          zIndex={10000000}
+          styles={{
+            tooltip: {
+              backgroundColor: "white",
+              boxShadow: "1px 1px 8px #ccc",
+            },
+          }}
+          position="bottom"
+          multiline
+          arrowSize={10}
+        >
+          <IconInfoCircle
+            size="12pt"
+            color="gray"
+            style={{ marginBottom: "-4px" }}
+          />
+        </Tooltip>
         <div className="add-llm-model-btn nodrag">
           <button
             ref={addBtnRef}

@@ -1492,35 +1492,27 @@ export async function importCache(files: {
  * @returns a Promise with the JSON of the loaded data
  */
 export async function fetchExampleFlow(evalname: string): Promise<Dict> {
-  if (APP_IS_RUNNING_LOCALLY()) {
-    // Attempt to fetch the example flow from the local filesystem
-    // by querying the Flask server:
-    return fetch(`${FLASK_BASE_URL}app/fetchExampleFlow`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({ name: evalname }),
+  // Attempt to fetch the example flow from the local filesystem
+  // by querying the Flask server:
+  return fetch(`${FLASK_BASE_URL}app/fetchExampleFlow`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    },
+    body: JSON.stringify({ name: evalname }),
+  })
+    .then(function (res) {
+      return res.json();
     })
-      .then(function (res) {
-        return res.json();
-      })
-      .then(function (json) {
-        if (json?.error !== undefined || !json?.data)
-          throw new Error(
-            (json.error as string) ??
-              "Request to fetch example flow was sent to backend server, but there was no response.",
-          );
-        return json.data as Dict;
-      });
-  }
-
-  // App is not running locally, but hosted on a site.
-  // If this is the case, attempt to fetch the example flow from a relative site path:
-  return fetch(`examples/${evalname}.cforge`).then((response) =>
-    response.json(),
-  );
+    .then(function (json) {
+      if (json?.error !== undefined || !json?.data)
+        throw new Error(
+          (json.error as string) ??
+            "Request to fetch example flow was sent to backend server, but there was no response.",
+        );
+      return json.data as Dict;
+    });
 }
 
 /**

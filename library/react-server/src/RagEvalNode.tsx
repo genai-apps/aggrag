@@ -157,7 +157,9 @@ const RagEvalNode: React.FC<RagEvalNodeProps> = ({ data, id }) => {
         );
         if (ground_truth) params.ground_truth.push(ground_truth.text);
         const ans = llm_answers[element].find(
-          (obj: any) => obj.prompt === question.text,
+          (obj: any) =>
+            obj.prompt.toLowerCase().trim() ===
+            question.text.toLowerCase().trim(),
         );
         if (ans) params.answer.push(ans.text);
       });

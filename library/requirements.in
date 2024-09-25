@@ -5,7 +5,7 @@ cohere==5.5.6
 dalaipy==2.0.2
 deepeval==0.21.62
 Flask==3.0.3
-Flask-Cors==4.0.1
+Flask-Cors==5.0.0
 google-generativeai==0.6.0
 grpcio-status==1.62.2
 llama-index==0.10.43
@@ -23,3 +23,4 @@ llama-index-llms-together==0.1.3
 llama-index-llms-replicate==0.1.3
 replicate==0.31.0
 llama-index-llms-anthropic==0.1.11
+flask-limiter==3.8.0

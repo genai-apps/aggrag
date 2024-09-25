@@ -72,6 +72,7 @@ import {
   queryRAG,
 } from "./backend/backend";
 import { typecastRagSettingsDict } from "./ModelSettingSchemas";
+import { useNotification } from "./Notification";
 
 const getUniqueLLMMetavarKey = (responses: LLMResponse[]) => {
   const metakeys = new Set(
@@ -238,6 +239,7 @@ const PromptNode: React.FC<PromptNodeProps> = ({
   const setDataPropsForNode = useStore((state) => state.setDataPropsForNode);
   const pingOutputNodes = useStore((state) => state.pingOutputNodes);
   const bringNodeToFront = useStore((state) => state.bringNodeToFront);
+  const { showNotification } = useNotification();
 
   // API Keys (set by user in popup GlobalSettingsModal)
   const apiKeys = useStore((state) => state.apiKeys);
@@ -501,6 +503,17 @@ const PromptNode: React.FC<PromptNodeProps> = ({
     debounce((_value) => refreshTemplateHooks(_value), 500)(value);
   };
 
+  const triggerHintForPromptRun = () => {
+    if (promptText && varConnected) {
+      const localStorageHintRuns: any = localStorage.getItem("hintRuns");
+      if (localStorageHintRuns) {
+        const parsedData = JSON.parse(localStorageHintRuns);
+        if (parsedData && parsedData.prompthitplay <= 1) {
+          setTriggerHint("prompt-play");
+        }
+      }
+    }
+  };
   // On initialization
   useEffect(() => {
     refreshTemplateHooks(promptText);
@@ -542,7 +555,13 @@ const PromptNode: React.FC<PromptNodeProps> = ({
   useEffect(() => {
     if (calledHandleInputChange === "inputchange") {
       if (templateVars.length > 0) {
-        setTriggerHint("textfields3");
+        const localStorageHintRuns: any = localStorage.getItem("hintRuns");
+        if (localStorageHintRuns) {
+          const parsedData = JSON.parse(localStorageHintRuns);
+          if (parsedData && parsedData.textfields3 < 1) {
+            setTriggerHint("textfields3");
+          }
+        }
       }
     }
   }, [calledHandleInputChange, templateVars]);
@@ -1147,7 +1166,8 @@ Soft failing by replacing undefined with empty strings.`,
 
           // All responses collected! Change status to 'ready':
           setStatus(Status.READY);
-
+          // showing hint when play button is clicked (for LLM's)
+          triggerHintForPromptRun();
           // Ping any inspect nodes attached to this node to refresh their contents:
           pingOutputNodes(id);
         });
@@ -1162,7 +1182,8 @@ Soft failing by replacing undefined with empty strings.`,
           ["rag_knowledge_base"],
           id,
         ).filter((t) => t.type === "uploadfilefields");
-        data.index_path = `configurations/${urlParams.get("p_folder")}/${urlParams.get("i_folder")}`;
+        data.p_folder = urlParams.get("p_folder");
+        data.i_folder = urlParams.get("i_folder");
         data.query = pulled_data;
         data.uid = [];
         pulled_vars.forEach((node_obj) => {
@@ -1199,7 +1220,7 @@ Soft failing by replacing undefined with empty strings.`,
               LlmRagJsonResponses = json.responses;
             }
             setJSONResponses(LlmRagJsonResponses);
-
+            triggerHintForPromptRun();
             // Log responses for debugging:
             // console.log(LlmRagJsonResponses);
 
@@ -1274,6 +1295,7 @@ Soft failing by replacing undefined with empty strings.`,
 
             // Set error status
             setStatus(Status.ERROR);
+
             setContChatToggleDisabled(false);
 
             // Trigger alert and display one error message per RAG of all collected errors:
@@ -1312,14 +1334,9 @@ Soft failing by replacing undefined with empty strings.`,
 
           // All responses collected! Change status to 'ready':
           setStatus(Status.READY);
-
           // Ping any inspect nodes attached to this node to refresh their contents:
           pingOutputNodes(id);
         });
-      }
-      // code for showing hint when play button is clicked
-      if (promptText && varConnected) {
-        setTriggerHint("prompt-play");
       }
     };
 
@@ -1399,7 +1416,10 @@ Soft failing by replacing undefined with empty strings.`,
                 rag_params = rag.settings;
 
               const dataObj: any = {
-                files_path: `configurations/${node_obj.data.fields[key]}`,
+                p_folder: urlParams.get("p_folder") || "",
+                i_folder: urlParams.get("i_folder") || "",
+                file_node_id: node_obj.data.fields[key].split("/")[3],
+                file: node_obj.data.fields[key].split("/")[4],
                 rag_name: rag.model,
                 settings: {
                   ...rag_params,
@@ -1436,15 +1456,17 @@ Soft failing by replacing undefined with empty strings.`,
                 }
                 return item;
               });
-              setRunTooltip("Error while indexing file.");
               console.error(err);
+              showNotification("Failed", "Error while indexing file.", "red");
+              setRunTooltip("Error while indexing file.");
             }
           });
         });
       });
     } catch (err) {
-      setRunTooltip("Error: Duplicate variables detected.");
       console.error(err);
+      showNotification("Failed", "Error while indexing file.", "red");
+      setRunTooltip("Error while indexing file.");
     }
   };
 
