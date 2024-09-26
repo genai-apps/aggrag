@@ -82,7 +82,7 @@ class AzureOpenAIModelEngines(Enum):
     Enum representing different OpenAI model engines on Azure, each identified by a unique deployment string.
     """
     gpt_4 = azure_service.get('chat_models').get("gpt-4", {}).get("deployment_name", None)
-    gpt_35_turbo = azure_service.get('chat_models').get("gpt-35-turbo", {}).get("deployment_name", None)
+    gpt_35_turbo = azure_service.get('chat_models').get("gpt-35-turbo-16k", {}).get("deployment_name", None)
     gpt_4_turbo = azure_service.get('chat_models').get("gpt-4-turbo", {}).get("deployment_name", None)
     text_embedding_ada_002 = azure_service.get('embed_models').get("text-embedding-ada-002", {}).get("deployment_name", None)
     gpt_4o = azure_service.get('chat_models').get("gpt-4o", {}).get("deployment_name", None)
@@ -91,7 +91,7 @@ class AzureOpenAIModelNames(Enum):
     Enum representing different OpenAI model names on Azure, each identified by a unique deployment string.
     """
     gpt_4 = azure_service.get('chat_models').get("gpt-4", {}).get("model_name", None)
-    gpt_35_turbo = azure_service.get('chat_models').get("gpt-35-turbo", {}).get("model_name", None)
+    gpt_35_turbo = azure_service.get('chat_models').get("gpt-35-turbo-16k", {}).get("model_name", None)
     gpt_4_turbo = azure_service.get('chat_models').get("gpt-4-turbo", {}).get("model_name", None)
     text_embedding_ada_002 = azure_service.get('embed_models').get("text-embedding-ada-002", {}).get("model_name", None)
     gpt_4o = azure_service.get('chat_models').get("gpt-4o", {}).get("model_name", None)
