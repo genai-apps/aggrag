@@ -132,9 +132,9 @@ flask==3.0.3
     # via
     #   -r library/requirements.in
     #   flask-cors
+    #   flask-limiter
 flask-cors==5.0.0
     # via -r library/requirements.in
-    #   flask-limiter
 flask-limiter==3.8.0
     # via -r library/requirements.in
 frozenlist==1.4.1
@@ -183,6 +183,8 @@ grpcio-status==1.62.2
     # via
     #   -r library/requirements.in
     #   google-api-core
+gunicorn==23.0.0
+    # via -r library/requirements.in
 h11==0.14.0
     # via
     #   httpcore
@@ -458,6 +460,7 @@ packaging==24.1
     #   build
     #   datasets
     #   deprecation
+    #   gunicorn
     #   huggingface-hub
     #   lancedb
     #   langchain-core
@@ -573,8 +576,6 @@ python-socketio==5.11.3
     # via dalaipy
 pytz==2024.1
     # via pandas
-pywin32==306; sys_platform == 'win32' 
-# manually added for windows comptability, to be checked
 pyyaml==6.0.2
     # via
     #   datasets
