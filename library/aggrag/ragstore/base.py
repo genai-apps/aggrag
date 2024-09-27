@@ -208,8 +208,7 @@ class Base:
         Raises:
             Exception: If unable to download index from Azure and no local index is found.
         """
-
-        persistent_path = os.path.join(self.PERSIST_DIR, self.index_name)
+        persistent_path = os.path.join(os.path.dirname(BASE_DIR),self.PERSIST_DIR, self.index_name)
 
         if os.path.exists(persistent_path):
             logger.debug(f"Retrieveing index from the persistent path  : {persistent_path}")

@@ -1676,8 +1676,8 @@ def RAGStoreChat():
     query = data.get("query")
     ragstore_settings = data.get("ragstore_settings")
 
-    use_case_name = working_dir.split("/")[-2]
-    iteration = working_dir.split("/")[-1]
+    # use_case_name = working_dir.split("/")[-2]
+    # iteration = working_dir.split("/")[-1]
     rag_models = ["base", "raptor", "subqa", "meta_llama", "meta_lang", "tableBase"]
 
     if rag_name not in rag_models:
@@ -1750,8 +1750,8 @@ def RAGStoreChat():
 
     aggrag = AggRAG(
         ragstore_bool=RagStoreBool(**{rag_name: True}),
-        usecase_name=use_case_name,
-        iteration=iteration,
+        usecase_name=usecase_name,
+        iteration=iteration_name,
         DATA_DIR=working_dir,
         ragstore_settings=aggrag_ragstore_settings,
     )
