@@ -38,6 +38,7 @@ Aggrag allows you to configure LLM experiments, and take them from prototype to 
       - You will need to create `.env` file in the root directory. Use the `.env-sample` file as a reference.
       - run `pip install -r requirements.txt`. It is recommended to create a new virtualenv in the root directory to avoid installing packages globally. Command to create a new virtual env: `python3 -m venv venv`
 
+For deployment, however, you can use the command `gunicorn --workers=1 --threads=1 -b 0.0.0.0:8000 library.wsgi:app`
 
 # Managing Dependencies
  
