@@ -65,4 +65,4 @@ class Logger:
         logger.addHandler(error_handler)
 
 
-app_loger = Logger()
+app_logger = Logger()
