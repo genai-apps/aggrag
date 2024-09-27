@@ -28,7 +28,7 @@ import requests as py_requests
 import logging
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import ImmutableMultiDict
-from library.aggrag.core.log_config import app_loger
+from library.aggrag.core.log_config import app_logger as logger
 from openai import OpenAIError
 from library.aggrag.evals.evaluator import Evaluator
 from ragas.metrics import answer_similarity, answer_correctness
@@ -44,7 +44,7 @@ from library.aggrag.evals.eval_utils import load_llm_for_deepeval, load_llms_for
     SETUP AND GLOBALS
     =================
 """
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 # Setup Flask app to serve static version of React front-end
 HOSTNAME = "localhost"
 PORT = 8000
@@ -56,7 +56,7 @@ STATIC_DIR = os.path.join(BUILD_DIR, "static")
 
 UPLOAD_FILE_MAXIMUM_SIZE: int = 25  # 25 MB
 
-app_loger.configure_logs()
+logger.configure_logs()
 
 
 app = Flask(__name__, static_folder=STATIC_DIR, template_folder=BUILD_DIR)
@@ -1805,7 +1805,7 @@ def RAGStoreChat():
 
     except Exception as e:
         # Handle other exceptions
-        logging.error(f"Unexpected error: {str(e)}")
+        logger.error(f"Unexpected error: {str(e)}")
         return (
             jsonify({"error": "An unexpected error occurred.", "details": str(e)}),
             500,

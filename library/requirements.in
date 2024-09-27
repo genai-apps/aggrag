@@ -24,3 +24,4 @@ llama-index-llms-replicate==0.1.3
 replicate==0.31.0
 llama-index-llms-anthropic==0.1.11
 flask-limiter==3.8.0
+gunicorn==23.0.0
