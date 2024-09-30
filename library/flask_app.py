@@ -74,6 +74,7 @@ limiter = Limiter(
 def limit_requests():
     pass
 
+
 @app.after_request
 def after_request(response):
     response.headers["Strict-Transport-Security"] = (
@@ -1674,8 +1675,6 @@ def RAGStoreChat():
     query = data.get("query")
     ragstore_settings = data.get("ragstore_settings")
 
-    # use_case_name = working_dir.split("/")[-2]
-    # iteration = working_dir.split("/")[-1]
     rag_models = ["base", "raptor", "subqa", "meta_llama", "meta_lang", "tableBase"]
 
     if rag_name not in rag_models:

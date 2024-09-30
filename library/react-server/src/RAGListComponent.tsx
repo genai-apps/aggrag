@@ -32,7 +32,7 @@ import { Tooltip } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 
 // The RAG(s) to include by default on a PromptNode whenever one is created.
-const DEFAULT_INIT_RAGS: Dict[] = [initRAGProviderMenu[0]];
+const DEFAULT_INIT_RAGS: LLMSpec[] = [initRAGProviderMenu[0]];
 // Helper funcs
 // Ensure that a name is 'unique'; if not, return an amended version with a count tacked on (e.g. "GPT-4 (2)")
 const ensureUniqueName = (_name: string, _prev_names: string[]) => {
@@ -328,15 +328,38 @@ export const RAGListContainer = forwardRef<
   };
 
   // Selecting RAG models to prompt
-  const [ragItems, setRAGItems] = useState(
-    initRAGItems ||
-      DEFAULT_INIT_RAGS.map((i) => ({
-        key: uuid(),
-        settings: getDefaultModelSettings(i.base_model),
-        ...i,
-      })),
-  );
+  const initialRAGItems = useMemo(() => {
+    if (initRAGItems && initRAGItems.length > 0) {
+      return initRAGItems.map((item) => ({
+        ...item,
+        key: item.key || uuid(),
+        settings: {
+          ...getDefaultModelSettings(item.base_model),
+          index_name: item.name.toLowerCase() + "_index_1",
+        },
+        formData: {
+          shortname: item.name,
+          index_name: item.name.toLowerCase() + "_index_1",
+        },
+      }));
+    } else {
+      return DEFAULT_INIT_RAGS.map((item) => ({
+        ...item,
+        key: item.key || uuid(),
+        settings: {
+          ...getDefaultModelSettings(item.base_model),
+          index_name: item.name.toLowerCase() + "_index_1",
+        },
+        formData: {
+          shortname: item.name,
+          index_name: item.name.toLowerCase() + "_index_1",
+        },
+      }));
+    }
+  }, [initRAGItems]);
+  const [ragItems, setRAGItems] = useState<LLMSpec[]>(initialRAGItems);
   const [ragItemsCurrState, setRAGItemsCurrState] = useState<LLMSpec[]>([]);
+
   const resetRAGItemsProgress = useCallback(() => {
     setRAGItems(
       ragItemsCurrState.map((item) => {
@@ -345,6 +368,7 @@ export const RAGListContainer = forwardRef<
       }),
     );
   }, [ragItemsCurrState]);
+
   const setZeroPercProgress = useCallback(() => {
     setRAGItems(
       ragItemsCurrState.map((item) => {
