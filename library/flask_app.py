@@ -56,8 +56,6 @@ STATIC_DIR = os.path.join(BUILD_DIR, "static")
 
 UPLOAD_FILE_MAXIMUM_SIZE: int = 25  # 25 MB
 
-logger.configure_logs()
-
 
 app = Flask(__name__, static_folder=STATIC_DIR, template_folder=BUILD_DIR)
 
