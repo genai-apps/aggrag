@@ -6,6 +6,9 @@ from enum import Enum
 import os
 from typing import Optional
 
+from typing import Dict, Optional
+from pydantic import BaseModel, Field
+
 from pydantic_settings import BaseSettings
 logger = logging.getLogger(__name__)
 
@@ -13,6 +16,22 @@ dotenv_file = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenv_file)
 from dotenv import dotenv_values
 config = dotenv_values(".env")
+
+
+class ModelConfig(BaseModel):
+    model_name: Optional[str] = None
+    deployment_name: Optional[str] = None
+
+class AIServiceConfig(BaseModel):
+    embed_models: Optional[Dict[str, ModelConfig]] = None
+    chat_models: Optional[Dict[str, ModelConfig]] = None
+
+class AIServicesConfig(BaseModel):
+    AzureOpenAI: Optional[AIServiceConfig] = None
+    Replicate: Optional[AIServiceConfig] = None
+    Together: Optional[AIServiceConfig] = None
+    OpenAI: Optional[AIServiceConfig] = None
+    Anthropic: Optional[AIServiceConfig] = None
 
 
 try:
@@ -23,6 +42,7 @@ try:
 
     ai_services_config_str = ai_services_config_str.strip()
     ai_services_config = json.loads(ai_services_config_str)
+    AI_SERVICES_CONFIG = AIServicesConfig.parse_obj(json.loads(ai_services_config_str))
 
     # Accessing Each service
     azure_service = ai_services_config.get("AzureOpenAI", {})
@@ -30,7 +50,7 @@ try:
     openai_service =  ai_services_config.get("OpenAI", {})
     together_ai_service = ai_services_config.get("Together", {})
     replicate_ai_service = ai_services_config.get("Replicate", {})
-
+    anthropic_ai_service = ai_services_config.get("Anthropic", {})
 
     # List of all AI services
     all_ai_services = list(ai_services_config.keys())  
@@ -50,43 +70,31 @@ class OpenAIModelNames(Enum):
     """
     Enum representing different OpenAI model names, each identified by a unique model string.
     """
-    gpt_35_turbo = openai_service.get('chat_models').get("gpt-35-turbo", {}).get("model_name", None)
-    gpt_35_turbo_16k = openai_service.get('chat_models').get("gpt-35-turbo-16k", {}).get("model_name", None)
+    gpt_4 = openai_service.get('chat_models').get("gpt-4", {}).get("model_name", None)
+    gpt_35_turbo = openai_service.get('chat_models').get("gpt-3.5-turbo", {}).get("model_name", None)
     gpt_4_turbo = openai_service.get('chat_models').get("gpt-4-turbo", {}).get("model_name", None)
-    gpt_4_32k = openai_service.get('chat_models').get("gpt-4-32k", {}).get("model_name", None)
     text_embedding_ada_002 = openai_service.get("embed_models").get("text-embedding-ada-002", {}).get("model_name", None)
     gpt_4o = openai_service.get('chat_models').get("gpt-4o", {}).get("model_name", None)
-
-
-class OpenAIModelEngines(Enum):
-    """
-    Enum representing different OpenAI model engines on Azure, each identified by a unique deployment string.
-    """
-    gpt_35_turbo = azure_service.get('chat_models').get("gpt-35-turbo", {}).get("deployment_name", None)
-    text_embedding_ada_002 = azure_service.get('chat_models').get("text-embedding-ada-002", {}).get("model_name", None)
 
 
 class AzureOpenAIModelEngines(Enum):
     """
     Enum representing different OpenAI model engines on Azure, each identified by a unique deployment string.
     """
+    gpt_4 = azure_service.get('chat_models').get("gpt-4", {}).get("deployment_name", None)
     gpt_35_turbo = azure_service.get('chat_models').get("gpt-35-turbo", {}).get("deployment_name", None)
-    gpt_35_turbo_16k = azure_service.get('chat_models').get("gpt-35-turbo-16k", {}).get("deployment_name", None)
     gpt_4_turbo = azure_service.get('chat_models').get("gpt-4-turbo", {}).get("deployment_name", None)
-    gpt_4_32k = azure_service.get('chat_models').get("gpt-4-32k", {}).get("deployment_name", None)
     text_embedding_ada_002 = azure_service.get('embed_models').get("text-embedding-ada-002", {}).get("deployment_name", None)
     gpt_4o = azure_service.get('chat_models').get("gpt-4o", {}).get("deployment_name", None)
-
 class AzureOpenAIModelNames(Enum):
     """
     Enum representing different OpenAI model names on Azure, each identified by a unique deployment string.
     """
-    gpt_35_turbo_16k = azure_service.get('chat_models').get("gpt-35-turbo-16k", {}).get("model_name", None)
-    gpt_4_32k = azure_service.get('chat_models').get("gpt-4-32k", {}).get("model_name", None)
+    gpt_4 = azure_service.get('chat_models').get("gpt-4", {}).get("model_name", None)
+    gpt_35_turbo = azure_service.get('chat_models').get("gpt-35-turbo", {}).get("model_name", None)
     gpt_4_turbo = azure_service.get('chat_models').get("gpt-4-turbo", {}).get("model_name", None)
     text_embedding_ada_002 = azure_service.get('embed_models').get("text-embedding-ada-002", {}).get("model_name", None)
     gpt_4o = azure_service.get('chat_models').get("gpt-4o", {}).get("model_name", None)
-
 
 
 class NemoModelNames(Enum):
@@ -99,18 +107,6 @@ class NemoModelNames(Enum):
     nvolveqa_40k = nemo_service.get('chat_models', {}).get("nvolveqa_40k", {}).get("model_name", None)
     ai_embed_qa_4 = nemo_service.get('chat_models', {}).get("ai-embed-qa-4", {}).get("model_name", None)
 
-
-class OpenAIModelNames(Enum):
-    """
-    Enum representing different OpenAI model names, each identified by a unique deployment string.
-    """
-    gpt_35_turbo = openai_service.get('chat_models').get("gpt-35-turbo", {}).get("model_name", None)
-    gpt_35_turbo_16k = openai_service.get('chat_models').get("gpt-35-turbo-16k", {}).get("model_name", None)
-    gpt_4_turbo = openai_service.get('chat_models').get("gpt-4-turbo", {}).get("model_name", None)
-    gpt_4_32k = openai_service.get('chat_models').get("gpt-4-32k", {}).get("model_name", None)
-    text_embedding_ada_002 = openai_service.get('embed_models').get("text-embedding-ada-002", {}).get("model_name", None)
-    gpt_4o = openai_service.get('chat_models').get("gpt-4o", {}).get("model_name", None)
-    text_embedding_ada_003 = openai_service.get('chat_models').get("text-embedding-ada-003", {}).get("model_name", None)
 
 
 class TogetherLLMModelNames(Enum):
@@ -125,6 +121,15 @@ class ReplicateModelNames(Enum):
     Enum representing different model names for Replicate, each identified by a unique model string.
     """
     meta_llama_3_70b_instruct = replicate_ai_service.get("chat_models", {}).get("meta_llama_3_70b_instruct", {}).get("model_name", None)
+    # Add more models as needed
+
+class AnthropicModelNames(Enum):
+    """
+    Enum representing different model names for Anthropics, each identified by a unique model string.
+    """
+    claude_3_opus_20240229 = anthropic_ai_service.get("chat_models", {}).get("claude-3-opus-20240229", {}).get("model_name", None)
+    claude_3_sonnet_20240229 = anthropic_ai_service.get("chat_models", {}).get("claude-3-sonnet-20240229", {}).get("model_name", None)
+    claude_3_haiku_20240307 = anthropic_ai_service.get("chat_models", {}).get("claude-3-haiku-20240307", {}).get("model_name", None)
     # Add more models as needed
 
 logger.info(f"NemoModelnames: {NemoModelNames.__members__}")

@@ -53,14 +53,11 @@ class Raptor:
         self.llm_summary = llm
         self.summary_module = SummaryModule(summary_prompt=raptor_rag_setting.summary_prompt, llm=self.llm_summary)
 
-        self.embed_model = embed_model or AzureOpenAIEmbedding(
-            model=raptor_rag_setting.embed_model,
-            deployment_name=raptor_rag_setting.embed_deployment,
-            api_key=settings.AZURE_OPENAI_KEY,
-            azure_endpoint=settings.AZURE_API_BASE,
-            api_version=settings.OPENAI_API_VERSION,
-        )
+        self.embed_model = embed_model
 
+        logger.info(f"embed model: {self.embed_model}")
+        logger.info(f"llm model: {self.llm}")
+        
         self.documents = None
         self.index_name = raptor_rag_setting.index_name
         self.index = None
