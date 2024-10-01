@@ -80,6 +80,7 @@ class AggRAGBase:
                 base=Base(
                     usecase_name=self.usecase_name,
                     iteration=self.iteration,
+                    DATA_DIR=self.DATA_DIR,
                     base_rag_setting=self.ragstore_settings.base_rag_setting if self.ragstore_settings.base_rag_setting else BaseRagSetting(),
                     llm=AIServiceFactory.create_llm_model(**self.ragstore_settings.base_rag_setting.model_dump()),
                     embed_model=AIServiceFactory.create_embed_model(**self.ragstore_settings.base_rag_setting.model_dump())
