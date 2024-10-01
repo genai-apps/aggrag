@@ -2995,10 +2995,10 @@ const Meta_langRagSettings: ModelSettingsDict = {
             const: "OpenAI",
             title: "OpenAI",
           },
-          // {
-          //   const: "AzureOpenAI",
-          //   title: "AzureOpenAI",
-          // },
+          {
+            const: "AzureOpenAI",
+            title: "AzureOpenAI",
+          },
           // {
           //   const: "Nvidia",
           //   title: "Nvidia",
