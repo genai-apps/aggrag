@@ -2379,14 +2379,14 @@ const BaseRagSettings: ModelSettingsDict = {
             const: "AzureOpenAI",
             title: "AzureOpenAI",
           },
-          {
-            const: "Nvidia",
-            title: "Nvidia",
-          },
-          {
-            const: "Replicate",
-            title: "Replicate",
-          },
+          // {
+          //   const: "Nvidia",
+          //   title: "Nvidia",
+          // },
+          // {
+          //   const: "Replicate",
+          //   title: "Replicate",
+          // },
           {
             const: "Together",
             title: "Together",
@@ -2724,14 +2724,14 @@ const RaptorRagSettings: ModelSettingsDict = {
             const: "AzureOpenAI",
             title: "AzureOpenAI",
           },
-          {
-            const: "Nvidia",
-            title: "Nvidia",
-          },
-          {
-            const: "Replicate",
-            title: "Replicate",
-          },
+          // {
+          //   const: "Nvidia",
+          //   title: "Nvidia",
+          // },
+          // {
+          //   const: "Replicate",
+          //   title: "Replicate",
+          // },
           {
             const: "Together",
             title: "Together",
@@ -3135,14 +3135,14 @@ const Table_baseRagSettings: ModelSettingsDict = {
             const: "AzureOpenAI",
             title: "AzureOpenAI",
           },
-          {
-            const: "Nvidia",
-            title: "Nvidia",
-          },
-          {
-            const: "Replicate",
-            title: "Replicate",
-          },
+          // {
+          //   const: "Nvidia",
+          //   title: "Nvidia",
+          // },
+          // {
+          //   const: "Replicate",
+          //   title: "Replicate",
+          // },
           {
             const: "Together",
             title: "Together",
