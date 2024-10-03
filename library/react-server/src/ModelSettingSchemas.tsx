@@ -2568,22 +2568,22 @@ const SubQARagSettings: ModelSettingsDict = {
             const: "AzureOpenAI",
             title: "AzureOpenAI",
           },
-          {
-            const: "Nvidia",
-            title: "Nvidia",
-          },
-          {
-            const: "Replicate",
-            title: "Replicate",
-          },
-          {
-            const: "Together",
-            title: "Together",
-          },
-          {
-            const: "Anthropic",
-            title: "Anthropic",
-          },
+          // {
+          //   const: "Nvidia",
+          //   title: "Nvidia",
+          // },
+          // {
+          //   const: "Replicate",
+          //   title: "Replicate",
+          // },
+          // {
+          //   const: "Together",
+          //   title: "Together",
+          // },
+          // {
+          //   const: "Anthropic",
+          //   title: "Anthropic",
+          // },
         ],
         title: "AI service",
         type: "string",
@@ -2989,16 +2989,16 @@ const Meta_langRagSettings: ModelSettingsDict = {
         default: "User description",
       },
       ai_service: {
-        default: "AzureOpenAI",
+        default: "OpenAI",
         oneOf: [
           {
             const: "OpenAI",
             title: "OpenAI",
           },
-          {
-            const: "AzureOpenAI",
-            title: "AzureOpenAI",
-          },
+          // {
+          //   const: "AzureOpenAI",
+          //   title: "AzureOpenAI",
+          // },
           // {
           //   const: "Nvidia",
           //   title: "Nvidia",
