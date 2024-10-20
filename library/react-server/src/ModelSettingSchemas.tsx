@@ -109,6 +109,13 @@ const ChatGPTSettings: ModelSettingsDict = {
           "An object specifying the format that the model must output. Currently, can only be text or JSON. Only works with newest GPT models. IMPORTANT: when using JSON mode, you must also instruct the model to produce JSON yourself via a system or user message. Without this, the model may generate an unending stream of whitespace until the generation reaches the token limit, resulting in a long-running and seemingly 'stuck' request.",
         default: "text",
       },
+      image_url: {
+        type: "string",
+        title: "image_url",
+        description:
+          "The URL of an image to include in the prompt. Only works with newest GPT models, including gpt-4o, gpt-4o-mini or gpt-4-turbo.",
+        default: "",
+      },
       functions: {
         type: "string",
         title: "functions",
@@ -202,6 +209,9 @@ const ChatGPTSettings: ModelSettingsDict = {
     },
     response_format: {
       "ui:help": "Defaults to text.",
+    },
+    image_url: {
+      "ui:help": "Defaults to blank.",
     },
     functions: {
       "ui:help":

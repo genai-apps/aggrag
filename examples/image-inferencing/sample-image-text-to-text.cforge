@@ -1,0 +1,1190 @@
+{
+    "flow": {
+        "nodes": [
+            {
+                "id": "promptNode-1729398874081",
+                "type": "prompt",
+                "data": {
+                    "prompt": "What\u2019s in this image?.\n\n{=image_url}",
+                    "llms": [
+                        {
+                            "key": "1aec44d8-8b86-4189-9b9c-c2744d7f7fc2",
+                            "settings": {
+                                "system_msg": "You are a helpful assistant.",
+                                "temperature": 1,
+                                "response_format": {
+                                    "type": "text"
+                                },
+                                "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+                                "functions": [],
+                                "function_call": "",
+                                "top_p": 1,
+                                "stop": [],
+                                "presence_penalty": 0,
+                                "frequency_penalty": 0,
+                                "seed": null,
+                                "max_tokens": null,
+                                "logit_bias": null
+                            },
+                            "name": "gpt-4o",
+                            "emoji": "\ud83e\udd16",
+                            "model": "gpt-4o",
+                            "base_model": "gpt-3.5-turbo",
+                            "temp": 1,
+                            "formData": {
+                                "shortname": "gpt-4o",
+                                "model": "gpt-4o",
+                                "system_msg": "You are a helpful assistant.",
+                                "temperature": 1,
+                                "response_format": "text",
+                                "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+                                "functions": "",
+                                "function_call": "",
+                                "top_p": 1,
+                                "stop": "",
+                                "presence_penalty": 0,
+                                "frequency_penalty": 0,
+                                "seed": null,
+                                "max_tokens": null,
+                                "logit_bias": null
+                            }
+                        },
+                        {
+                            "key": "d16859a8-5e8f-44df-b321-b6f4fe08c025",
+                            "name": "GPT4",
+                            "emoji": "\ud83e\udd75",
+                            "model": "gpt-4-turbo",
+                            "base_model": "gpt-4",
+                            "temp": 1,
+                            "settings": {
+                                "system_msg": "You are a helpful assistant.",
+                                "temperature": 1,
+                                "response_format": {
+                                    "type": "text"
+                                },
+                                "image_url": "",
+                                "functions": [],
+                                "function_call": "",
+                                "top_p": 1,
+                                "stop": [],
+                                "presence_penalty": 0,
+                                "frequency_penalty": 0
+                            },
+                            "formData": {
+                                "shortname": "GPT4",
+                                "model": "gpt-4-turbo",
+                                "system_msg": "You are a helpful assistant.",
+                                "temperature": 1,
+                                "response_format": "text",
+                                "image_url": "",
+                                "functions": "",
+                                "function_call": "",
+                                "top_p": 1,
+                                "stop": "",
+                                "presence_penalty": 0,
+                                "frequency_penalty": 0
+                            }
+                        }
+                    ],
+                    "rags": [],
+                    "refresh": false,
+                    "fields": [
+                        {
+                            "text": "The image shows a wooden boardwalk path cutting through a lush, grassy landscape under a vibrant blue sky with some clouds. Trees and shrubs are visible in the background, suggesting a natural or park setting. It appears to be a peaceful, outdoor scene with bright, sunny weather.",
+                            "prompt": "What\u2019s in this image?.\n\n",
+                            "fill_history": {
+                                "=image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                            },
+                            "llm": {
+                                "key": "1aec44d8-8b86-4189-9b9c-c2744d7f7fc2",
+                                "settings": {
+                                    "system_msg": "You are a helpful assistant.",
+                                    "temperature": 1,
+                                    "response_format": {
+                                        "type": "text"
+                                    },
+                                    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+                                    "functions": [],
+                                    "function_call": "",
+                                    "top_p": 1,
+                                    "stop": [],
+                                    "presence_penalty": 0,
+                                    "frequency_penalty": 0,
+                                    "seed": null,
+                                    "max_tokens": null,
+                                    "logit_bias": null
+                                },
+                                "name": "gpt-4o",
+                                "emoji": "\ud83e\udd16",
+                                "model": "gpt-4o",
+                                "base_model": "gpt-3.5-turbo",
+                                "temp": 1,
+                                "formData": {
+                                    "shortname": "gpt-4o",
+                                    "model": "gpt-4o",
+                                    "system_msg": "You are a helpful assistant.",
+                                    "temperature": 1,
+                                    "response_format": "text",
+                                    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+                                    "functions": "",
+                                    "function_call": "",
+                                    "top_p": 1,
+                                    "stop": "",
+                                    "presence_penalty": 0,
+                                    "frequency_penalty": 0,
+                                    "seed": null,
+                                    "max_tokens": null,
+                                    "logit_bias": null
+                                },
+                                "progress": {
+                                    "success": 100,
+                                    "error": 0
+                                }
+                            },
+                            "uid": "b03f65bb-1d61-4f76-aec7-24410a3ea5a5",
+                            "metavars": {
+                                "__pt": "What\u2019s in this image?.\n\n{=image_url}",
+                                "LLM_0": "gpt-4o"
+                            }
+                        },
+                        {
+                            "text": "This image features a beautiful natural landscape with a wooden boardwalk extending through a lush green meadow. The meadow is filled with tall grass, and various trees can be seen in the distance. The sky above is partly cloudy with shades of blue, and hints of white clouds. The scene is likely a nature reserve or park, ideal for walking and enjoying the tranquil outdoor environment. The image captures a vibrant and peaceful setting, suggesting a perfect day for a leisurely stroll.",
+                            "prompt": "What\u2019s in this image?.\n\n",
+                            "fill_history": {
+                                "=image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                            },
+                            "llm": {
+                                "key": "d16859a8-5e8f-44df-b321-b6f4fe08c025",
+                                "name": "GPT4",
+                                "emoji": "\ud83e\udd75",
+                                "model": "gpt-4-turbo",
+                                "base_model": "gpt-4",
+                                "temp": 1,
+                                "settings": {
+                                    "system_msg": "You are a helpful assistant.",
+                                    "temperature": 1,
+                                    "response_format": {
+                                        "type": "text"
+                                    },
+                                    "image_url": "",
+                                    "functions": [],
+                                    "function_call": "",
+                                    "top_p": 1,
+                                    "stop": [],
+                                    "presence_penalty": 0,
+                                    "frequency_penalty": 0
+                                },
+                                "formData": {
+                                    "shortname": "GPT4",
+                                    "model": "gpt-4-turbo",
+                                    "system_msg": "You are a helpful assistant.",
+                                    "temperature": 1,
+                                    "response_format": "text",
+                                    "image_url": "",
+                                    "functions": "",
+                                    "function_call": "",
+                                    "top_p": 1,
+                                    "stop": "",
+                                    "presence_penalty": 0,
+                                    "frequency_penalty": 0
+                                },
+                                "progress": {
+                                    "success": 50,
+                                    "error": 0
+                                }
+                            },
+                            "uid": "6a4059d2-edd1-4ee7-99f8-4f7bf9142f00",
+                            "metavars": {
+                                "__pt": "What\u2019s in this image?.\n\n{=image_url}",
+                                "LLM_0": "GPT4"
+                            }
+                        },
+                        {
+                            "text": "This image shows a collection of keychains shaped like various miniature foods and items on a wooden surface. There are small food replicas such as Indian sweets and dishes, a keychain with what looks like a small clay pot, and a cork top. Two round coasters with a decorative pattern and a small white jug are also visible on the table.",
+                            "prompt": "What\u2019s in this image?.\n\n",
+                            "fill_history": {
+                                "=image_url": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                            },
+                            "llm": {
+                                "key": "1aec44d8-8b86-4189-9b9c-c2744d7f7fc2",
+                                "settings": {
+                                    "system_msg": "You are a helpful assistant.",
+                                    "temperature": 1,
+                                    "response_format": {
+                                        "type": "text"
+                                    },
+                                    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+                                    "functions": [],
+                                    "function_call": "",
+                                    "top_p": 1,
+                                    "stop": [],
+                                    "presence_penalty": 0,
+                                    "frequency_penalty": 0,
+                                    "seed": null,
+                                    "max_tokens": null,
+                                    "logit_bias": null
+                                },
+                                "name": "gpt-4o",
+                                "emoji": "\ud83e\udd16",
+                                "model": "gpt-4o",
+                                "base_model": "gpt-3.5-turbo",
+                                "temp": 1,
+                                "formData": {
+                                    "shortname": "gpt-4o",
+                                    "model": "gpt-4o",
+                                    "system_msg": "You are a helpful assistant.",
+                                    "temperature": 1,
+                                    "response_format": "text",
+                                    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+                                    "functions": "",
+                                    "function_call": "",
+                                    "top_p": 1,
+                                    "stop": "",
+                                    "presence_penalty": 0,
+                                    "frequency_penalty": 0,
+                                    "seed": null,
+                                    "max_tokens": null,
+                                    "logit_bias": null
+                                },
+                                "progress": {
+                                    "success": 100,
+                                    "error": 0
+                                }
+                            },
+                            "uid": "4cf5ae91-14be-4b73-904f-2010b63550e7",
+                            "metavars": {
+                                "__pt": "What\u2019s in this image?.\n\n{=image_url}",
+                                "LLM_0": "gpt-4o"
+                            }
+                        },
+                        {
+                            "text": "This image shows a collection of keychains with miniature food and kitchenware models on a wooden surface. Each keychain features different items:\n\n1. A tiny flowerpot with a cork.\n2. A silver spoon beside miniature crockery with an orange piece of food.\n3. A basket with what looks like two lemon slices.\n4. Two small baskets containing kiwi slices and onion rings.\n5. Another keychain has what appears to be yellow and orange clump of cylinders resembling kernels.\n6. A silver ladle with tiny white rounded items.\n7. A tiny white bucket or container. \n\nAdditionally, there are two coasters or decorative round plates with a floral and rustic design. The miniature items are intricately detailed, suggesting they are possibly hand-crafted.",
+                            "prompt": "What\u2019s in this image?.\n\n",
+                            "fill_history": {
+                                "=image_url": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                            },
+                            "llm": {
+                                "key": "d16859a8-5e8f-44df-b321-b6f4fe08c025",
+                                "name": "GPT4",
+                                "emoji": "\ud83e\udd75",
+                                "model": "gpt-4-turbo",
+                                "base_model": "gpt-4",
+                                "temp": 1,
+                                "settings": {
+                                    "system_msg": "You are a helpful assistant.",
+                                    "temperature": 1,
+                                    "response_format": {
+                                        "type": "text"
+                                    },
+                                    "image_url": "",
+                                    "functions": [],
+                                    "function_call": "",
+                                    "top_p": 1,
+                                    "stop": [],
+                                    "presence_penalty": 0,
+                                    "frequency_penalty": 0
+                                },
+                                "formData": {
+                                    "shortname": "GPT4",
+                                    "model": "gpt-4-turbo",
+                                    "system_msg": "You are a helpful assistant.",
+                                    "temperature": 1,
+                                    "response_format": "text",
+                                    "image_url": "",
+                                    "functions": "",
+                                    "function_call": "",
+                                    "top_p": 1,
+                                    "stop": "",
+                                    "presence_penalty": 0,
+                                    "frequency_penalty": 0
+                                },
+                                "progress": {
+                                    "success": 50,
+                                    "error": 0
+                                }
+                            },
+                            "uid": "99f069d3-761c-4208-b639-1f5ef45f28e3",
+                            "metavars": {
+                                "__pt": "What\u2019s in this image?.\n\n{=image_url}",
+                                "LLM_0": "GPT4"
+                            }
+                        }
+                    ]
+                },
+                "position": {
+                    "x": 496,
+                    "y": 448
+                },
+                "selected": false,
+                "width": 312,
+                "height": 433,
+                "positionAbsolute": {
+                    "x": 496,
+                    "y": 448
+                },
+                "dragging": false
+            },
+            {
+                "id": "textFieldsNode-1729399034396",
+                "type": "textfields",
+                "data": {
+                    "fields": {
+                        "f1": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+                        "f2": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                    },
+                    "title": "Image URL",
+                    "fields_visibility": {}
+                },
+                "position": {
+                    "x": -48,
+                    "y": 496
+                },
+                "selected": false,
+                "width": 312,
+                "height": 325,
+                "positionAbsolute": {
+                    "x": -48,
+                    "y": 496
+                },
+                "dragging": false
+            },
+            {
+                "id": "comment-1729415028968",
+                "type": "comment",
+                "data": {
+                    "text": "This iteration works only with OpenAI models, including gpt-4o, gpt-4o-mini or gpt-4-turbo.",
+                    "title": "NOTE"
+                },
+                "position": {
+                    "x": 256,
+                    "y": 224
+                },
+                "selected": false,
+                "width": 282,
+                "height": 150,
+                "positionAbsolute": {
+                    "x": 256,
+                    "y": 224
+                },
+                "dragging": false
+            }
+        ],
+        "edges": [
+            {
+                "source": "textFieldsNode-1729399034396",
+                "sourceHandle": "output",
+                "target": "promptNode-1729398874081",
+                "targetHandle": "=image_url",
+                "interactionWidth": 40,
+                "markerEnd": {
+                    "type": "arrow",
+                    "width": 22,
+                    "height": 22
+                },
+                "type": "default",
+                "id": "reactflow__edge-textFieldsNode-1729399034396output-promptNode-1729398874081=image_url"
+            }
+        ],
+        "viewport": {
+            "x": 185,
+            "y": 125,
+            "zoom": 1
+        }
+    },
+    "cache": {
+        "promptNode-1729398874081_2.json": {
+            "What\u2019s in this image?\n\n": [
+                {
+                    "prompt": "What\u2019s in this image?\n\n",
+                    "query": {
+                        "model": "gpt-4o",
+                        "n": 1,
+                        "temperature": 1,
+                        "response_format": {
+                            "type": "text"
+                        },
+                        "top_p": 1,
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0,
+                        "seed": null,
+                        "max_tokens": null,
+                        "logit_bias": null,
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "You are a helpful assistant."
+                            },
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": "What\u2019s in this image?\n\n"
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "uid": "7b2e5f4a-fb25-43e2-b579-7a4483934e8e",
+                    "responses": [
+                        "The image shows a collection of keychains resembling miniature Indian sweets and dishes on a wooden surface. There are several keychains featuring different items such as a gulab jamun, rasgulla, jalebi, and perhaps some traditional snacks. There's also a small white condiment container and two decorative round coasters on the table."
+                    ],
+                    "raw_response": {
+                        "id": "chatcmpl-AKM5bMIXr13SlglMjPtZU8Vo0DK07",
+                        "object": "chat.completion",
+                        "created": 1729414835,
+                        "model": "gpt-4o-2024-08-06",
+                        "choices": [
+                            {
+                                "index": 0,
+                                "message": {
+                                    "role": "assistant",
+                                    "content": "The image shows a collection of keychains resembling miniature Indian sweets and dishes on a wooden surface. There are several keychains featuring different items such as a gulab jamun, rasgulla, jalebi, and perhaps some traditional snacks. There's also a small white condiment container and two decorative round coasters on the table.",
+                                    "refusal": null
+                                },
+                                "logprobs": null,
+                                "finish_reason": "stop"
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 788,
+                            "completion_tokens": 65,
+                            "total_tokens": 853,
+                            "prompt_tokens_details": {
+                                "cached_tokens": 0
+                            },
+                            "completion_tokens_details": {
+                                "reasoning_tokens": 0
+                            }
+                        },
+                        "system_fingerprint": "fp_45c6de4934"
+                    },
+                    "llm": "gpt-4o",
+                    "vars": {
+                        "=image_url": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                    },
+                    "metavars": {
+                        "__pt": "What\u2019s in this image?\n\n{=image_url}",
+                        "LLM_0": "gpt-4o"
+                    }
+                },
+                {
+                    "prompt": "What\u2019s in this image?\n\n",
+                    "query": {
+                        "model": "gpt-4o",
+                        "n": 1,
+                        "temperature": 1,
+                        "response_format": {
+                            "type": "text"
+                        },
+                        "top_p": 1,
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0,
+                        "seed": null,
+                        "max_tokens": null,
+                        "logit_bias": null,
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "You are a helpful assistant."
+                            },
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": "What\u2019s in this image?\n\n"
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "uid": "62033a69-d94a-4c28-be29-13a0ed50c287",
+                    "responses": [
+                        "The image shows a scenic landscape with a wooden boardwalk leading through a field of lush green grass. The sky is blue with some clouds, and there are trees and shrubs in the distance. The setting appears calm and natural, evoking a sense of tranquility."
+                    ],
+                    "raw_response": {
+                        "id": "chatcmpl-AKM5c8mf0EaRlNKLo4Ps0mJq0i2S3",
+                        "object": "chat.completion",
+                        "created": 1729414836,
+                        "model": "gpt-4o-2024-08-06",
+                        "choices": [
+                            {
+                                "index": 0,
+                                "message": {
+                                    "role": "assistant",
+                                    "content": "The image shows a scenic landscape with a wooden boardwalk leading through a field of lush green grass. The sky is blue with some clouds, and there are trees and shrubs in the distance. The setting appears calm and natural, evoking a sense of tranquility.",
+                                    "refusal": null
+                                },
+                                "logprobs": null,
+                                "finish_reason": "stop"
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 1128,
+                            "completion_tokens": 52,
+                            "total_tokens": 1180,
+                            "prompt_tokens_details": {
+                                "cached_tokens": 0
+                            },
+                            "completion_tokens_details": {
+                                "reasoning_tokens": 0
+                            }
+                        },
+                        "system_fingerprint": "fp_a20a4ee344"
+                    },
+                    "llm": "gpt-4o",
+                    "vars": {
+                        "=image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                    },
+                    "metavars": {
+                        "__pt": "What\u2019s in this image?\n\n{=image_url}",
+                        "LLM_0": "gpt-4o"
+                    }
+                }
+            ],
+            "What\u2019s in this image?.\n\n": [
+                {
+                    "prompt": "What\u2019s in this image?.\n\n",
+                    "query": {
+                        "model": "gpt-4o",
+                        "n": 1,
+                        "temperature": 1,
+                        "response_format": {
+                            "type": "text"
+                        },
+                        "top_p": 1,
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0,
+                        "seed": null,
+                        "max_tokens": null,
+                        "logit_bias": null,
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "You are a helpful assistant."
+                            },
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": "What\u2019s in this image?.\n\n"
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "uid": "b03f65bb-1d61-4f76-aec7-24410a3ea5a5",
+                    "responses": [
+                        "The image shows a wooden boardwalk path cutting through a lush, grassy landscape under a vibrant blue sky with some clouds. Trees and shrubs are visible in the background, suggesting a natural or park setting. It appears to be a peaceful, outdoor scene with bright, sunny weather."
+                    ],
+                    "raw_response": {
+                        "id": "chatcmpl-AKM8AjSqpnFDkrJTNtjXDLZYJ3F36",
+                        "object": "chat.completion",
+                        "created": 1729414994,
+                        "model": "gpt-4o-2024-08-06",
+                        "choices": [
+                            {
+                                "index": 0,
+                                "message": {
+                                    "role": "assistant",
+                                    "content": "The image shows a wooden boardwalk path cutting through a lush, grassy landscape under a vibrant blue sky with some clouds. Trees and shrubs are visible in the background, suggesting a natural or park setting. It appears to be a peaceful, outdoor scene with bright, sunny weather.",
+                                    "refusal": null
+                                },
+                                "logprobs": null,
+                                "finish_reason": "stop"
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 1128,
+                            "completion_tokens": 55,
+                            "total_tokens": 1183,
+                            "prompt_tokens_details": {
+                                "cached_tokens": 1024
+                            },
+                            "completion_tokens_details": {
+                                "reasoning_tokens": 0
+                            }
+                        },
+                        "system_fingerprint": "fp_a20a4ee344"
+                    },
+                    "llm": "gpt-4o",
+                    "vars": {
+                        "=image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                    },
+                    "metavars": {
+                        "__pt": "What\u2019s in this image?.\n\n{=image_url}",
+                        "LLM_0": "gpt-4o"
+                    }
+                },
+                {
+                    "prompt": "What\u2019s in this image?.\n\n",
+                    "query": {
+                        "model": "gpt-4o",
+                        "n": 1,
+                        "temperature": 1,
+                        "response_format": {
+                            "type": "text"
+                        },
+                        "top_p": 1,
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0,
+                        "seed": null,
+                        "max_tokens": null,
+                        "logit_bias": null,
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "You are a helpful assistant."
+                            },
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": "What\u2019s in this image?.\n\n"
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "uid": "4cf5ae91-14be-4b73-904f-2010b63550e7",
+                    "responses": [
+                        "This image shows a collection of keychains shaped like various miniature foods and items on a wooden surface. There are small food replicas such as Indian sweets and dishes, a keychain with what looks like a small clay pot, and a cork top. Two round coasters with a decorative pattern and a small white jug are also visible on the table."
+                    ],
+                    "raw_response": {
+                        "id": "chatcmpl-AKM8BQfSbuYcODMoSYbaqbaPHpnbf",
+                        "object": "chat.completion",
+                        "created": 1729414995,
+                        "model": "gpt-4o-2024-08-06",
+                        "choices": [
+                            {
+                                "index": 0,
+                                "message": {
+                                    "role": "assistant",
+                                    "content": "This image shows a collection of keychains shaped like various miniature foods and items on a wooden surface. There are small food replicas such as Indian sweets and dishes, a keychain with what looks like a small clay pot, and a cork top. Two round coasters with a decorative pattern and a small white jug are also visible on the table.",
+                                    "refusal": null
+                                },
+                                "logprobs": null,
+                                "finish_reason": "stop"
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 788,
+                            "completion_tokens": 69,
+                            "total_tokens": 857,
+                            "prompt_tokens_details": {
+                                "cached_tokens": 0
+                            },
+                            "completion_tokens_details": {
+                                "reasoning_tokens": 0
+                            }
+                        },
+                        "system_fingerprint": "fp_a20a4ee344"
+                    },
+                    "llm": "gpt-4o",
+                    "vars": {
+                        "=image_url": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                    },
+                    "metavars": {
+                        "__pt": "What\u2019s in this image?.\n\n{=image_url}",
+                        "LLM_0": "gpt-4o"
+                    }
+                }
+            ]
+        },
+        "promptNode-1729398874081_3.json": {
+            "What\u2019s in this image?\n\n": [
+                {
+                    "prompt": "What\u2019s in this image?\n\n",
+                    "query": {
+                        "model": "gpt-4-turbo",
+                        "n": 1,
+                        "temperature": 1,
+                        "response_format": {
+                            "type": "text"
+                        },
+                        "top_p": 1,
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0,
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "You are a helpful assistant."
+                            },
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": "What\u2019s in this image?\n\n"
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "uid": "1b73b06c-9f5b-4eba-bc74-d47eb78932d0",
+                    "responses": [
+                        "This image shows a beautiful natural landscape featuring a wooden boardwalk that extends through a lush green meadow with tall grasses. There's a vibrant blue sky with fluffy clouds overhead, and the environment seems peaceful and serene. The scene suggests a place ideal for a leisurely walk or nature observation, emphasizing the beauty of an open, natural space."
+                    ],
+                    "raw_response": {
+                        "id": "chatcmpl-AKM5c4PeXRfiL8ocicrgpKQxspuNn",
+                        "object": "chat.completion",
+                        "created": 1729414836,
+                        "model": "gpt-4-turbo-2024-04-09",
+                        "choices": [
+                            {
+                                "index": 0,
+                                "message": {
+                                    "role": "assistant",
+                                    "content": "This image shows a beautiful natural landscape featuring a wooden boardwalk that extends through a lush green meadow with tall grasses. There's a vibrant blue sky with fluffy clouds overhead, and the environment seems peaceful and serene. The scene suggests a place ideal for a leisurely walk or nature observation, emphasizing the beauty of an open, natural space.",
+                                    "refusal": null
+                                },
+                                "logprobs": null,
+                                "finish_reason": "stop"
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 1128,
+                            "completion_tokens": 69,
+                            "total_tokens": 1197,
+                            "prompt_tokens_details": {
+                                "cached_tokens": 0
+                            },
+                            "completion_tokens_details": {
+                                "reasoning_tokens": 0
+                            }
+                        },
+                        "system_fingerprint": "fp_ba97e70e7c"
+                    },
+                    "llm": "GPT4",
+                    "vars": {
+                        "=image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                    },
+                    "metavars": {
+                        "__pt": "What\u2019s in this image?\n\n{=image_url}",
+                        "LLM_0": "GPT4"
+                    }
+                },
+                {
+                    "prompt": "What\u2019s in this image?\n\n",
+                    "query": {
+                        "model": "gpt-4-turbo",
+                        "n": 1,
+                        "temperature": 1,
+                        "response_format": {
+                            "type": "text"
+                        },
+                        "top_p": 1,
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0,
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "You are a helpful assistant."
+                            },
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": "What\u2019s in this image?\n\n"
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "uid": "d749291e-458d-4c71-bc0e-5db394a733aa",
+                    "responses": [
+                        "The image shows a collection of keychains, each featuring miniature, highly detailed models of different foods and kitchen items. Some of the keychains have tiny bowls or baskets containing foods like fruits, beans, and bread. Others feature a small replica of a open trash can, a terracotta pot, and kitchen utensils like a spoon. The background has a wooden surface, and there are also two coasters with decorative patterns on the upper right side. The attention to detail in these miniatures is very intricate, suggesting that they might be handcrafted or collectible items."
+                    ],
+                    "raw_response": {
+                        "id": "chatcmpl-AKM5cmqJ7lFC5LVFJk1d65zP1L3fB",
+                        "object": "chat.completion",
+                        "created": 1729414836,
+                        "model": "gpt-4-turbo-2024-04-09",
+                        "choices": [
+                            {
+                                "index": 0,
+                                "message": {
+                                    "role": "assistant",
+                                    "content": "The image shows a collection of keychains, each featuring miniature, highly detailed models of different foods and kitchen items. Some of the keychains have tiny bowls or baskets containing foods like fruits, beans, and bread. Others feature a small replica of a open trash can, a terracotta pot, and kitchen utensils like a spoon. The background has a wooden surface, and there are also two coasters with decorative patterns on the upper right side. The attention to detail in these miniatures is very intricate, suggesting that they might be handcrafted or collectible items.",
+                                    "refusal": null
+                                },
+                                "logprobs": null,
+                                "finish_reason": "stop"
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 788,
+                            "completion_tokens": 115,
+                            "total_tokens": 903,
+                            "prompt_tokens_details": {
+                                "cached_tokens": 0
+                            },
+                            "completion_tokens_details": {
+                                "reasoning_tokens": 0
+                            }
+                        },
+                        "system_fingerprint": "fp_ba97e70e7c"
+                    },
+                    "llm": "GPT4",
+                    "vars": {
+                        "=image_url": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                    },
+                    "metavars": {
+                        "__pt": "What\u2019s in this image?\n\n{=image_url}",
+                        "LLM_0": "GPT4"
+                    }
+                }
+            ],
+            "What\u2019s in this image?.\n\n": [
+                {
+                    "prompt": "What\u2019s in this image?.\n\n",
+                    "query": {
+                        "model": "gpt-4-turbo",
+                        "n": 1,
+                        "temperature": 1,
+                        "response_format": {
+                            "type": "text"
+                        },
+                        "top_p": 1,
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0,
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "You are a helpful assistant."
+                            },
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": "What\u2019s in this image?.\n\n"
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "uid": "6a4059d2-edd1-4ee7-99f8-4f7bf9142f00",
+                    "responses": [
+                        "This image features a beautiful natural landscape with a wooden boardwalk extending through a lush green meadow. The meadow is filled with tall grass, and various trees can be seen in the distance. The sky above is partly cloudy with shades of blue, and hints of white clouds. The scene is likely a nature reserve or park, ideal for walking and enjoying the tranquil outdoor environment. The image captures a vibrant and peaceful setting, suggesting a perfect day for a leisurely stroll."
+                    ],
+                    "raw_response": {
+                        "id": "chatcmpl-AKM8BJP77IS8wVhI6V08zRD6HH5Fz",
+                        "object": "chat.completion",
+                        "created": 1729414995,
+                        "model": "gpt-4-turbo-2024-04-09",
+                        "choices": [
+                            {
+                                "index": 0,
+                                "message": {
+                                    "role": "assistant",
+                                    "content": "This image features a beautiful natural landscape with a wooden boardwalk extending through a lush green meadow. The meadow is filled with tall grass, and various trees can be seen in the distance. The sky above is partly cloudy with shades of blue, and hints of white clouds. The scene is likely a nature reserve or park, ideal for walking and enjoying the tranquil outdoor environment. The image captures a vibrant and peaceful setting, suggesting a perfect day for a leisurely stroll.",
+                                    "refusal": null
+                                },
+                                "logprobs": null,
+                                "finish_reason": "stop"
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 1129,
+                            "completion_tokens": 95,
+                            "total_tokens": 1224,
+                            "prompt_tokens_details": {
+                                "cached_tokens": 0
+                            },
+                            "completion_tokens_details": {
+                                "reasoning_tokens": 0
+                            }
+                        },
+                        "system_fingerprint": "fp_ba97e70e7c"
+                    },
+                    "llm": "GPT4",
+                    "vars": {
+                        "=image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                    },
+                    "metavars": {
+                        "__pt": "What\u2019s in this image?.\n\n{=image_url}",
+                        "LLM_0": "GPT4"
+                    }
+                },
+                {
+                    "prompt": "What\u2019s in this image?.\n\n",
+                    "query": {
+                        "model": "gpt-4-turbo",
+                        "n": 1,
+                        "temperature": 1,
+                        "response_format": {
+                            "type": "text"
+                        },
+                        "top_p": 1,
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0,
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "You are a helpful assistant."
+                            },
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": "What\u2019s in this image?.\n\n"
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "uid": "99f069d3-761c-4208-b639-1f5ef45f28e3",
+                    "responses": [
+                        "This image shows a collection of keychains with miniature food and kitchenware models on a wooden surface. Each keychain features different items:\n\n1. A tiny flowerpot with a cork.\n2. A silver spoon beside miniature crockery with an orange piece of food.\n3. A basket with what looks like two lemon slices.\n4. Two small baskets containing kiwi slices and onion rings.\n5. Another keychain has what appears to be yellow and orange clump of cylinders resembling kernels.\n6. A silver ladle with tiny white rounded items.\n7. A tiny white bucket or container. \n\nAdditionally, there are two coasters or decorative round plates with a floral and rustic design. The miniature items are intricately detailed, suggesting they are possibly hand-crafted."
+                    ],
+                    "raw_response": {
+                        "id": "chatcmpl-AKM8CbvBdFOkj363tWFPAyibs7l8P",
+                        "object": "chat.completion",
+                        "created": 1729414996,
+                        "model": "gpt-4-turbo-2024-04-09",
+                        "choices": [
+                            {
+                                "index": 0,
+                                "message": {
+                                    "role": "assistant",
+                                    "content": "This image shows a collection of keychains with miniature food and kitchenware models on a wooden surface. Each keychain features different items:\n\n1. A tiny flowerpot with a cork.\n2. A silver spoon beside miniature crockery with an orange piece of food.\n3. A basket with what looks like two lemon slices.\n4. Two small baskets containing kiwi slices and onion rings.\n5. Another keychain has what appears to be yellow and orange clump of cylinders resembling kernels.\n6. A silver ladle with tiny white rounded items.\n7. A tiny white bucket or container. \n\nAdditionally, there are two coasters or decorative round plates with a floral and rustic design. The miniature items are intricately detailed, suggesting they are possibly hand-crafted.",
+                                    "refusal": null
+                                },
+                                "logprobs": null,
+                                "finish_reason": "stop"
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 789,
+                            "completion_tokens": 155,
+                            "total_tokens": 944,
+                            "prompt_tokens_details": {
+                                "cached_tokens": 0
+                            },
+                            "completion_tokens_details": {
+                                "reasoning_tokens": 0
+                            }
+                        },
+                        "system_fingerprint": "fp_ba97e70e7c"
+                    },
+                    "llm": "GPT4",
+                    "vars": {
+                        "=image_url": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                    },
+                    "metavars": {
+                        "__pt": "What\u2019s in this image?.\n\n{=image_url}",
+                        "LLM_0": "GPT4"
+                    }
+                }
+            ]
+        },
+        "promptNode-1729398874081.json": {
+            "cache_files": {
+                "promptNode-1729398874081_2.json": {
+                    "key": "1aec44d8-8b86-4189-9b9c-c2744d7f7fc2",
+                    "settings": {
+                        "system_msg": "You are a helpful assistant.",
+                        "temperature": 1,
+                        "response_format": {
+                            "type": "text"
+                        },
+                        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+                        "functions": [],
+                        "function_call": "",
+                        "top_p": 1,
+                        "stop": [],
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0,
+                        "seed": null,
+                        "max_tokens": null,
+                        "logit_bias": null
+                    },
+                    "name": "gpt-4o",
+                    "emoji": "\ud83e\udd16",
+                    "model": "gpt-4o",
+                    "base_model": "gpt-3.5-turbo",
+                    "temp": 1,
+                    "formData": {
+                        "shortname": "gpt-4o",
+                        "model": "gpt-4o",
+                        "system_msg": "You are a helpful assistant.",
+                        "temperature": 1,
+                        "response_format": "text",
+                        "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+                        "functions": "",
+                        "function_call": "",
+                        "top_p": 1,
+                        "stop": "",
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0,
+                        "seed": null,
+                        "max_tokens": null,
+                        "logit_bias": null
+                    },
+                    "progress": {
+                        "success": 0,
+                        "error": 0
+                    }
+                },
+                "promptNode-1729398874081_3.json": {
+                    "key": "d16859a8-5e8f-44df-b321-b6f4fe08c025",
+                    "name": "GPT4",
+                    "emoji": "\ud83e\udd75",
+                    "model": "gpt-4-turbo",
+                    "base_model": "gpt-4",
+                    "temp": 1,
+                    "settings": {
+                        "system_msg": "You are a helpful assistant.",
+                        "temperature": 1,
+                        "response_format": {
+                            "type": "text"
+                        },
+                        "image_url": "",
+                        "functions": [],
+                        "function_call": "",
+                        "top_p": 1,
+                        "stop": [],
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0
+                    },
+                    "formData": {
+                        "shortname": "GPT4",
+                        "model": "gpt-4-turbo",
+                        "system_msg": "You are a helpful assistant.",
+                        "temperature": 1,
+                        "response_format": "text",
+                        "image_url": "",
+                        "functions": "",
+                        "function_call": "",
+                        "top_p": 1,
+                        "stop": "",
+                        "presence_penalty": 0,
+                        "frequency_penalty": 0
+                    },
+                    "progress": {
+                        "success": 0,
+                        "error": 0
+                    }
+                }
+            },
+            "responses_last_run": [
+                {
+                    "vars": {
+                        "=image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                    },
+                    "metavars": {
+                        "__pt": "What\u2019s in this image?.\n\n{=image_url}",
+                        "LLM_0": "gpt-4o"
+                    },
+                    "llm": "gpt-4o",
+                    "prompt": "What\u2019s in this image?.\n\n",
+                    "responses": [
+                        "The image shows a wooden boardwalk path cutting through a lush, grassy landscape under a vibrant blue sky with some clouds. Trees and shrubs are visible in the background, suggesting a natural or park setting. It appears to be a peaceful, outdoor scene with bright, sunny weather."
+                    ],
+                    "uid": "b03f65bb-1d61-4f76-aec7-24410a3ea5a5"
+                },
+                {
+                    "vars": {
+                        "=image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                    },
+                    "metavars": {
+                        "__pt": "What\u2019s in this image?.\n\n{=image_url}",
+                        "LLM_0": "GPT4"
+                    },
+                    "llm": "GPT4",
+                    "prompt": "What\u2019s in this image?.\n\n",
+                    "responses": [
+                        "This image features a beautiful natural landscape with a wooden boardwalk extending through a lush green meadow. The meadow is filled with tall grass, and various trees can be seen in the distance. The sky above is partly cloudy with shades of blue, and hints of white clouds. The scene is likely a nature reserve or park, ideal for walking and enjoying the tranquil outdoor environment. The image captures a vibrant and peaceful setting, suggesting a perfect day for a leisurely stroll."
+                    ],
+                    "uid": "6a4059d2-edd1-4ee7-99f8-4f7bf9142f00"
+                },
+                {
+                    "vars": {
+                        "=image_url": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                    },
+                    "metavars": {
+                        "__pt": "What\u2019s in this image?.\n\n{=image_url}",
+                        "LLM_0": "gpt-4o"
+                    },
+                    "llm": "gpt-4o",
+                    "prompt": "What\u2019s in this image?.\n\n",
+                    "responses": [
+                        "This image shows a collection of keychains shaped like various miniature foods and items on a wooden surface. There are small food replicas such as Indian sweets and dishes, a keychain with what looks like a small clay pot, and a cork top. Two round coasters with a decorative pattern and a small white jug are also visible on the table."
+                    ],
+                    "uid": "4cf5ae91-14be-4b73-904f-2010b63550e7"
+                },
+                {
+                    "vars": {
+                        "=image_url": "https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1222452332334029&signature=AbwM6THOj7uFvqLcm--QpWEHDwsmwuUr9r4dZ5QoSge_sB8Hm0VlXrBR_i5EE1hH5xu2RGBuDCJjyZW8aNV1istvCizYGbyn7Sioz7BgpoJSC6a7dpkdpsJ1SndExZSx4x9FU9GqPWFA9m7KGr10eXZMP1QTrLEHrT-LkktvI_YOiXjKRPGfFXdIbIGPxfnww3iNLTjMNXHf55pj54y-HczWzVg1MH8"
+                    },
+                    "metavars": {
+                        "__pt": "What\u2019s in this image?.\n\n{=image_url}",
+                        "LLM_0": "GPT4"
+                    },
+                    "llm": "GPT4",
+                    "prompt": "What\u2019s in this image?.\n\n",
+                    "responses": [
+                        "This image shows a collection of keychains with miniature food and kitchenware models on a wooden surface. Each keychain features different items:\n\n1. A tiny flowerpot with a cork.\n2. A silver spoon beside miniature crockery with an orange piece of food.\n3. A basket with what looks like two lemon slices.\n4. Two small baskets containing kiwi slices and onion rings.\n5. Another keychain has what appears to be yellow and orange clump of cylinders resembling kernels.\n6. A silver ladle with tiny white rounded items.\n7. A tiny white bucket or container. \n\nAdditionally, there are two coasters or decorative round plates with a floral and rustic design. The miniature items are intricately detailed, suggesting they are possibly hand-crafted."
+                    ],
+                    "uid": "99f069d3-761c-4208-b639-1f5ef45f28e3"
+                }
+            ]
+        },
+        "textFieldsNode-1729399034396.json": {},
+        "comment-1729415028968.json": {}
+    }
+}
