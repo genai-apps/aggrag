@@ -312,8 +312,8 @@ export async function call_chatgpt(
         },
       },
     ];
-    delete params.image_url;
   }
+  if (params && 'image_url' in params) delete params.image_url; // Check if params is defined
   const query: Dict = {
     model: modelname,
     n,
@@ -340,6 +340,8 @@ export async function call_chatgpt(
     );
   }
 
+  console.log("query");
+  console.log(query);
   // Try to call OpenAI
   let response: Dict = {};
   try {
@@ -1561,8 +1563,6 @@ export async function call_llm(
 
   const llm_name = llm.toString().toLowerCase();
   if (llm_provider === LLMProvider.OpenAI) {
-    console.log("params");
-    console.log(params);
     if (llm_name.startsWith("dall-e")) call_api = call_dalle;
     else call_api = call_chatgpt;
   } else if (llm_provider === LLMProvider.Azure_OpenAI)
