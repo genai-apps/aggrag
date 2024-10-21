@@ -223,11 +223,12 @@ export function get_azure_openai_api_keys(): [
  * @param system_msg Optional; the system message to use if none is present in chat_history. (Ignored if chat_history already has a sys message.)
  */
 function construct_openai_chat_history(
-  prompt: string,
+  prompt: string | Dict[] | string[],
   chat_history?: ChatHistory,
   system_msg?: string,
 ): ChatHistory {
   const prompt_msg: ChatMessage = { role: "user", content: prompt };
+
   const sys_msg: ChatMessage[] =
     system_msg !== undefined ? [{ role: "system", content: system_msg }] : [];
   if (chat_history !== undefined && chat_history.length > 0) {
@@ -247,7 +248,7 @@ function construct_openai_chat_history(
    @returns raw query and response JSON dicts.
  */
 export async function call_chatgpt(
-  prompt: string,
+  prompt: string | string[] | Dict[],
   model: LLM,
   n = 1,
   temperature = 1.0,
@@ -301,6 +302,18 @@ export async function call_chatgpt(
   delete params?.system_msg;
   delete params?.chat_history;
 
+  if (params?.image_url) {
+    prompt = [
+      { type: "text", text: prompt },
+      {
+        type: "image_url",
+        image_url: {
+          url: params.image_url,
+        },
+      },
+    ];
+  }
+  if (params && 'image_url' in params) delete params.image_url; // Check if params is defined
   const query: Dict = {
     model: modelname,
     n,
@@ -327,6 +340,8 @@ export async function call_chatgpt(
     );
   }
 
+  console.log("query");
+  console.log(query);
   // Try to call OpenAI
   let response: Dict = {};
   try {
@@ -421,7 +436,7 @@ export async function call_dalle(
  *  NOTE: It is recommended to set an environment variables AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT
  */
 export async function call_azure_openai(
-  prompt: string,
+  prompt: string | Dict[] | string[],
   model: LLM,
   n = 1,
   temperature = 1.0,
@@ -1029,11 +1044,11 @@ export async function call_huggingface(
       for (const chat_msg of params.chat_history as ChatHistory) {
         if (chat_msg.role === "user")
           hf_chat_hist.past_user_inputs = hf_chat_hist.past_user_inputs.concat(
-            chat_msg.content,
+            chat_msg.content as string,
           );
         else if (chat_msg.role === "assistant")
           hf_chat_hist.generated_responses =
-            hf_chat_hist.generated_responses.concat(chat_msg.content);
+            hf_chat_hist.generated_responses.concat(chat_msg.content as string);
         // ignore system messages
       }
     }

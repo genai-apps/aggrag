@@ -33,7 +33,7 @@ export interface OpenAIFunctionCall {
 /** OpenAI chat message format */
 export interface ChatMessage {
   role: string;
-  content: string;
+  content: string | string[] | Dict[];
   name?: string;
   function_call?: OpenAIFunctionCall;
 }
