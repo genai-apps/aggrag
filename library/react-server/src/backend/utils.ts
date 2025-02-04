@@ -65,7 +65,7 @@ const ANTHROPIC_AI_PROMPT = "\n\nAssistant:";
 /** Where the Aggrag Flask server is being hosted, if any. */
 
 export const FLASK_BASE_URL = process.env.REACT_APP_API_URL;
-const url = new URL(FLASK_BASE_URL);
+const url = new URL(FLASK_BASE_URL || "http://localhost:8000/");
 export const baseUrl = `${url.protocol}//${url.hostname}`;
 export const PORT_EXPRESS = process.env.PORT_EXPRESS;
 

@@ -939,6 +939,11 @@ Soft failing by replacing undefined with empty strings.`,
       }
     };
 
+    console.log(`prompt template: ${prompt_template}`);
+    console.log("pulled data:", pulled_data);
+    console.log(`${_llmItemsCurrState}`);
+    console.log(`${_ragItemsCurrState}`);
+
     // Fetch info about the number of queries we'll need to make
     const fetch_resp_count = () =>
       fetchResponseCounts(

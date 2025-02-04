@@ -420,27 +420,162 @@ def index():
 
     return html_str
 
-
-# Add this route to proxy requests to Express server
-@app.route("/app/run", methods=["POST"])
-def proxy_express_run():
+@app.route("/app/validate", methods=["POST"])
+def proxy_express_validate():
     """
-    This is a proxy endpoint that passes all the request to Express Server running internally on port 3001;
+    This endpoint proxies validation requests to the Express server.
+    It handles the same input formats as /app/run:
+    1. Direct request data (JSON)
+    2. File path to a .cforge file
+    3. Actual .cforge file upload
+    
+    Request format:
+    {
+        "flow_path": str,  # Optional: Path to .cforge file
+        "flow": dict,      # Optional: Direct flow data
+    }
     """
     try:
+        request_data = request.get_json()
+        
+        # Check if we have a file path
+         # Check if we have a file path
+        if "flow_path" in request_data:
+            flow_path = request_data["flow_path"]
+            if not os.path.exists(flow_path):
+                return jsonify({"error": f"Flow file not found at path: {flow_path}"}), 404
+                
+            # Load the flow from file
+            try:
+                with open(flow_path, 'r') as f:
+                    flow_data = json.load(f)
+
+                    # The file contains a top-level "flow" key
+                    if "flow" in flow_data:
+                        request_data["flow"] = flow_data["flow"]
+                    else:
+                        return jsonify({"error": "Invalid flow structure"}), 400
+                # request_data["flow"] = flow_data
+            except Exception as e:
+                return jsonify({"error": f"Error reading flow file: {str(e)}"}), 500
+
         # Forward the request to Express server
         url = f"http://localhost:{settings.PORT_EXPRESS}"
         
         response = requests.post(
-            f"{url}/app/run",
-            json=request.get_json(),
+            f"{url}/app/validate",
+            json=request_data,
             headers={
                 "Content-Type": "application/json"
             }
         )
+
         return response.json(), response.status_code
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/app/run", methods=["POST"])
+def proxy_express_run():
+    """/ap
+    This endpoint handles three types of inputs:
+    1. Direct request data (JSON)
+    2. File path to a .cforge file
+    3. Actual .cforge file upload
+    
+    Request format:
+    {
+        "flow_path": str,  # Optional: Path to .cforge file
+        "flow": dict,      # Optional: Direct flow data
+        "vars": dict       # Optional: Variables to use in the flow
+    }
+    """
+    try:
+        request_data = request.get_json()
+        
+        # print(f"request_data is: {request_data}")
+        # Check if we have a file path
+        if "flow_path" in request_data:
+            flow_path = request_data["flow_path"]
+            if not os.path.exists(flow_path):
+                return jsonify({"error": f"Flow file not found at path: {flow_path}"}), 404
+                
+            # Load the flow from file
+            try:
+                with open(flow_path, 'r') as f:
+                    flow_data = json.load(f)
+
+                    # The file contains a top-level "flow" key
+                    if "flow" in flow_data:
+                        request_data["flow"] = flow_data["flow"]
+                    else:
+                        return jsonify({"error": "Invalid flow structure"}), 400
+                # request_data["flow"] = flow_data
+            except Exception as e:
+                return jsonify({"error": f"Error reading flow file: {str(e)}"}), 500
+        
+        print(f"loaded data is: {request_data}")
+         
+            # If we have vars and flow, update the nodes' data fields
+        if "vars" in request_data and "flow" in request_data:
+            
+            vars_data = request_data["vars"]
+            
+            # Update vars in each node's data object
+            for node in request_data["flow"].get("nodes", []):
+                if "data" in node:
+                    # Handle fields that contain @variable references
+                    if "fields" in node["data"] and isinstance(node['data'].get('fields'), dict):
+                        for field_key, field_value in node["data"]["fields"].items():
+                            print(f"field key: {field_key} and value: {field_value}")
+                            for var_key, var_value in vars_data.items():
+                                # Remove @ from both the pattern and var_key
+                                clean_var_key = var_key.lstrip('@')
+                                pattern = f"{{@{clean_var_key}}}"
+                                
+                                if isinstance(field_value, str) and pattern in field_value:
+                                    node["data"]["fields"][field_key] = field_value.replace(pattern, var_value)
+                                    print(f"Updated the node: {node}")
+            
+            
+        # Forward the request to Express server
+        url = f"http://localhost:{settings.PORT_EXPRESS}"
+        print(f"request_data is: {request_data}")
+        response = requests.post(
+            f"{url}/app/run",
+            json=request_data,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        return response.json(), response.status_code
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+# # Add this route to proxy requests to Express server
+# @app.route("/app/run", methods=["POST"])
+# def proxy_express_run():
+#     """
+#     This is a proxy endpoint that passes all the request to Express Server running internally on port 3001;
+#     """
+#     try:
+#         # Forward the request to Express server
+#         url = f"http://localhost:{settings.PORT_EXPRESS}"
+
+#         # Get the full request JSON including any kwargs
+#         request_data = request.get_json()
+        
+#         response = requests.post(
+#             f"{url}/app/run",
+#             json=request_data,
+#             headers={
+#                 "Content-Type": "application/json"
+#             }
+#         )
+
+#         return response.json(), response.status_code
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/app/executepy", methods=["POST"])

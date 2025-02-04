@@ -16,7 +16,15 @@ module.exports = {
     semi: ["error", "always"],
     camelcase: ["off"],
     "react/prop-types": ["off"],
+    "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/no-explicit-any": ["off"],
+    // Add any other rules you want to disable
+    // "@typescript-eslint/no-unused-vars": "off",
+    // "no-unused-vars": "off",
+    // Set everything to warn instead of error
+    // "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-expressions": "warn",
+    "@typescript-eslint/no-require-imports": "warn",
   },
 
   settings: {

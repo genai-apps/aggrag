@@ -411,11 +411,33 @@ export const initRAGProviderMenu: LLMSpec[] = [
   },
 ];
 
-const togetherModels = TogetherChatSettings.schema.properties.model
-  .enum as string[];
+// src/store.tsx
+// src/store.tsx
+// const togetherModels =
+//   (TogetherChatSettings?.schema?.properties?.model as unknown as string[]) ||
+//   [];
+const togetherModels = Array.isArray(
+  TogetherChatSettings?.schema?.properties?.model,
+)
+  ? TogetherChatSettings.schema.properties.model
+  : [];
+
+// const togetherModels = TogetherChatSettings?.schema?.properties?.model
+//   .enum as string[];
+if (!togetherModels) {
+  console.warn(
+    "Warning: TogetherChatSettings schema is not defined. Defaulting to backup settings.",
+  );
+  // Implement fallback logic here
+}
 const togetherGroups = () => {
   const groupNames: string[] = [];
   const groups: { [key: string]: LLMGroup } = {};
+  if (!Array.isArray(togetherModels)) {
+    console.warn("Warning: togetherModels is not an array");
+    return [];
+  }
+
   togetherModels.forEach((model) => {
     const [groupName, modelName] = model.split("/");
     const spec: LLMSpec = {
@@ -1042,3 +1064,4 @@ const useStore = create<StoreHandles>((set, get) => ({
 }));
 
 export default useStore;
+// src/store.tsx

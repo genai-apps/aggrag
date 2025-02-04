@@ -38,6 +38,7 @@ import {
 import { UserForcedPrematureExit } from "./errors";
 import CancelTracker from "./canceler";
 import { execPy } from "./pyodide/exec-py";
+// import { execPy } from "./pyodide/exec-py";
 
 // """ =================
 //     SETUP AND GLOBALS
@@ -397,7 +398,7 @@ function check_typeof_vals(arr: Array<any>): MetricType {
   } else return val_type;
 }
 
-async function run_over_responses(
+export async function run_over_responses(
   process_func: (resp: ResponseInfo) => any,
   responses: LLMResponse[],
   process_type: "evaluator" | "processor",
@@ -1671,6 +1672,17 @@ export async function queryRAG(
   errors: Dict<string[]>;
   cache?: Dict<string | LLMSpec>;
 }> {
+  // Add console logs for all parameters
+  console.log("queryRAG parameters:");
+  console.log("id:", id);
+  // console.log('rag:', rag);
+  // console.log('prompt:', prompt);
+  console.log("vars:", vars);
+  // console.log('chat_histories:', chat_histories);
+  // console.log('no_cache:', no_cache);
+  console.log("progress_listener:", progress_listener);
+  console.log("cancel_id:", cancel_id);
+
   // Verify the integrity of the params
   if (typeof id !== "string" || id.trim().length === 0)
     throw new Error("id is improper format (length 0 or not a string)");

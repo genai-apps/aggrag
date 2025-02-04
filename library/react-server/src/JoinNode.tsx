@@ -37,7 +37,7 @@ import {
 } from "./backend/typing";
 import { generatePrompts } from "./backend/backend";
 
-enum JoinFormat {
+export enum JoinFormat {
   DubNewLine = "\n\n",
   NewLine = "\n",
   DashedList = "-",
@@ -185,6 +185,7 @@ const JoinNode: React.FC<JoinNodeProps> = ({ data, id }) => {
   const [joinedTexts, setJoinedTexts] = useState<(TemplateVarInfo | string)[]>(
     [],
   );
+
 
   // For an info pop-up that previews all the joined inputs
   const [infoModalOpened, { open: openInfoModal, close: closeInfoModal }] =

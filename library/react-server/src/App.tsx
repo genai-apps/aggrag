@@ -95,8 +95,6 @@ import {
   FLASK_BASE_URL,
   APP_IS_RUNNING_LOCALLY,
   browserTabIsActive,
-  baseUrl,
-  PORT_EXPRESS,
 } from "./backend/utils";
 import { Dict, JSONCompatible, LLMSpec } from "./backend/typing";
 import {
@@ -128,6 +126,7 @@ import {
 import "./CssStyles.css";
 import { HintRunsType, incrementHintRun, setHintSteps } from "./HintHelpers";
 import CustomModal from "./CustomModal";
+import RunFlowDropdown from "./RunFlowDropdown";
 const IS_ACCEPTED_BROWSER =
   (isChrome ||
     isChromium ||
@@ -736,7 +735,7 @@ const App = () => {
     handleSaveFlow(true);
   };
 
-  const handleRunFlow = async () => {
+  const validateFlow = async () => {
     if (!rfInstance) return;
 
     try {
@@ -745,7 +744,43 @@ const App = () => {
       // Get current flow data
       const flow = rfInstance.toObject();
 
-      // Call the backend API to run the flow
+      // Call the backend API to validate the flow
+      const response = await fetch(`${FLASK_BASE_URL}app/validate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({ flow }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || "Flow validation failed");
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Flow validation error:", error);
+      showNotification(
+        "Error",
+        error instanceof Error ? error.message : "Flow validation failed",
+        "red",
+      );
+      throw error;
+    } finally {
+      setIsFlowRunning(false);
+    }
+  };
+
+  const handleRunFlow = async () => {
+    if (!rfInstance) return;
+
+    try {
+      setIsFlowRunning(true);
+      const flow = rfInstance.toObject();
+
       const response = await fetch(`${FLASK_BASE_URL}app/run`, {
         method: "POST",
         headers: {
@@ -761,16 +796,14 @@ const App = () => {
         throw new Error(data.error || "Flow execution failed");
       }
 
-      // Handle successful execution
       showNotification(
         "Success",
         "Flow execution completed successfully!",
         "green",
       );
 
-      // Update node states with results
-      // This will be implemented as we add node execution handlers
       updateNodesWithResults(data.results);
+      return data; // Return the API response data
     } catch (error) {
       console.error("Flow execution error:", error);
       showNotification(
@@ -778,6 +811,7 @@ const App = () => {
         error instanceof Error ? error.message : "Flow execution failed",
         "red",
       );
+      throw error; // Re-throw the error to be caught by handleRun
     } finally {
       setIsFlowRunning(false);
     }
@@ -3525,7 +3559,26 @@ const App = () => {
               >
                 Import
               </Button>
-              <Button
+              <RunFlowDropdown
+                onValidate={validateFlow}
+                onRun={handleRunFlow}
+                isRunning={isFlowRunning || !rfInstance}
+                className="run-btn"
+                style={{
+                  float: "left",
+                  backgroundColor: "#198c8a",
+                }}
+                compact
+                size="sm"
+                icon={
+                  isFlowRunning ? (
+                    <Loader size="xs" color="white" mr="4px" />
+                  ) : (
+                    <IconPlayerPlay size="16px" />
+                  )
+                }
+              />
+              {/* <Button
                 className="run-btn"
                 size="sm"
                 variant="filled"
@@ -3549,7 +3602,7 @@ const App = () => {
                   <IconPlayerPlay size="16px" />
                 )}
                 {isFlowRunning ? "Running..." : "Run Flow"}
-              </Button>
+              </Button> */}
               <Menu
                 transitionProps={{ transition: "pop-top-left" }}
                 position="bottom-end"
